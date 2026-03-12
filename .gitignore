@@ -1,0 +1,20 @@
+# Obsidian
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/plugins/
+.obsidian/themes/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Generated output
+output/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
