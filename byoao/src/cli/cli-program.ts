@@ -22,7 +22,7 @@ program
     "  3. byoao status <path>  Check vault health\n\n" +
     "For more info visit https://github.com/JayJiangCT/BYOAO"
   )
-  .version("0.2.0");
+  .version("0.2.1");
 
 // ── byoao install ────────────────────────────────────────────────
 program
@@ -37,7 +37,7 @@ program
   .option("--project-dir <path>", "Project directory (default: current directory)")
   .action(async (opts) => {
     printLogo();
-    printVersion("0.2.0");
+    printVersion("0.2.1");
 
     let installGlobal = opts.global;
     let installSkills = opts.skills !== false;
@@ -85,7 +85,7 @@ program
   .command("init")
   .description(
     "Create a new Obsidian knowledge base for your team — sets up folders, templates, " +
-    "glossary, and an AI routing index (AGENT.md). Opens the vault in Obsidian when done."
+    "glossary, and an AI routing index (AGENT.md)"
   )
   .option("--team <name>", "Team name (skips interactive prompt)")
   .option("--path <path>", "Where to create the vault (default: ~/Documents/<team> Workspace)")

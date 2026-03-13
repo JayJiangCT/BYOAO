@@ -76,7 +76,12 @@ byoao init
 byoao init --team "My Team" --preset pm-tpm
 ```
 
-Your vault opens automatically in Obsidian. Then launch OpenCode and try `/init-knowledge-base` for the full guided setup, or `/vault-doctor` to check vault health.
+Then register it in Obsidian:
+
+1. Open Obsidian → **Manage vaults** → **Open folder as vault**
+2. Read **"Start Here.md"** — it explains the vault structure
+3. Start adding notes — meeting notes, project docs, daily notes
+4. When ready for AI features, `cd` into your vault and run `opencode`
 
 ---
 
@@ -154,7 +159,7 @@ byoao/
 ├── src/
 │   ├── index.ts              # Plugin entry — tools, hooks
 │   ├── plugin-config.ts      # Zod schemas (VaultConfig, PresetConfig, VaultDoctor)
-│   ├── cli/                  # CLI: install, vault init (interactive TUI), vault status
+│   ├── cli/                  # CLI: install, init (interactive TUI), status
 │   ├── tools/                # 6 OpenCode tools
 │   ├── skills/               # 4 skill definitions (.md)
 │   ├── hooks/                # system.transform + idle suggestions
