@@ -254,9 +254,9 @@ program
     "Check the health of an existing vault — note count, directory structure, " +
     "broken [[wikilinks]], and Obsidian connection status"
   )
-  .argument("<path>", "Path to the vault folder")
-  .action(async (vaultPath: string) => {
-    const resolvedPath = path.resolve(vaultPath);
+  .argument("[path...]", "Path to the vault folder (default: current directory)")
+  .action(async (pathParts: string[]) => {
+    const resolvedPath = pathParts.length > 0 ? path.resolve(pathParts.join(" ")) : process.cwd();
     const status = await getVaultStatus(resolvedPath);
     console.log(formatVaultStatus(status));
 

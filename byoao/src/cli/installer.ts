@@ -106,7 +106,14 @@ export async function install(
     if (installed) {
       // Re-check after installation so plugin registration works
       openCodeStatus = checkOpenCode();
-      printProgress("OpenCode", "ok", "installed");
+      if (!openCodeStatus.installed) {
+        printProgress("OpenCode", "ok", "installed (restart terminal to use)");
+        printInfo(
+          "Open a new terminal window, or run: source ~/.zshrc"
+        );
+      } else {
+        printProgress("OpenCode", "ok", "installed");
+      }
     } else {
       printWarning(
         "OpenCode is required for the plugin to work."
