@@ -1,0 +1,12 @@
+{
+  "name": "pm-tpm",
+  "displayName": "PM / TPM",
+  "description": "Project tracking, sprint cycles, stakeholder management",
+  "directories": ["Projects", "Sprints"],
+  "agentDescription": "PM/TPM knowledge base",
+  "frontmatterExtras": {
+    "project": ["jira", "stakeholders", "priority"],
+    "sprint": ["sprint-dates", "jira-board"]
+  },
+  "templates": ["Feature Doc.md", "Sprint Handoff.md"]
+}
