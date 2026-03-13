@@ -14,7 +14,7 @@ export async function addMember(input: AddMemberInput): Promise<AddMemberResult>
   let wikilinksAdded = 0;
 
   // 1. Create person note
-  const personPath = path.join(vaultPath, `40-People/${name}.md`);
+  const personPath = path.join(vaultPath, `People/${name}.md`);
   if (await fs.pathExists(personPath)) {
     throw new Error(`Person note already exists: ${personPath}`);
   }
@@ -36,11 +36,11 @@ tags: [person]
   await fs.writeFile(personPath, content);
 
   // 2. Update team index if it exists
-  const teamFiles = await fs.readdir(path.join(vaultPath, "40-People"));
+  const teamFiles = await fs.readdir(path.join(vaultPath, "People"));
   const teamIndexFile = teamFiles.find((f) => f.endsWith("Team.md"));
 
   if (teamIndexFile) {
-    const teamIndexPath = path.join(vaultPath, "40-People", teamIndexFile);
+    const teamIndexPath = path.join(vaultPath, "People", teamIndexFile);
     let teamContent = await fs.readFile(teamIndexPath, "utf-8");
 
     // Add to members table

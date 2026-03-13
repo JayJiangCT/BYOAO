@@ -12,7 +12,7 @@ export async function addGlossaryTerm(
 ): Promise<AddGlossaryTermResult> {
   const { vaultPath, term, definition } = input;
 
-  const glossaryPath = path.join(vaultPath, "30-Knowledge/Glossary.md");
+  const glossaryPath = path.join(vaultPath, "Knowledge/Glossary.md");
   if (!(await fs.pathExists(glossaryPath))) {
     throw new Error(`Glossary not found at: ${glossaryPath}`);
   }

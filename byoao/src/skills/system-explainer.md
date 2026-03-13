@@ -43,7 +43,7 @@ Previously generated explanations are cached in `Systems/`. Reuse them when the 
 
 1. **Parse the question** — identify the target system, service, or feature.
 2. **Load baseline overview** — read `.opencode/context/repos/{service}.md`.
-3. **Check Obsidian vault** — search `50-Systems/` for existing knowledge docs.
+3. **Check Obsidian vault** — search `Systems/` for existing knowledge docs.
 4. **If more detail needed** — read the local repo clone using baseline as guide.
 5. **Staleness detection** — flag discrepancies between baseline and actual code.
 6. **Synthesize a clear explanation** with Mermaid diagrams where helpful.

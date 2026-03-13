@@ -13,7 +13,7 @@ export async function addProject(input: AddProjectInput): Promise<AddProjectResu
   let wikilinksAdded = 0;
 
   // 1. Create project note
-  const projectPath = path.join(vaultPath, `10-Projects/${name}.md`);
+  const projectPath = path.join(vaultPath, `Projects/${name}.md`);
   if (await fs.pathExists(projectPath)) {
     throw new Error(`Project note already exists: ${projectPath}`);
   }
@@ -37,7 +37,7 @@ ${description}
   await fs.writeFile(projectPath, content);
 
   // 2. Update team index if it exists
-  const peoplePath = path.join(vaultPath, "40-People");
+  const peoplePath = path.join(vaultPath, "People");
   if (await fs.pathExists(peoplePath)) {
     const teamFiles = await fs.readdir(peoplePath);
     const teamIndexFile = teamFiles.find((f) => f.endsWith("Team.md"));
