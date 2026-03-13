@@ -1,5 +1,5 @@
 {
   "folder": "Daily",
   "format": "YYYY-MM-DD",
-  "template": "30-Knowledge/templates/Daily Note"
+  "template": "Knowledge/templates/Daily Note"
 }

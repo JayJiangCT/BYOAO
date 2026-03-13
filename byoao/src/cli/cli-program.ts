@@ -205,11 +205,11 @@ program
 
     console.log();
     printEventDetail("Next steps:");
-    printEventDetail("  1. Open Obsidian → vault switcher (bottom-left) → Manage vaults");
-    printEventDetail(`     → Open folder as vault → select "${result.vaultPath}"`);
-    printEventDetail(`  2. cd "${result.vaultPath}"`);
-    printEventDetail("  3. opencode                       # Launch AI agent");
-    printEventDetail("  4. /init-knowledge-base           # Add team members & projects");
+    printEventDetail("  1. Open Obsidian → Manage vaults → Open folder as vault");
+    printEventDetail(`     ${result.vaultPath}`);
+    printEventDetail('  2. Read "Start Here.md" — it explains the vault structure');
+    printEventDetail("  3. Start adding notes — meeting notes, project docs, daily notes");
+    printEventDetail(`  4. When ready for AI features: cd "${result.vaultPath}" && opencode`);
   });
 
 // ── byoao status ─────────────────────────────────────────────────

@@ -3,7 +3,7 @@ import { addMember } from "../vault/member.js";
 
 export const byoao_add_member = tool({
   description:
-    "Add a new team member note to an existing vault. Creates a person note in 40-People/ and updates the team index and AGENT.md wikilinks.",
+    "Add a new team member note to an existing vault. Creates a person note in People/ and updates the team index and AGENT.md wikilinks.",
   args: {
     vaultPath: tool.schema.string().describe("Path to the Obsidian vault"),
     name: tool.schema.string().describe("Person's full name"),
