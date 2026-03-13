@@ -23,7 +23,6 @@ program
   .option("-g, --global", "Install globally (all projects)", false)
   .option("-y, --yes", "Skip interactive prompts, use defaults/flags", false)
   .option("--no-skills", "Skip installing Obsidian Skills")
-  .option("--no-web-clipper", "Skip installing Web Clipper templates")
   .option("--project-dir <path>", "Project directory (default: current directory)")
   .action(async (opts) => {
     printLogo();
@@ -31,7 +30,6 @@ program
 
     let installGlobal = opts.global;
     let installSkills = opts.skills !== false;
-    let installWebClipper = opts.webClipper !== false;
 
     // Interactive prompts unless --yes flag is set
     if (!opts.yes) try {
@@ -53,17 +51,10 @@ program
           message: "Install Obsidian Skills? (obsidian-cli, obsidian-markdown, etc.)",
           default: true,
         },
-        {
-          type: "confirm",
-          name: "webClipper",
-          message: "Install Web Clipper templates?",
-          default: true,
-        },
       ]);
 
       installGlobal = answers.location === "global";
       installSkills = answers.skills;
-      installWebClipper = answers.webClipper;
     } catch {
       // inquirer not available — use CLI flags
     }
@@ -72,7 +63,6 @@ program
       {
         global: installGlobal,
         installSkills,
-        installWebClipper,
         projectDir: opts.projectDir,
       },
       !opts.yes
