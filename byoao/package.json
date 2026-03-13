@@ -1,0 +1,47 @@
+{
+  "name": "byoao",
+  "version": "0.2.0",
+  "description": "Build Your Own AI OS — Obsidian + AI Agent",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "byoao": "dist/cli/cli-program.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "node --import tsx src/cli/cli-program.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": [
+    "dist/",
+    "src/assets/",
+    "src/skills/"
+  ],
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "obsidian",
+    "knowledge-os",
+    "preset",
+    "knowledge-management"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.2.24",
+    "chalk": "^5.0.0",
+    "commander": "^12.0.0",
+    "fs-extra": "^11.0.0",
+    "gray-matter": "^4.0.0",
+    "handlebars": "^4.7.0",
+    "inquirer": "^9.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.0",
+    "@types/inquirer": "^9.0.0",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.4.0"
+  }
+}
