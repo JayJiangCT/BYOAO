@@ -203,27 +203,13 @@ program
     printEventDetail(`Wikilinks: ${result.wikilinksCreated}`);
     printEventDetail(`Directories: ${result.directories.length}`);
 
-    // Open vault in Obsidian
-    if (obsidianStatus.installed) {
-      try {
-        const { execSync } = await import("node:child_process");
-        const encodedPath = encodeURIComponent(result.vaultPath);
-        execSync(`open "obsidian://open?path=${encodedPath}"`, { stdio: "ignore" });
-        console.log();
-        printEventDone("Opened in Obsidian");
-      } catch {
-        console.log();
-        printEventDetail(`Open Obsidian → "Open folder as vault" → select "${result.vaultPath}"`);
-      }
-    } else {
-      console.log(`\nNext: Open Obsidian → "Open folder as vault" → select "${result.vaultPath}"`);
-    }
-
     console.log();
     printEventDetail("Next steps:");
-    printEventDetail(`  cd "${result.vaultPath}"`);
-    printEventDetail("  opencode                          # Launch AI agent");
-    printEventDetail("  /init-knowledge-base              # Add team members & projects");
+    printEventDetail("  1. Open Obsidian → vault switcher (bottom-left) → Manage vaults");
+    printEventDetail(`     → Open folder as vault → select "${result.vaultPath}"`);
+    printEventDetail(`  2. cd "${result.vaultPath}"`);
+    printEventDetail("  3. opencode                       # Launch AI agent");
+    printEventDetail("  4. /init-knowledge-base           # Add team members & projects");
   });
 
 // ── byoao status ─────────────────────────────────────────────────
