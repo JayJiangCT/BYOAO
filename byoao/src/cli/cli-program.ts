@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { install } from "./installer.js";
-import { printLogo, printVersion } from "./ui.js";
+import { printLogo, printVersion, printEvent, printEventDetail, printEventDone } from "./ui.js";
 import { createVault } from "../vault/create.js";
 import { getVaultStatus, formatVaultStatus } from "../vault/status.js";
 import { checkObsidian, formatObsidianStatus } from "../vault/obsidian-check.js";
+import { listPresets } from "../vault/preset.js";
 import { VaultConfigSchema } from "../plugin-config.js";
 import path from "node:path";
 import os from "node:os";
@@ -75,8 +76,9 @@ program
   .description("Vault management commands")
   .command("init")
   .description("Create a new Obsidian vault for a team")
-  .requiredOption("--team <name>", "Team name")
+  .option("--team <name>", "Team name")
   .option("--path <path>", "Vault location")
+  .option("--preset <name>", "Role preset (default: pm-tpm)")
   .action(async (opts) => {
     // Check Obsidian first
     const obsidianStatus = checkObsidian();
@@ -86,23 +88,143 @@ program
       process.exit(1);
     }
 
-    const vaultPath =
-      opts.path || path.join(os.homedir(), "Documents", `${opts.team} Workspace`);
+    let teamName = opts.team;
+    let vaultPath = opts.path;
+    let presetName = opts.preset || "pm-tpm";
+    let members: { name: string; role: string }[] = [];
+    let projects: { name: string; description: string }[] = [];
+
+    // Interactive TUI when --team is not provided and stdout is TTY
+    if (!teamName && process.stdout.isTTY) {
+      try {
+        const { default: inquirer } = await import("inquirer");
+
+        printEvent("Creating a new knowledge base");
+        console.log();
+
+        // 1. Role selection
+        const presets = listPresets();
+        const { selectedPreset } = await inquirer.prompt([{
+          type: "list",
+          name: "selectedPreset",
+          message: "Choose your role",
+          choices: [
+            ...presets.map(p => ({
+              name: `${p.displayName} — ${p.description}`,
+              value: p.name,
+            })),
+            new inquirer.Separator(),
+            { name: "Engineer (coming soon)", disabled: true },
+            { name: "Designer (coming soon)", disabled: true },
+          ],
+        }]);
+        presetName = selectedPreset;
+
+        // 2. Team name
+        const teamAnswer = await inquirer.prompt([{
+          type: "input",
+          name: "teamName",
+          message: "Team name:",
+          validate: (v: string) => v.trim() ? true : "Team name is required",
+        }]);
+        teamName = teamAnswer.teamName;
+
+        // 3. Vault path
+        const defaultPath = path.join(os.homedir(), "Documents", `${teamName} Workspace`);
+        const { pathChoice } = await inquirer.prompt([{
+          type: "list",
+          name: "pathChoice",
+          message: "Vault location",
+          choices: [
+            { name: `Use default (${defaultPath})`, value: "default" },
+            { name: "Choose custom path", value: "custom" },
+          ],
+        }]);
+        vaultPath = defaultPath;
+        if (pathChoice === "custom") {
+          const { customPath } = await inquirer.prompt([{
+            type: "input",
+            name: "customPath",
+            message: "Custom path:",
+          }]);
+          vaultPath = customPath;
+        }
+
+        // 4. Members loop
+        let addingMembers = true;
+        while (addingMembers) {
+          const { action } = await inquirer.prompt([{
+            type: "list",
+            name: "action",
+            message: `Team members (${members.length} added)`,
+            choices: [
+              { name: "Add a member", value: "add" },
+              { name: "Done", value: "done" },
+            ],
+          }]);
+          if (action === "done") break;
+          const { name, role } = await inquirer.prompt([
+            { type: "input", name: "name", message: "Name:" },
+            { type: "input", name: "role", message: "Role:", default: "" },
+          ]);
+          if (name.trim()) members.push({ name: name.trim(), role: role.trim() || "Team Member" });
+        }
+
+        // 5. Projects loop
+        let addingProjects = true;
+        while (addingProjects) {
+          const { action } = await inquirer.prompt([{
+            type: "list",
+            name: "action",
+            message: `Projects (${projects.length} added)`,
+            choices: [
+              { name: "Add a project", value: "add" },
+              { name: "Done", value: "done" },
+            ],
+          }]);
+          if (action === "done") break;
+          const { name, description } = await inquirer.prompt([
+            { type: "input", name: "name", message: "Project name:" },
+            { type: "input", name: "description", message: "Description:", default: "" },
+          ]);
+          if (name.trim()) projects.push({ name: name.trim(), description: description.trim() || "" });
+        }
+      } catch {
+        // inquirer not available — fall through to require --team
+        if (!teamName) {
+          console.error("Error: --team flag is required in non-interactive mode");
+          process.exit(1);
+        }
+      }
+    }
+
+    if (!teamName) {
+      console.error("Error: --team flag is required");
+      process.exit(1);
+    }
+
+    vaultPath = vaultPath || path.join(os.homedir(), "Documents", `${teamName} Workspace`);
 
     const config = VaultConfigSchema.parse({
-      teamName: opts.team,
+      teamName,
       vaultPath,
+      members,
+      projects,
+      preset: presetName,
     });
 
-    console.log(`Creating vault for "${opts.team}" at ${vaultPath}...`);
+    printEvent(`Creating vault for "${teamName}"`);
     const result = await createVault(config);
-    console.log(`\n✓ Vault created!`);
-    console.log(`  Path: ${result.vaultPath}`);
-    console.log(`  Files: ${result.filesCreated}`);
-    console.log(`  Directories: ${result.directories.length}`);
+    console.log();
+    printEventDone("Vault created");
+    printEventDetail(`Path: ${result.vaultPath}`);
+    printEventDetail(`Files: ${result.filesCreated}`);
+    printEventDetail(`Wikilinks: ${result.wikilinksCreated}`);
+    printEventDetail(`Directories: ${result.directories.length}`);
 
     if (!obsidianStatus.running) {
-      console.log(`\n${formatObsidianStatus(obsidianStatus)}`);
+      console.log();
+      console.log(formatObsidianStatus(obsidianStatus));
     }
     console.log(`\nNext: Open Obsidian → "Open folder as vault" → select "${result.vaultPath}"`);
   });
