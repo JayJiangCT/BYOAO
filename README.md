@@ -1,117 +1,196 @@
-# BYOAO — Build Your Own AI OS
+<p align="center">
+  <pre align="center">
+  ██████╗ ██╗   ██╗ ██████╗   ██╗    ██████╗
+  ██╔══██╗╚██╗ ██╔╝██╔═══██╗ ████╗  ██╔═══██╗
+  ██████╔╝ ╚████╔╝ ██║   ██║██╔══██╗██║   ██║
+  ██╔══██╗  ╚██╔╝  ██║   ██║██║  ██║██║   ██║
+  ██████╔╝   ██║   ╚██████╔╝██║  ██║╚██████╔╝
+  ╚═════╝    ╚═╝    ╚═════╝ ╚═╝  ╚═╝ ╚═════╝
+  </pre>
+  <strong>Build Your Own AI OS</strong>
+  <br/>
+  <em>Turn Obsidian into your team's AI-powered knowledge graph</em>
+  <br/><br/>
+  <a href="#quick-start">Quick Start</a> · <a href="#tools">Tools</a> · <a href="#skills">Skills</a> · <a href="#vault-structure">Vault Structure</a>
+</p>
 
-> 本地优先的 AI 办公助手系统，让 PM/TPM 通过自然语言完成需求分析、状态报告、系统理解等日常任务。
+---
 
-## 核心价值
+## What is BYOAO?
 
-把分散在 Confluence、BigQuery、Codebase、Obsidian 中的信息，通过 AI Agent 统一调度，降低 PM/TPM 的信息获取和文档生产成本。
-
-## 架构概览
-
-```
-👤 PM/TPM
- ├── /command 或自然语言 → OpenCode TUI → LLM Engine (Gemini/Claude)
- └── 🌐 Web Clipper (浏览器) → clip 到 Obsidian Vault
-
-LLM Engine 调度:
- ├── Obsidian Skills → Vault 读写 / 知识图谱遍历
- ├── Atlassian MCP  → Confluence / Jira 数据
- ├── BigQuery MCP   → 数据仓库查询
- └── Local Repos    → 代码系统理解 (file read + grep)
-
-数据层:
- ├── ⭐ Obsidian Vault — 本地知识图谱 (documents as graph nodes)
- ├── Local Repo Clones — 服务代码库
- ├── Confluence / Jira — 公司知识与项目管理
- └── BigQuery — 数据仓库
-```
-
-> 在 Obsidian 中打开 `BYOAO-Architecture.canvas` 查看交互式架构图。
-
-## 关键设计决策
-
-| 决策 | 选择 | 理由 |
-|------|------|------|
-| 集成环境 | OpenCode (开源 TUI) | 多模型支持、MCP 原生、Custom Commands |
-| 知识检索 | Agentic Retrieval (无 RAG) | LLM 多轮迭代检索，零基础设施，Obsidian CLI 提供图谱遍历 |
-| Obsidian 能力 | [kepano/obsidian-skills](https://github.com/kepano/obsidian-skills) | 官方维护，5 个 SKILL.md，无需自建 MCP |
-| 信息采集 | Web Clipper + Custom Templates | 浏览器端一键 clip，AI 自动摘要和打 tag |
-| 代码理解 | CLAUDE.md baseline + Local Clone | 工程师用 `/init` 生成 overview，agent 按需读代码 |
-
-## 项目结构
+BYOAO is an [OpenCode](https://opencode.ai) plugin that turns [Obsidian](https://obsidian.md) into an AI-driven knowledge OS. It generates and manages structured knowledge bases — vaults where every note is a graph node, connected by frontmatter metadata and `[[wikilinks]]`.
 
 ```
-BYOAO/
-├── BYOAO-Plan.md                    # 完整架构与实施计划
-├── BYOAO-Architecture.canvas        # Obsidian Canvas 架构图
-├── .opencode/
-│   ├── commands/                    # Custom Commands (Skills)
-│   │   └── system-explainer.md      # 代码系统解释器
-│   └── templates/
-│       └── web-clipper/             # Web Clipper 模板 (可导入)
-│           ├── confluence-page.json
-│           ├── jira-issue.json
-│           ├── general-article.json
-│           └── meeting-notes.json
-├── references/                      # 调研文档
-│   ├── BYOAO Open Research Questions.md
-│   ├── Codebase Knowledge Layer - Open Questions.md
-│   ├── Digital Knowledge Architecture_...md
-│   ├── Obsidian CLI Commands Reference.md
-│   └── Obsidian Web Clipper Practical Guide.md
-└── .obsidian/                       # Obsidian vault 配置
+You → OpenCode TUI → BYOAO Plugin → Obsidian Vault (local knowledge graph)
+                                   → Atlassian MCP (Jira / Confluence)
+                                   → BigQuery MCP (data warehouse)
 ```
 
-## MVP 实施阶段
+**Local-first.** Your data stays on your machine. No cloud sync, no vendor lock-in.
 
-| Phase | 内容 | 天数 |
-|-------|------|------|
-| **Phase 1** — Foundation | OpenCode 安装、配置、hello-boyo 验证 | 3 天 |
-| **Phase 2** — Obsidian + Web Clipper | Skills 安装、Vault 结构、Web Clipper 模板、enrich-document | 5 天 |
-| **Phase 3** — Requirements Analysis | Atlassian MCP 配置、requirements-analysis command | 6 天 |
-| **Phase 4** — Polish & Distribution | Setup wizard、skill-creator、E2E 测试、团队试用准备 | 5 天 |
+**Role-agnostic.** Choose a preset (PM/TPM, Engineer, Designer...) and get a vault tailored to your workflows.
 
-详见 `BYOAO-Plan.md` 中的 Gantt 图和各 Phase 详细任务。
+**AI-native.** Every vault ships with `AGENT.md` — a routing index that lets AI agents navigate your knowledge graph without RAG infrastructure.
 
-## 信息采集三通道
+---
 
-| 通道 | 触发者 | 数据源 | 落地位置 |
-|------|--------|--------|---------|
-| **Web Clipper** | TPM 手动 (浏览器) | 网页、Confluence、Jira | `00-Inbox/` |
-| **Atlassian MCP** | Agent (TPM 提问) | Confluence/Jira API | `10-Projects/` |
-| **system-explainer** | Agent (TPM 提问) | Local repo clones + baseline | `50-Systems/` |
+## Quick Start
 
-## 快速开始
+### Prerequisites
 
-### 前置要求
+- [Obsidian](https://obsidian.md/) desktop app
+- [OpenCode](https://opencode.ai) (recommended) or any compatible AI agent harness
+- Node.js 20+
 
-- [Obsidian](https://obsidian.md/) 桌面应用
-- [Obsidian Web Clipper](https://obsidian.md/clipper) 浏览器扩展
-- [OpenCode](https://github.com/opencode-ai/opencode) (TUI)
-- Gemini API key 或 Vertex AI 访问权限
-
-### 本地开发
+### Install
 
 ```bash
-# Clone
 git clone https://github.com/JayJiangCT/BYOAO.git
-cd BYOAO
+cd BYOAO/byoao
+npm install && npm run build
 
-# 用 Obsidian 打开此目录作为 Vault
-# 查看 BYOAO-Architecture.canvas 和 BYOAO-Plan.md
-
-# 导入 Web Clipper 模板
-# 浏览器 → Web Clipper 设置 → Import → 选择 .opencode/templates/web-clipper/*.json
+# Interactive installer — registers plugin, copies skills
+node dist/cli/cli-program.js install
 ```
 
-## 参与贡献
+### Create Your First Vault
 
-目前处于 MVP 试验阶段。欢迎通过 Issues 讨论架构决策和实施方案。
+```bash
+# Interactive mode — guided TUI with role selection
+byoao vault init
 
-关键讨论文档：
-- `references/BYOAO Open Research Questions.md` — 整体开放问题
-- `references/Codebase Knowledge Layer - Open Questions.md` — 代码知识层待决事项
+# Or flag mode for scripting
+byoao vault init --team "My Team" --preset pm-tpm
+```
+
+After creation, open Obsidian → *Open folder as vault* → select the generated directory.
+
+Then launch OpenCode and try `/init-knowledge-base` for the full guided setup, or `/vault-doctor` to check vault health.
+
+---
+
+## Tools
+
+| Tool | What It Does |
+|------|-------------|
+| `byoao_init_vault` | Create a vault with preset-driven directory structure, templates, glossary, and AI routing |
+| `byoao_add_member` | Add a team member note + wire wikilinks in team index and AGENT.md |
+| `byoao_add_project` | Add a project note + wire wikilinks |
+| `byoao_add_glossary_term` | Append a term to the Glossary table |
+| `byoao_vault_status` | Scan vault health: note count, wikilinks, broken links, Obsidian status |
+| `byoao_vault_doctor` | Full diagnostic: missing frontmatter, orphan notes, AGENT.md drift, broken links |
+
+## Skills
+
+| Skill | What It Does |
+|-------|-------------|
+| `/init-knowledge-base` | 4-phase interactive vault setup: gather info → create vault → populate → onboard |
+| `/system-explainer` | Explain codebases in plain language using 3-layer knowledge (baseline → code → cache) |
+| `/enrich-document` | Auto-add frontmatter and wikilinks to unstructured notes |
+| `/vault-doctor` | Diagnose vault health and suggest targeted fixes |
+
+## Plugin Hooks
+
+| Hook | Behavior |
+|------|----------|
+| `system.transform` | Injects `AGENT.md` into every LLM conversation for vault-aware responses |
+| `session.idle` | Suggests BYOAO commands via toast after conversations end |
+
+---
+
+## Vault Structure
+
+```
+{Team} Workspace/
+├── Inbox/                    # Quick captures, unprocessed notes
+├── Projects/                 # One note per active project
+├── Sprints/                  # Sprint handoff documents
+├── Knowledge/                # Domain reference
+│   ├── concepts/             # Deep-dive concept notes
+│   └── templates/            # 6 note templates (Daily, Meeting, Decision, Investigation, Feature Doc, Sprint Handoff)
+├── People/                   # Team roster + member notes
+├── Systems/                  # AI-generated codebase explanations
+├── Archive/                  # Completed / deprecated
+├── Daily/                    # Daily notes
+├── AGENT.md                  # AI routing index (projects, team, glossary)
+├── CLAUDE.md                 # Same as AGENT.md (for Claude Code)
+├── Start Here.md             # Human onboarding (5 operations + Quick Win)
+└── Knowledge/Glossary.md     # Domain terminology
+```
+
+> **Key idea:** Folders are suggestions. The real structure lives in frontmatter (`type`, `status`, `team`, `tags`) and `[[wikilinks]]`. AI agents navigate by metadata, not by folder paths.
+
+---
+
+## Preset System
+
+BYOAO uses a two-layer preset architecture: **common** (shared by all roles) + **role overlay** (role-specific directories, templates, and AGENT.md sections).
+
+| Preset | Directories | Templates | Status |
+|--------|------------|-----------|--------|
+| **PM / TPM** | Projects, Sprints | Feature Doc, Sprint Handoff | Available |
+| **Engineer** | — | — | Coming soon |
+| **Designer** | — | — | Coming soon |
+
+Presets are defined by a simple `preset.json` — adding a new role is as easy as creating a new directory under `src/assets/presets/`.
+
+---
+
+## Architecture
+
+```
+byoao/
+├── src/
+│   ├── index.ts              # Plugin entry — tools, hooks
+│   ├── plugin-config.ts      # Zod schemas (VaultConfig, PresetConfig, VaultDoctor)
+│   ├── cli/                  # CLI: install, vault init (interactive TUI), vault status
+│   ├── tools/                # 6 OpenCode tools
+│   ├── skills/               # 4 skill definitions (.md)
+│   ├── hooks/                # system.transform + idle suggestions
+│   ├── vault/                # Core library: create, status, doctor, preset, obsidian-cli
+│   └── assets/
+│       └── presets/
+│           ├── common/       # Shared templates, AGENT.md skeleton, .obsidian config
+│           └── pm-tpm/       # PM/TPM preset: preset.json, agent-section, templates
+├── package.json
+└── tsconfig.json
+```
+
+### Key Design Decisions
+
+| Decision | Choice | Why |
+|----------|--------|-----|
+| Integration | OpenCode Plugin API | Native tool registration, no MCP overhead |
+| Knowledge Retrieval | Agentic Retrieval | LLM-driven multi-round search, zero infrastructure (no RAG) |
+| Obsidian Skills | [kepano/obsidian-skills](https://github.com/kepano/obsidian-skills) | 5 official SKILL.md files for CLI, Markdown, Bases, Canvas, Defuddle |
+| Vault Structure | Frontmatter + Wikilinks | Graph-native — AI navigates by metadata, not folder paths |
+| CLI | Interactive TUI + flag mode | Guided setup for humans, scriptable for CI |
+
+---
+
+## CLI Reference
+
+```bash
+byoao install                          # Install plugin into OpenCode
+byoao install -y -g                    # Non-interactive, global install
+byoao vault init                       # Interactive vault creation (TUI)
+byoao vault init --team "X" --preset pm-tpm   # Flag-based creation
+byoao vault status <path>             # Check vault health
+byoao check-obsidian                  # Verify Obsidian installation
+```
+
+---
+
+## Roadmap
+
+- [ ] Publish to npm
+- [ ] Engineer and Designer presets
+- [ ] Atlassian MCP integration (Jira/Confluence)
+- [ ] Obsidian CLI integration for post-init operations
+- [ ] Team-sharable config (shared Skills + individual API keys)
+
+---
 
 ## License
 
-Private — 内部团队使用。
+MIT
