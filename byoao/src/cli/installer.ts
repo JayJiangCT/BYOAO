@@ -112,7 +112,7 @@ export async function install(
         "OpenCode is required for the plugin to work."
       );
       printInfo(
-        "You can still use the standalone CLI (byoao vault init, byoao vault status)."
+        "You can still use the standalone CLI (byoao init, byoao status)."
       );
       printInfo("To install OpenCode later, run one of:");
       for (const cmd of openCodeStatus.installCommands) {
@@ -291,8 +291,8 @@ export async function install(
   }
 
   gettingStartedItems.push(
-    { cmd: "byoao vault init", desc: "# Create a knowledge base" },
-    { cmd: "byoao vault status <path>", desc: "# Check vault health" },
+    { cmd: "byoao init", desc: "# Create a knowledge base" },
+    { cmd: "byoao status <path>", desc: "# Check vault health" },
   );
 
   printGettingStarted(gettingStartedItems);
