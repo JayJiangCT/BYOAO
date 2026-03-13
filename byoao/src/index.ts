@@ -9,8 +9,13 @@ import { byoao_add_project } from "./tools/add-project.js";
 import { byoao_add_glossary_term } from "./tools/add-glossary-term.js";
 import { byoao_vault_status } from "./tools/vault-status.js";
 import { byoao_vault_doctor } from "./tools/vault-doctor.js";
+import { systemTransformHook } from "./hooks/system-transform.js";
+import { getIdleSuggestion } from "./hooks/idle-suggestions.js";
 
-const BYOAOPlugin: Plugin = async (_ctx) => {
+const BYOAOPlugin: Plugin = async (ctx) => {
+  // Capture client from plugin context for use in hooks via closure
+  const { client } = ctx;
+
   return {
     tool: {
       byoao_init_vault,
@@ -19,6 +24,22 @@ const BYOAOPlugin: Plugin = async (_ctx) => {
       byoao_add_glossary_term,
       byoao_vault_status,
       byoao_vault_doctor,
+    },
+    "experimental.chat.system.transform": systemTransformHook,
+    event: async ({ event }) => {
+      if (event.type === "session.idle") {
+        const suggestion = getIdleSuggestion();
+        if (suggestion) {
+          client.tui.showToast({
+            body: {
+              title: "BYOAO",
+              message: suggestion,
+              variant: "info",
+              duration: 5000,
+            },
+          });
+        }
+      }
     },
   };
 };
