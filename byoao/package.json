@@ -1,5 +1,5 @@
 {
-  "name": "byoao",
+  "name": "@jayjiang/byoao",
   "version": "0.2.0",
   "description": "Build Your Own AI OS — Obsidian + AI Agent",
   "type": "module",
@@ -11,7 +11,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "node --import tsx src/cli/cli-program.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
   },
   "files": [
     "dist/",
@@ -27,6 +28,16 @@
     "knowledge-management"
   ],
   "license": "MIT",
+  "author": "Jay Jiang",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JayJiangCT/BYOAO.git",
+    "directory": "byoao"
+  },
+  "homepage": "https://github.com/JayJiangCT/BYOAO#readme",
+  "bugs": {
+    "url": "https://github.com/JayJiangCT/BYOAO/issues"
+  },
   "dependencies": {
     "@opencode-ai/plugin": "^1.2.24",
     "chalk": "^5.0.0",

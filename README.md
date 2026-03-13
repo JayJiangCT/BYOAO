@@ -11,6 +11,9 @@
   <br/>
   <em>Turn Obsidian into your team's AI-powered knowledge graph</em>
   <br/><br/>
+  <a href="https://www.npmjs.com/package/@jayjiang/byoao"><img src="https://img.shields.io/npm/v/@jayjiang/byoao?style=flat-square" alt="npm version"></a>
+  <a href="https://github.com/JayJiangCT/BYOAO/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="license"></a>
+  <br/><br/>
   <a href="#quick-start">Quick Start</a> · <a href="#tools">Tools</a> · <a href="#skills">Skills</a> · <a href="#vault-structure">Vault Structure</a>
 </p>
 
@@ -45,13 +48,23 @@ You → OpenCode TUI → BYOAO Plugin → Obsidian Vault (local knowledge graph)
 ### Install
 
 ```bash
+npm install -g @jayjiang/byoao
+
+# Interactive installer — registers plugin, copies skills
+byoao install
+```
+
+<details>
+<summary>Install from source</summary>
+
+```bash
 git clone https://github.com/JayJiangCT/BYOAO.git
 cd BYOAO/byoao
 npm install && npm run build
-
-# Interactive installer — registers plugin, copies skills
 node dist/cli/cli-program.js install
 ```
+
+</details>
 
 ### Create Your First Vault
 
@@ -183,7 +196,7 @@ byoao check-obsidian                  # Verify Obsidian installation
 
 ## Roadmap
 
-- [ ] Publish to npm
+- [x] Publish to npm
 - [ ] Engineer and Designer presets
 - [ ] Atlassian MCP integration (Jira/Confluence)
 - [ ] Obsidian CLI integration for post-init operations
