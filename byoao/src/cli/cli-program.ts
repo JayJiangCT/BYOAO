@@ -92,7 +92,6 @@ program
     let vaultPath = opts.path;
     let presetName = opts.preset || "pm-tpm";
     let members: { name: string; role: string }[] = [];
-    let projects: { name: string; description: string }[] = [];
 
     // Interactive TUI when --team is not provided and stdout is TTY
     if (!teamName && process.stdout.isTTY) {
@@ -129,7 +128,18 @@ program
         }]);
         teamName = teamAnswer.teamName;
 
-        // 3. Vault path
+        // 3. Your name (creates your own People note)
+        const { yourName } = await inquirer.prompt([{
+          type: "input",
+          name: "yourName",
+          message: "Your name:",
+          validate: (v: string) => v.trim() ? true : "Your name is required",
+        }]);
+        if (yourName.trim()) {
+          members.push({ name: yourName.trim(), role: presetName === "pm-tpm" ? "PM/TPM" : "Team Member" });
+        }
+
+        // 4. Vault path
         const defaultPath = path.join(os.homedir(), "Documents", `${teamName} Workspace`);
         const { pathChoice } = await inquirer.prompt([{
           type: "list",
@@ -148,46 +158,6 @@ program
             message: "Custom path:",
           }]);
           vaultPath = customPath;
-        }
-
-        // 4. Members loop
-        let addingMembers = true;
-        while (addingMembers) {
-          const { action } = await inquirer.prompt([{
-            type: "list",
-            name: "action",
-            message: `Team members (${members.length} added)`,
-            choices: [
-              { name: "Add a member", value: "add" },
-              { name: "Done", value: "done" },
-            ],
-          }]);
-          if (action === "done") break;
-          const { name, role } = await inquirer.prompt([
-            { type: "input", name: "name", message: "Name:" },
-            { type: "input", name: "role", message: "Role:", default: "" },
-          ]);
-          if (name.trim()) members.push({ name: name.trim(), role: role.trim() || "Team Member" });
-        }
-
-        // 5. Projects loop
-        let addingProjects = true;
-        while (addingProjects) {
-          const { action } = await inquirer.prompt([{
-            type: "list",
-            name: "action",
-            message: `Projects (${projects.length} added)`,
-            choices: [
-              { name: "Add a project", value: "add" },
-              { name: "Done", value: "done" },
-            ],
-          }]);
-          if (action === "done") break;
-          const { name, description } = await inquirer.prompt([
-            { type: "input", name: "name", message: "Project name:" },
-            { type: "input", name: "description", message: "Description:", default: "" },
-          ]);
-          if (name.trim()) projects.push({ name: name.trim(), description: description.trim() || "" });
         }
       } catch {
         // inquirer not available — fall through to require --team
@@ -209,7 +179,7 @@ program
       teamName,
       vaultPath,
       members,
-      projects,
+      projects: [],
       preset: presetName,
     });
 
@@ -222,11 +192,24 @@ program
     printEventDetail(`Wikilinks: ${result.wikilinksCreated}`);
     printEventDetail(`Directories: ${result.directories.length}`);
 
-    if (!obsidianStatus.running) {
-      console.log();
-      console.log(formatObsidianStatus(obsidianStatus));
+    // Open vault in Obsidian
+    if (obsidianStatus.installed) {
+      try {
+        const { execSync } = await import("node:child_process");
+        const encodedPath = encodeURIComponent(result.vaultPath);
+        execSync(`open "obsidian://open?path=${encodedPath}"`, { stdio: "ignore" });
+        console.log();
+        printEventDone("Opened in Obsidian");
+      } catch {
+        console.log();
+        printEventDetail(`Open Obsidian → "Open folder as vault" → select "${result.vaultPath}"`);
+      }
+    } else {
+      console.log(`\nNext: Open Obsidian → "Open folder as vault" → select "${result.vaultPath}"`);
     }
-    console.log(`\nNext: Open Obsidian → "Open folder as vault" → select "${result.vaultPath}"`);
+
+    console.log();
+    printEventDetail("Add team members and projects: run /init-knowledge-base in OpenCode");
   });
 
 // ── byoao vault status ──────────────────────────────────────────

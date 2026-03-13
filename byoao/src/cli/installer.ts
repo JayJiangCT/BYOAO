@@ -92,7 +92,7 @@ export async function install(
   // ── 1. Check dependencies ─────────────────────────────────────
   printSectionHeader("Checking dependencies...");
 
-  const openCodeStatus = checkOpenCode();
+  let openCodeStatus = checkOpenCode();
 
   if (!openCodeStatus.installed) {
     printProgress("OpenCode", "warn", "not installed");
@@ -104,6 +104,8 @@ export async function install(
     );
 
     if (installed) {
+      // Re-check after installation so plugin registration works
+      openCodeStatus = checkOpenCode();
       printProgress("OpenCode", "ok", "installed");
     } else {
       printWarning(
