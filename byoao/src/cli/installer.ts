@@ -223,7 +223,7 @@ export async function install(
           await fs.copy(
             path.join(obsidianSkillsSrc, file),
             path.join(skillsDir, file),
-            { overwrite: false }
+            { overwrite: true }
           );
           installedCount++;
         }
@@ -258,7 +258,7 @@ export async function install(
         await fs.copy(
           path.join(byoaoSkillsSrc, file),
           path.join(skillsDestDir, file),
-          { overwrite: false }
+          { overwrite: true }
         );
         installedCount++;
       }
