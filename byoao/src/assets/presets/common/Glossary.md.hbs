@@ -1,0 +1,44 @@
+---
+title: "{{TEAM_NAME}} Domain Glossary"
+type: reference
+status: active
+date: {{date}}
+tags: [glossary, domain, reference]
+---
+
+# {{TEAM_NAME}} Domain Glossary
+
+Centralized quick-reference for all domain terms. This glossary uses a **two-tier terminology system**:
+
+- **Tier 1 (this file)**: Simple terms defined in one or two sentences — kept here in table rows.
+- **Tier 2 (concept notes)**: Complex terms that need detailed explanation, diagrams, or have multiple relationships — get their own note in `30-Knowledge/concepts/` and are linked from here.
+
+---
+
+## Core Terms
+
+| Term | Definition |
+|------|-----------|
+{{GLOSSARY_ENTRIES}}
+
+---
+
+## How to Add a New Term
+
+1. **Start here**: Add a row to the appropriate table above with a one-line definition.
+2. **Graduate if needed**: If a term grows beyond 2 sentences, has 3+ relationships to other terms, or has important gotchas, create a concept note:
+   - Create `30-Knowledge/concepts/Term Name.md`
+   - Replace the definition here with: `Brief intro — see [[Term Name]] for full details.`
+3. **Link generously**: Use `[[wikilinks]]` in definitions to connect related terms.
+
+### Graduation Rule
+
+A term should move from Tier 1 to Tier 2 when:
+- Its definition needs **more than 2 sentences**
+- It has **3+ relationships** to other notes (people, projects, systems)
+- It has **gotchas or edge cases** that people frequently get wrong
+- It requires **examples, diagrams, or data** to explain properly
+
+---
+
+*Maintenance: This file is the first stop for any domain question. Keep it alphabetized within sections. Review quarterly for stale or missing terms.*

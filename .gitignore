@@ -12,9 +12,25 @@
 # Generated output
 output/
 
+# BYOAO plugin build artifacts
+byoao/dist/
+byoao/node_modules/
+
 # OS
 .DS_Store
 Thumbs.db
 
 # Claude Code
 .claude/
+
+# Internal docs — plans, specs, design reviews, research
+docs/superpowers/
+references/
+BYOAO-Overview.md
+BYOAO-Architecture.canvas
+
+# OpenCode local config (installed by `byoao install`)
+.opencode/
+
+# Web clipper templates (not yet distributed)
+byoao/src/assets/web-clipper/
