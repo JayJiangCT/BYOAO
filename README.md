@@ -70,15 +70,13 @@ node dist/cli/cli-program.js install
 
 ```bash
 # Interactive mode — guided TUI with role selection
-byoao vault init
+byoao init
 
 # Or flag mode for scripting
-byoao vault init --team "My Team" --preset pm-tpm
+byoao init --team "My Team" --preset pm-tpm
 ```
 
-After creation, open Obsidian → *Open folder as vault* → select the generated directory.
-
-Then launch OpenCode and try `/init-knowledge-base` for the full guided setup, or `/vault-doctor` to check vault health.
+Your vault opens automatically in Obsidian. Then launch OpenCode and try `/init-knowledge-base` for the full guided setup, or `/vault-doctor` to check vault health.
 
 ---
 
@@ -184,12 +182,12 @@ byoao/
 ## CLI Reference
 
 ```bash
-byoao install                          # Install plugin into OpenCode
+byoao install                          # Set up BYOAO plugin in OpenCode
 byoao install -y -g                    # Non-interactive, global install
-byoao vault init                       # Interactive vault creation (TUI)
-byoao vault init --team "X" --preset pm-tpm   # Flag-based creation
-byoao vault status <path>             # Check vault health
-byoao check-obsidian                  # Verify Obsidian installation
+byoao init                             # Interactive vault creation (TUI)
+byoao init --team "X" --preset pm-tpm  # Flag-based creation
+byoao status <path>                    # Check vault health
+byoao check-obsidian                   # Verify Obsidian installation
 ```
 
 ---
