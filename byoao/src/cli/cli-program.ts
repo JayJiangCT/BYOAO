@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { install } from "./installer.js";
+import { install, uninstall } from "./installer.js";
 import { printLogo, printVersion, printEvent, printEventDetail, printEventDone } from "./ui.js";
 import { createVault } from "../vault/create.js";
 import { getVaultStatus, formatVaultStatus } from "../vault/status.js";
@@ -78,6 +78,41 @@ program
       },
       !opts.yes
     );
+  });
+
+// ── byoao uninstall ──────────────────────────────────────────────
+program
+  .command("uninstall")
+  .description(
+    "Remove BYOAO plugin from OpenCode — unregisters the plugin and removes copied " +
+    "skills and commands. Your vaults and notes are not affected."
+  )
+  .option("-g, --global", "Uninstall from global config", false)
+  .option("-y, --yes", "Skip confirmation prompt", false)
+  .option("--project-dir <path>", "Project directory (default: current directory)")
+  .action(async (opts) => {
+    if (!opts.yes && process.stdout.isTTY) {
+      try {
+        const { default: inquirer } = await import("inquirer");
+        const { confirm } = await inquirer.prompt([{
+          type: "confirm",
+          name: "confirm",
+          message: "Uninstall BYOAO? (your vaults and notes will not be affected)",
+          default: true,
+        }]);
+        if (!confirm) {
+          console.log("Cancelled.");
+          return;
+        }
+      } catch {
+        // inquirer not available — proceed
+      }
+    }
+
+    await uninstall({
+      global: opts.global,
+      projectDir: opts.projectDir,
+    });
   });
 
 // ── byoao init ───────────────────────────────────────────────────

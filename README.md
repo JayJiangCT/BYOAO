@@ -189,6 +189,7 @@ byoao/
 ```bash
 byoao install                          # Set up BYOAO plugin in OpenCode
 byoao install -y -g                    # Non-interactive, global install
+byoao uninstall                        # Remove BYOAO plugin (vaults untouched)
 byoao init                             # Interactive vault creation (TUI)
 byoao init --team "X" --preset pm-tpm  # Flag-based creation
 byoao status <path>                    # Check vault health

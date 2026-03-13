@@ -223,7 +223,7 @@ export async function install(
           await fs.copy(
             path.join(obsidianSkillsSrc, file),
             path.join(skillsDir, file),
-            { overwrite: false }
+            { overwrite: true }
           );
           installedCount++;
         }
@@ -258,7 +258,7 @@ export async function install(
         await fs.copy(
           path.join(byoaoSkillsSrc, file),
           path.join(skillsDestDir, file),
-          { overwrite: false }
+          { overwrite: true }
         );
         installedCount++;
       }
@@ -303,6 +303,104 @@ export async function install(
   if (!obsidianStatus.running) {
     printWarning("Don't forget to open Obsidian before creating a vault.");
     printBlank();
+  }
+}
+
+export async function uninstall(
+  options: { global: boolean; projectDir?: string },
+  interactive = true
+): Promise<void> {
+  printSectionHeader("Uninstalling BYOAO...");
+
+  let removedItems: string[] = [];
+
+  // ── 1. Remove plugin from opencode.json ─────────────────────
+  const configCandidates: string[] = [];
+  if (options.global) {
+    for (const p of OPENCODE_CONFIG_PATHS) {
+      configCandidates.push(p);
+    }
+  } else {
+    const dir = options.projectDir || process.cwd();
+    configCandidates.push(path.join(dir, ".opencode.json"));
+  }
+
+  for (const configPath of configCandidates) {
+    if (await fs.pathExists(configPath)) {
+      try {
+        const config = await fs.readJson(configPath);
+        const plugins = (config.plugin as string[] | undefined) || [];
+        const idx = plugins.indexOf("byoao");
+        if (idx !== -1) {
+          plugins.splice(idx, 1);
+          config.plugin = plugins;
+          await fs.writeJson(configPath, config, { spaces: 2 });
+          removedItems.push(`Plugin unregistered from ${configPath}`);
+        }
+      } catch {
+        // Invalid JSON — skip
+      }
+    }
+  }
+
+  // ── 2. Remove Obsidian Skills ───────────────────────────────
+  const skillsDir = options.global
+    ? path.join(os.homedir(), ".config/opencode/skills")
+    : path.join(options.projectDir || process.cwd(), ".opencode/skills");
+
+  const assetsDir = resolveAssetsDir();
+  const obsidianSkillsSrc = path.join(assetsDir, "obsidian-skills");
+
+  if (await fs.pathExists(obsidianSkillsSrc) && await fs.pathExists(skillsDir)) {
+    const skillFiles = await fs.readdir(obsidianSkillsSrc);
+    let removedCount = 0;
+    for (const file of skillFiles) {
+      if (file.endsWith(".md")) {
+        const dest = path.join(skillsDir, file);
+        if (await fs.pathExists(dest)) {
+          await fs.remove(dest);
+          removedCount++;
+        }
+      }
+    }
+    if (removedCount > 0) {
+      removedItems.push(`Obsidian Skills (${removedCount} files)`);
+    }
+  }
+
+  // ── 3. Remove BYOAO commands ────────────────────────────────
+  const commandsDir = options.global
+    ? path.join(os.homedir(), ".config/opencode/commands")
+    : path.join(options.projectDir || process.cwd(), ".opencode/commands");
+
+  const byoaoSkillsSrc = path.join(assetsDir, "..", "skills");
+
+  if (await fs.pathExists(byoaoSkillsSrc) && await fs.pathExists(commandsDir)) {
+    const skillFiles = await fs.readdir(byoaoSkillsSrc);
+    let removedCount = 0;
+    for (const file of skillFiles) {
+      if (file.endsWith(".md")) {
+        const dest = path.join(commandsDir, file);
+        if (await fs.pathExists(dest)) {
+          await fs.remove(dest);
+          removedCount++;
+        }
+      }
+    }
+    if (removedCount > 0) {
+      removedItems.push(`BYOAO commands (${removedCount} files)`);
+    }
+  }
+
+  // ── Summary ─────────────────────────────────────────────────
+  if (removedItems.length === 0) {
+    printInfo("Nothing to uninstall — BYOAO was not found.");
+  } else {
+    for (const item of removedItems) {
+      printProgress(item, "ok", "removed");
+    }
+    printBlank();
+    printInfo("BYOAO has been uninstalled. Your vaults and notes are untouched.");
   }
 }
 
