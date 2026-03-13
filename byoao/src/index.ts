@@ -8,6 +8,7 @@ import { byoao_add_member } from "./tools/add-member.js";
 import { byoao_add_project } from "./tools/add-project.js";
 import { byoao_add_glossary_term } from "./tools/add-glossary-term.js";
 import { byoao_vault_status } from "./tools/vault-status.js";
+import { byoao_vault_doctor } from "./tools/vault-doctor.js";
 
 const BYOAOPlugin: Plugin = async (_ctx) => {
   return {
@@ -17,6 +18,7 @@ const BYOAOPlugin: Plugin = async (_ctx) => {
       byoao_add_project,
       byoao_add_glossary_term,
       byoao_vault_status,
+      byoao_vault_doctor,
     },
   };
 };
