@@ -14,15 +14,25 @@ const program = new Command();
 
 program
   .name("byoao")
-  .description("Build Your Own AI OS — Obsidian + AI Agent")
+  .description(
+    "Build Your Own AI OS — turn Obsidian into an AI-powered knowledge graph.\n\n" +
+    "Quick start:\n" +
+    "  1. byoao install        Set up BYOAO plugin in OpenCode\n" +
+    "  2. byoao init           Create your team's knowledge base\n" +
+    "  3. byoao status <path>  Check vault health\n\n" +
+    "For more info visit https://github.com/JayJiangCT/BYOAO"
+  )
   .version("0.2.0");
 
 // ── byoao install ────────────────────────────────────────────────
 program
   .command("install")
-  .description("Install BYOAO plugin into OpenCode")
-  .option("-g, --global", "Install globally (all projects)", false)
-  .option("-y, --yes", "Skip interactive prompts, use defaults/flags", false)
+  .description(
+    "Set up BYOAO plugin in OpenCode — registers the plugin, copies Obsidian Skills " +
+    "and BYOAO commands so they are available in your AI agent sessions"
+  )
+  .option("-g, --global", "Install globally so BYOAO works in every project", false)
+  .option("-y, --yes", "Skip interactive prompts, use defaults", false)
   .option("--no-skills", "Skip installing Obsidian Skills")
   .option("--project-dir <path>", "Project directory (default: current directory)")
   .action(async (opts) => {
@@ -70,15 +80,16 @@ program
     );
   });
 
-// ── byoao vault init ────────────────────────────────────────────
+// ── byoao init ───────────────────────────────────────────────────
 program
-  .command("vault")
-  .description("Vault management commands")
   .command("init")
-  .description("Create a new Obsidian vault for a team")
-  .option("--team <name>", "Team name")
-  .option("--path <path>", "Vault location")
-  .option("--preset <name>", "Role preset (default: pm-tpm)")
+  .description(
+    "Create a new Obsidian knowledge base for your team — sets up folders, templates, " +
+    "glossary, and an AI routing index (AGENT.md). Opens the vault in Obsidian when done."
+  )
+  .option("--team <name>", "Team name (skips interactive prompt)")
+  .option("--path <path>", "Where to create the vault (default: ~/Documents/<team> Workspace)")
+  .option("--preset <name>", "Role preset — determines folder structure and templates (default: pm-tpm)")
   .action(async (opts) => {
     // Check Obsidian first
     const obsidianStatus = checkObsidian();
@@ -209,34 +220,34 @@ program
     }
 
     console.log();
-    printEventDetail("Add team members and projects: run /init-knowledge-base in OpenCode");
+    printEventDetail("Next steps:");
+    printEventDetail(`  cd "${result.vaultPath}"`);
+    printEventDetail("  opencode                          # Launch AI agent");
+    printEventDetail("  /init-knowledge-base              # Add team members & projects");
   });
 
-// ── byoao vault status ──────────────────────────────────────────
-// We need to add status as a sibling command under vault
-// Commander's nested commands require a parent command object
-const vaultCmd = program.commands.find((c) => c.name() === "vault");
+// ── byoao status ─────────────────────────────────────────────────
+program
+  .command("status")
+  .description(
+    "Check the health of an existing vault — note count, directory structure, " +
+    "broken [[wikilinks]], and Obsidian connection status"
+  )
+  .argument("<path>", "Path to the vault folder")
+  .action(async (vaultPath: string) => {
+    const resolvedPath = path.resolve(vaultPath);
+    const status = await getVaultStatus(resolvedPath);
+    console.log(formatVaultStatus(status));
 
-if (vaultCmd) {
-  vaultCmd
-    .command("status")
-    .description("Check vault health")
-    .argument("<path>", "Path to the vault")
-    .action(async (vaultPath: string) => {
-      const resolvedPath = path.resolve(vaultPath);
-      const status = await getVaultStatus(resolvedPath);
-      console.log(formatVaultStatus(status));
-
-      console.log("\n--- Obsidian ---");
-      const obsidianStatus = checkObsidian();
-      console.log(formatObsidianStatus(obsidianStatus));
-    });
-}
+    console.log("\n--- Obsidian ---");
+    const obsidianStatus = checkObsidian();
+    console.log(formatObsidianStatus(obsidianStatus));
+  });
 
 // ── byoao check-obsidian ────────────────────────────────────────
 program
   .command("check-obsidian")
-  .description("Check if Obsidian is installed and running")
+  .description("Verify that Obsidian is installed and running on this machine")
   .action(() => {
     const status = checkObsidian();
     console.log(formatObsidianStatus(status));
