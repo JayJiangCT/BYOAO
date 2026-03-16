@@ -8,5 +8,11 @@
     "project": ["jira", "stakeholders", "priority"],
     "sprint": ["sprint-dates", "jira-board"]
   },
-  "templates": ["Feature Doc.md", "Sprint Handoff.md"]
+  "templates": ["Feature Doc.md", "Sprint Handoff.md"],
+  "mcpServers": {
+    "atlassian": {
+      "type": "remote",
+      "url": "https://mcp.atlassian.com/v1/sse"
+    }
+  }
 }

@@ -65,6 +65,13 @@ export const PresetConfigSchema = z.object({
   agentDescription: z.string(),
   frontmatterExtras: z.record(z.string(), z.array(z.string())).default({}),
   templates: z.array(z.string()).default([]),
+  mcpServers: z.record(
+    z.string(),
+    z.object({
+      type: z.literal("remote"),
+      url: z.string().url(),
+    })
+  ).default({}),
 });
 
 export type PresetConfig = z.infer<typeof PresetConfigSchema>;

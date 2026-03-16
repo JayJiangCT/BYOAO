@@ -238,6 +238,22 @@ program
     printEventDetail(`Wikilinks: ${result.wikilinksCreated}`);
     printEventDetail(`Directories: ${result.directories.length}`);
 
+    if (result.mcpResult) {
+      console.log();
+      if (result.mcpResult.serversAdded.length > 0) {
+        printEventDone("MCP servers configured");
+        for (const name of result.mcpResult.serversAdded) {
+          printEventDetail(`Added: ${name}`);
+        }
+      }
+      if (result.mcpResult.serversSkipped.length > 0) {
+        for (const name of result.mcpResult.serversSkipped) {
+          printEventDetail(`Skipped (already exists): ${name}`);
+        }
+      }
+      printEventDetail(`Config: ${result.mcpResult.configPath}`);
+    }
+
     console.log();
     printEventDetail("Next steps:");
     printEventDetail("  1. Open Obsidian → Manage vaults → Open folder as vault");
