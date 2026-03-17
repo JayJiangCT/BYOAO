@@ -85,6 +85,21 @@ export const byoao_init_vault = tool({
     output += `  Wikilinks: ${result.wikilinksCreated}\n`;
     output += `  Directories: ${result.directories.length}`;
 
+    if (result.mcpResult) {
+      if (result.mcpResult.serversAdded.length > 0) {
+        output += `\n\n✓ MCP servers configured:`;
+        for (const name of result.mcpResult.serversAdded) {
+          output += `\n  Added: ${name}`;
+        }
+      }
+      if (result.mcpResult.serversSkipped.length > 0) {
+        for (const name of result.mcpResult.serversSkipped) {
+          output += `\n  Skipped (already exists): ${name}`;
+        }
+      }
+      output += `\n  Config: ${result.mcpResult.configPath}`;
+    }
+
     if (!obsidianStatus.running) {
       output += `\n\n${formatObsidianStatus(obsidianStatus)}`;
       output += `\n\nAfter opening Obsidian, use "Open folder as vault" → select "${result.vaultPath}"`;

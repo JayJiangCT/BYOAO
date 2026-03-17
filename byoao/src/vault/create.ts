@@ -2,6 +2,7 @@ import fs from "fs-extra";
 import path from "node:path";
 import { renderTemplate, today } from "./template.js";
 import { loadPreset, getCommonDir } from "./preset.js";
+import { configureMcp, type ConfigureMcpResult } from "./mcp.js";
 import type { VaultConfig } from "../plugin-config.js";
 
 // Common directories shared by all presets
@@ -21,6 +22,7 @@ export interface CreateVaultResult {
   filesCreated: number;
   wikilinksCreated: number;
   directories: string[];
+  mcpResult: ConfigureMcpResult | null;
 }
 
 export async function createVault(config: VaultConfig): Promise<CreateVaultResult> {
@@ -269,10 +271,14 @@ tags: [team]
     }
   }
 
+  // 11. Configure MCP servers in global OpenCode config
+  const mcpResult = await configureMcp(presetConfig);
+
   return {
     vaultPath,
     filesCreated,
     wikilinksCreated,
     directories: allDirectories,
+    mcpResult,
   };
 }
