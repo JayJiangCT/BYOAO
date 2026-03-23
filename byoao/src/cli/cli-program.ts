@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { install, uninstall } from "./installer.js";
-import { printLogo, printVersion, printEvent, printEventDetail, printEventDone } from "./ui.js";
+import { printLogo, printVersion, printEvent, printEventDetail, printEventDone, printWarning } from "./ui.js";
 import { createVault } from "../vault/create.js";
 import { getVaultStatus, formatVaultStatus } from "../vault/status.js";
 import { checkObsidian, formatObsidianStatus } from "../vault/obsidian-check.js";
@@ -123,6 +123,7 @@ program
     "glossary, and an AI routing index (AGENT.md)"
   )
   .option("--team <name>", "Team name (skips interactive prompt)")
+  .option("--name <name>", "Your name — creates a person note (default: OS username in non-interactive mode)")
   .option("--path <path>", "Where to create the vault (default: ~/Documents/<team> Workspace)")
   .option("--preset <name>", "Role preset — determines folder structure and templates (default: pm-tpm)")
   .action(async (opts) => {
@@ -219,6 +220,14 @@ program
       process.exit(1);
     }
 
+    // In non-interactive mode, use --name flag or fall back to OS username
+    if (members.length === 0) {
+      const userName = opts.name || os.userInfo().username;
+      if (userName) {
+        members.push({ name: userName, role: presetName === "pm-tpm" ? "PM/TPM" : "Team Member" });
+      }
+    }
+
     vaultPath = vaultPath || path.join(os.homedir(), "Documents", `${teamName} Workspace`);
 
     const config = VaultConfigSchema.parse({
@@ -252,6 +261,34 @@ program
         }
       }
       printEventDetail(`Config: ${result.mcpResult.configPath}`);
+    }
+
+    if (result.pluginsResult) {
+      console.log();
+      printEventDone("Obsidian plugins installed");
+      if (result.pluginsResult.bratNewlyInstalled) {
+        printEventDetail("BRAT: newly installed (plugin manager)");
+      } else {
+        printEventDetail("BRAT: already installed");
+      }
+      if (result.pluginsResult.pluginsAdded.length > 0) {
+        for (const name of result.pluginsResult.pluginsAdded) {
+          printEventDetail(`Added: ${name}`);
+        }
+      }
+      if (result.pluginsResult.pluginsSkipped.length > 0) {
+        for (const name of result.pluginsResult.pluginsSkipped) {
+          printEventDetail(`Skipped (already installed): ${name}`);
+        }
+      }
+      if (result.pluginsResult.errors.length > 0) {
+        for (const err of result.pluginsResult.errors) {
+          printWarning(`${err.pluginId}: ${err.error}`);
+        }
+      }
+      if (obsidianStatus.running && result.pluginsResult.pluginsAdded.length > 0) {
+        printWarning("Obsidian is running — restart it or use 'Reload app without saving' to activate new plugins");
+      }
     }
 
     console.log();
