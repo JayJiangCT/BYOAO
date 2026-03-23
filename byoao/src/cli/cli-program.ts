@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { install, uninstall } from "./installer.js";
-import { printLogo, printVersion, printEvent, printEventDetail, printEventDone, printWarning } from "./ui.js";
+import { printLogo, printVersion, printEvent, printEventDetail, printEventCheck, printEventDone, printWarning, startSpinner } from "./ui.js";
 import { createVault } from "../vault/create.js";
 import { getVaultStatus, formatVaultStatus } from "../vault/status.js";
 import { checkObsidian, formatObsidianStatus } from "../vault/obsidian-check.js";
@@ -238,21 +238,20 @@ program
       preset: presetName,
     });
 
-    printEvent(`Creating vault for "${teamName}"`);
+    const spinner = startSpinner(`Creating vault for "${teamName}"`);
     const result = await createVault(config);
-    console.log();
-    printEventDone("Vault created");
-    printEventDetail(`Path: ${result.vaultPath}`);
-    printEventDetail(`Files: ${result.filesCreated}`);
-    printEventDetail(`Wikilinks: ${result.wikilinksCreated}`);
-    printEventDetail(`Directories: ${result.directories.length}`);
+    spinner.stop(`Vault created`);
+    printEventCheck(`Path: ${result.vaultPath}`);
+    printEventCheck(`Files: ${result.filesCreated}`);
+    printEventCheck(`Wikilinks: ${result.wikilinksCreated}`);
+    printEventCheck(`Directories: ${result.directories.length}`);
 
     if (result.mcpResult) {
       console.log();
+      printEventDone("MCP servers configured");
       if (result.mcpResult.serversAdded.length > 0) {
-        printEventDone("MCP servers configured");
         for (const name of result.mcpResult.serversAdded) {
-          printEventDetail(`Added: ${name}`);
+          printEventCheck(`Added: ${name}`);
         }
       }
       if (result.mcpResult.serversSkipped.length > 0) {
@@ -260,20 +259,20 @@ program
           printEventDetail(`Skipped (already exists): ${name}`);
         }
       }
-      printEventDetail(`Config: ${result.mcpResult.configPath}`);
+      printEventCheck(`Config: ${result.mcpResult.configPath}`);
     }
 
     if (result.pluginsResult) {
       console.log();
       printEventDone("Obsidian plugins installed");
       if (result.pluginsResult.bratNewlyInstalled) {
-        printEventDetail("BRAT: newly installed (plugin manager)");
+        printEventCheck("BRAT: newly installed (plugin manager)");
       } else {
         printEventDetail("BRAT: already installed");
       }
       if (result.pluginsResult.pluginsAdded.length > 0) {
         for (const name of result.pluginsResult.pluginsAdded) {
-          printEventDetail(`Added: ${name}`);
+          printEventCheck(`Added: ${name}`);
         }
       }
       if (result.pluginsResult.pluginsSkipped.length > 0) {
