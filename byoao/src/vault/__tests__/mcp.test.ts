@@ -40,6 +40,7 @@ function makePreset(
     frontmatterExtras: {},
     templates: [],
     mcpServers,
+    obsidianPlugins: {},
   };
 }
 
