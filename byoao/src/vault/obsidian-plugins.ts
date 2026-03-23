@@ -1,5 +1,6 @@
 import fs from "fs-extra";
 import path from "node:path";
+import { execSync } from "node:child_process";
 import type { PresetConfig } from "../plugin-config.js";
 
 const BRAT_PLUGIN_ID = "obsidian42-brat";
@@ -41,6 +42,34 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
   } finally {
     clearTimeout(timeout);
   }
+}
+
+/**
+ * Resolve command names to absolute paths in plugin config.
+ * Obsidian GUI apps don't inherit terminal PATH, so commands like "opencode"
+ * must be resolved to their full path (e.g., "/Users/jay/.opencode/bin/opencode").
+ */
+function resolveCommandPaths(config: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...config };
+
+  // Resolve command in customAgents array
+  if (Array.isArray(result.customAgents)) {
+    result.customAgents = (result.customAgents as Array<Record<string, unknown>>).map((agent) => {
+      if (typeof agent.command === "string" && !agent.command.startsWith("/")) {
+        try {
+          const resolved = execSync(`which ${agent.command}`, { encoding: "utf-8" }).trim();
+          if (resolved) {
+            return { ...agent, command: resolved };
+          }
+        } catch {
+          // Command not found — leave as-is
+        }
+      }
+      return agent;
+    });
+  }
+
+  return result;
 }
 
 /**
@@ -94,9 +123,10 @@ async function downloadPlugin(
     }
   }
 
-  // 4. Write plugin config if provided
+  // 4. Write plugin config if provided, resolving command paths to absolute
   if (config) {
-    await fs.writeJson(path.join(pluginDir, "data.json"), config, { spaces: 2 });
+    const resolved = resolveCommandPaths(config);
+    await fs.writeJson(path.join(pluginDir, "data.json"), resolved, { spaces: 2 });
   }
 }
 
