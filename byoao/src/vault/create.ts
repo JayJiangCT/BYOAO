@@ -3,7 +3,16 @@ import path from "node:path";
 import { renderTemplate, today } from "./template.js";
 import { loadPreset, getCommonDir } from "./preset.js";
 import { configureMcp, type ConfigureMcpResult } from "./mcp.js";
+import { configureObsidianPlugins, type ConfigurePluginsResult } from "./obsidian-plugins.js";
 import type { VaultConfig } from "../plugin-config.js";
+
+function countWikilinks(content: string): number {
+  const stripped = content
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/`[^`]+`/g, "");
+  const matches = stripped.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g);
+  return matches ? matches.length : 0;
+}
 
 // Common directories shared by all presets
 const COMMON_DIRECTORIES = [
@@ -23,6 +32,7 @@ export interface CreateVaultResult {
   wikilinksCreated: number;
   directories: string[];
   mcpResult: ConfigureMcpResult | null;
+  pluginsResult: ConfigurePluginsResult | null;
 }
 
 export async function createVault(config: VaultConfig): Promise<CreateVaultResult> {
@@ -32,7 +42,6 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
   const commonDir = getCommonDir();
   const presetDir = path.join(presetsDir, presetName);
   let filesCreated = 0;
-  let wikilinksCreated = 0;
 
   // Merge directories: common + preset-specific
   const allDirectories = [...COMMON_DIRECTORIES, ...presetConfig.directories];
@@ -100,8 +109,11 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
     date: today(),
     GLOSSARY_ENTRIES: glossaryRows,
   });
-  await fs.writeFile(path.join(vaultPath, "Knowledge/Glossary.md"), glossaryContent);
-  filesCreated++;
+  const glossaryPath = path.join(vaultPath, "Knowledge/Glossary.md");
+  if (!(await fs.pathExists(glossaryPath))) {
+    await fs.writeFile(glossaryPath, glossaryContent);
+    filesCreated++;
+  }
 
   // 5. Generate Start Here.md
   const startHereTemplate = await fs.readFile(
@@ -109,8 +121,11 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
     "utf-8"
   );
   const startHereContent = renderTemplate(startHereTemplate, { TEAM_NAME: teamName });
-  await fs.writeFile(path.join(vaultPath, "Start Here.md"), startHereContent);
-  filesCreated++;
+  const startHerePath = path.join(vaultPath, "Start Here.md");
+  if (!(await fs.pathExists(startHerePath))) {
+    await fs.writeFile(startHerePath, startHereContent);
+    filesCreated++;
+  }
 
   // 6. Generate AGENT.md (two-layer: common skeleton + preset section)
   const agentSkeletonTemplate = await fs.readFile(
@@ -129,7 +144,7 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
       projectsList = projects
         .map((p) => `- [[${p.name}]] — ${p.description}`)
         .join("\n");
-      wikilinksCreated += projects.length;
+
     } else {
       projectsList = "(No projects added yet — create notes in Projects/)";
     }
@@ -147,7 +162,7 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
   if (members.length > 0) {
     const rows = members.map((m) => `| [[${m.name}]] | ${m.role} |`).join("\n");
     teamTable = `| Name | Role |\n|------|------|\n${rows}`;
-    wikilinksCreated += members.length;
+
   } else {
     teamTable = "(No members added yet — create notes in People/)";
   }
@@ -162,9 +177,16 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
     TEAM_TABLE: teamTable,
     TEMPLATE_LIST: templateList,
   });
-  await fs.writeFile(path.join(vaultPath, "AGENT.md"), agentContent);
-  await fs.writeFile(path.join(vaultPath, "CLAUDE.md"), agentContent);
-  filesCreated += 2;
+  const agentMdPath = path.join(vaultPath, "AGENT.md");
+  const claudeMdPath = path.join(vaultPath, "CLAUDE.md");
+  if (!(await fs.pathExists(agentMdPath))) {
+    await fs.writeFile(agentMdPath, agentContent);
+    filesCreated++;
+  }
+  if (!(await fs.pathExists(claudeMdPath))) {
+    await fs.writeFile(claudeMdPath, agentContent);
+    filesCreated++;
+  }
 
   // 7. Create people notes
   for (const member of members) {
@@ -182,8 +204,11 @@ tags: [person]
 **Role**: ${member.role}
 **Team**: ${teamName}
 `;
-    await fs.writeFile(path.join(vaultPath, `People/${member.name}.md`), content);
-    filesCreated++;
+    const memberPath = path.join(vaultPath, `People/${member.name}.md`);
+    if (!(await fs.pathExists(memberPath))) {
+      await fs.writeFile(memberPath, content);
+      filesCreated++;
+    }
   }
 
   // 8. Create project notes
@@ -204,8 +229,11 @@ tags: [project]
 
 ${project.description}
 `;
-    await fs.writeFile(path.join(vaultPath, `Projects/${project.name}.md`), content);
-    filesCreated++;
+    const projectPath = path.join(vaultPath, `Projects/${project.name}.md`);
+    if (!(await fs.pathExists(projectPath))) {
+      await fs.writeFile(projectPath, content);
+      filesCreated++;
+    }
   }
 
   // 9. Create team index (always, since Start Here.md links to it)
@@ -225,7 +253,7 @@ tags: [team]
     if (members.length > 0) {
       teamIndexContent += "| Name | Role |\n|------|------|\n";
       teamIndexContent += members.map((m) => `| [[${m.name}]] | ${m.role} |`).join("\n");
-      wikilinksCreated += members.length;
+  
     } else {
       teamIndexContent += "(No members added yet)";
     }
@@ -235,17 +263,17 @@ tags: [team]
       teamIndexContent += projects
         .map((p) => `- [[${p.name}]] — ${p.description}`)
         .join("\n");
-      wikilinksCreated += projects.length;
+
     } else {
       teamIndexContent += "(No projects added yet)";
     }
     teamIndexContent += "\n";
 
-    await fs.writeFile(
-      path.join(vaultPath, `People/${teamName} Team.md`),
-      teamIndexContent
-    );
-    filesCreated++;
+    const teamIndexPath = path.join(vaultPath, `People/${teamName} Team.md`);
+    if (!(await fs.pathExists(teamIndexPath))) {
+      await fs.writeFile(teamIndexPath, teamIndexContent);
+      filesCreated++;
+    }
   }
 
   // 10. Create .gitkeep in empty directories
@@ -274,11 +302,26 @@ tags: [team]
   // 11. Configure MCP servers in global OpenCode config
   const mcpResult = await configureMcp(presetConfig);
 
+  // 12. Install Obsidian community plugins from preset
+  const pluginsResult = await configureObsidianPlugins(vaultPath, presetConfig);
+
+  // 13. Count wikilinks from all generated markdown files
+  let wikilinksCreated = 0;
+  const entries = await fs.readdir(vaultPath, { recursive: true });
+  for (const entry of entries) {
+    const entryStr = String(entry);
+    if (entryStr.endsWith(".md") && !entryStr.startsWith(".obsidian")) {
+      const content = await fs.readFile(path.join(vaultPath, entryStr), "utf-8");
+      wikilinksCreated += countWikilinks(content);
+    }
+  }
+
   return {
     vaultPath,
     filesCreated,
     wikilinksCreated,
     directories: allDirectories,
     mcpResult,
+    pluginsResult,
   };
 }
