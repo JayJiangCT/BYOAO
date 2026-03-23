@@ -299,7 +299,10 @@ tags: [team]
     }
   }
 
-  // 11. Configure MCP servers in global OpenCode config
+  // 11. Configure vault as OpenCode project (plugin + skills + commands)
+  await configureOpenCodeProject(vaultPath);
+
+  // 12. Configure MCP servers in global OpenCode config
   const mcpResult = await configureMcp(presetConfig);
 
   // 12. Install Obsidian community plugins from preset
@@ -324,4 +327,76 @@ tags: [team]
     mcpResult,
     pluginsResult,
   };
+}
+
+/**
+ * Configure the vault directory as an OpenCode project.
+ * Creates .opencode.json with BYOAO plugin registered,
+ * and copies skills + commands so BYOAO tools work when
+ * OpenCode is launched from the vault (including via Agent Client).
+ */
+async function configureOpenCodeProject(vaultPath: string): Promise<void> {
+  // 1. Write .opencode.json with BYOAO plugin
+  const configPath = path.join(vaultPath, ".opencode.json");
+  let config: Record<string, unknown> = {};
+  if (await fs.pathExists(configPath)) {
+    try {
+      config = await fs.readJson(configPath);
+    } catch {
+      // Invalid JSON — start fresh
+    }
+  }
+  const plugins = (config.plugin as string[] | undefined) || [];
+  if (!plugins.includes("byoao")) {
+    plugins.push("byoao");
+    config.plugin = plugins;
+  }
+  await fs.writeJson(configPath, config, { spaces: 2 });
+
+  // 2. Copy Obsidian Skills
+  const assetsDir = resolveAssetsDir();
+  const obsidianSkillsSrc = path.join(assetsDir, "obsidian-skills");
+  const skillsDest = path.join(vaultPath, ".opencode", "skills");
+
+  if (await fs.pathExists(obsidianSkillsSrc)) {
+    await fs.ensureDir(skillsDest);
+    const files = await fs.readdir(obsidianSkillsSrc);
+    for (const file of files) {
+      if (file.endsWith(".md")) {
+        await fs.copy(
+          path.join(obsidianSkillsSrc, file),
+          path.join(skillsDest, file),
+          { overwrite: true }
+        );
+      }
+    }
+  }
+
+  // 3. Copy BYOAO commands
+  const byoaoSkillsSrc = path.join(assetsDir, "..", "skills");
+  const commandsDest = path.join(vaultPath, ".opencode", "commands");
+
+  if (await fs.pathExists(byoaoSkillsSrc)) {
+    await fs.ensureDir(commandsDest);
+    const files = await fs.readdir(byoaoSkillsSrc);
+    for (const file of files) {
+      if (file.endsWith(".md")) {
+        await fs.copy(
+          path.join(byoaoSkillsSrc, file),
+          path.join(commandsDest, file),
+          { overwrite: true }
+        );
+      }
+    }
+  }
+}
+
+function resolveAssetsDir(): string {
+  const srcAssets = path.resolve(import.meta.dirname, "..", "assets");
+  const distAssets = path.resolve(
+    import.meta.dirname, "..", "..", "src", "assets"
+  );
+  if (fs.existsSync(srcAssets)) return srcAssets;
+  if (fs.existsSync(distAssets)) return distAssets;
+  return srcAssets;
 }
