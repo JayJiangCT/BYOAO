@@ -322,15 +322,14 @@ export async function uninstall(
   let removedItems: string[] = [];
 
   // ── 1. Remove plugin from opencode.json ─────────────────────
+  // Always check both global and project locations so uninstall works
+  // regardless of which --global flag was used during install.
   const configCandidates: string[] = [];
-  if (options.global) {
-    for (const p of OPENCODE_CONFIG_PATHS) {
-      configCandidates.push(p);
-    }
-  } else {
-    const dir = options.projectDir || process.cwd();
-    configCandidates.push(path.join(dir, ".opencode.json"));
+  for (const p of OPENCODE_CONFIG_PATHS) {
+    configCandidates.push(p);
   }
+  const dir = options.projectDir || process.cwd();
+  configCandidates.push(path.join(dir, ".opencode.json"));
 
   for (const configPath of configCandidates) {
     if (await fs.pathExists(configPath)) {
@@ -351,22 +350,27 @@ export async function uninstall(
   }
 
   // ── 2. Remove Obsidian Skills ───────────────────────────────
-  const skillsDir = options.global
-    ? path.join(os.homedir(), ".config/opencode/skills")
-    : path.join(options.projectDir || process.cwd(), ".opencode/skills");
+  // Check both global and project skill dirs
+  const skillsDirs = [
+    path.join(os.homedir(), ".config/opencode/skills"),
+    path.join(options.projectDir || process.cwd(), ".opencode/skills"),
+  ];
 
   const assetsDir = resolveAssetsDir();
   const obsidianSkillsSrc = path.join(assetsDir, "obsidian-skills");
 
-  if (await fs.pathExists(obsidianSkillsSrc) && await fs.pathExists(skillsDir)) {
-    const skillFiles = await fs.readdir(obsidianSkillsSrc);
+  if (await fs.pathExists(obsidianSkillsSrc)) {
     let removedCount = 0;
-    for (const file of skillFiles) {
-      if (file.endsWith(".md")) {
-        const dest = path.join(skillsDir, file);
-        if (await fs.pathExists(dest)) {
-          await fs.remove(dest);
-          removedCount++;
+    const skillFiles = await fs.readdir(obsidianSkillsSrc);
+    for (const skillsDir of skillsDirs) {
+      if (!(await fs.pathExists(skillsDir))) continue;
+      for (const file of skillFiles) {
+        if (file.endsWith(".md")) {
+          const dest = path.join(skillsDir, file);
+          if (await fs.pathExists(dest)) {
+            await fs.remove(dest);
+            removedCount++;
+          }
         }
       }
     }
@@ -376,21 +380,25 @@ export async function uninstall(
   }
 
   // ── 3. Remove BYOAO commands ────────────────────────────────
-  const commandsDir = options.global
-    ? path.join(os.homedir(), ".config/opencode/commands")
-    : path.join(options.projectDir || process.cwd(), ".opencode/commands");
+  const commandsDirs = [
+    path.join(os.homedir(), ".config/opencode/commands"),
+    path.join(options.projectDir || process.cwd(), ".opencode/commands"),
+  ];
 
   const byoaoSkillsSrc = path.join(assetsDir, "..", "skills");
 
-  if (await fs.pathExists(byoaoSkillsSrc) && await fs.pathExists(commandsDir)) {
-    const skillFiles = await fs.readdir(byoaoSkillsSrc);
+  if (await fs.pathExists(byoaoSkillsSrc)) {
     let removedCount = 0;
-    for (const file of skillFiles) {
-      if (file.endsWith(".md")) {
-        const dest = path.join(commandsDir, file);
-        if (await fs.pathExists(dest)) {
-          await fs.remove(dest);
-          removedCount++;
+    const skillFiles = await fs.readdir(byoaoSkillsSrc);
+    for (const commandsDir of commandsDirs) {
+      if (!(await fs.pathExists(commandsDir))) continue;
+      for (const file of skillFiles) {
+        if (file.endsWith(".md")) {
+          const dest = path.join(commandsDir, file);
+          if (await fs.pathExists(dest)) {
+            await fs.remove(dest);
+            removedCount++;
+          }
         }
       }
     }
