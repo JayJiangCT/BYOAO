@@ -22,7 +22,7 @@ program
     "  3. byoao status <path>  Check vault health\n\n" +
     "For more info visit https://github.com/JayJiangCT/BYOAO"
   )
-  .version("0.2.3");
+  .version("0.3.0");
 
 // ── byoao install ────────────────────────────────────────────────
 program
@@ -37,7 +37,7 @@ program
   .option("--project-dir <path>", "Project directory (default: current directory)")
   .action(async (opts) => {
     printLogo();
-    printVersion("0.2.3");
+    printVersion("0.3.0");
 
     let installGlobal = opts.global;
     let installSkills = opts.skills !== false;
