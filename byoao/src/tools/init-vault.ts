@@ -100,6 +100,31 @@ export const byoao_init_vault = tool({
       output += `\n  Config: ${result.mcpResult.configPath}`;
     }
 
+    if (result.pluginsResult) {
+      output += `\n\n✓ Obsidian plugins installed:`;
+      if (result.pluginsResult.bratNewlyInstalled) {
+        output += `\n  BRAT: newly installed (plugin manager)`;
+      }
+      if (result.pluginsResult.pluginsAdded.length > 0) {
+        for (const name of result.pluginsResult.pluginsAdded) {
+          output += `\n  Added: ${name}`;
+        }
+      }
+      if (result.pluginsResult.pluginsSkipped.length > 0) {
+        for (const name of result.pluginsResult.pluginsSkipped) {
+          output += `\n  Skipped (already installed): ${name}`;
+        }
+      }
+      if (result.pluginsResult.errors.length > 0) {
+        for (const err of result.pluginsResult.errors) {
+          output += `\n  ⚠ ${err.pluginId}: ${err.error}`;
+        }
+      }
+      if (obsidianStatus.running && result.pluginsResult.pluginsAdded.length > 0) {
+        output += `\n  ⚠ Obsidian is running — restart it to activate new plugins`;
+      }
+    }
+
     if (!obsidianStatus.running) {
       output += `\n\n${formatObsidianStatus(obsidianStatus)}`;
       output += `\n\nAfter opening Obsidian, use "Open folder as vault" → select "${result.vaultPath}"`;

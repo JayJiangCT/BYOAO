@@ -72,6 +72,14 @@ export const PresetConfigSchema = z.object({
       url: z.string().url(),
     })
   ).default({}),
+  obsidianPlugins: z.record(
+    z.string(),
+    z.object({
+      repo: z.string().regex(/^[^/]+\/[^/]+$/, "Must be owner/repo format"),
+      version: z.string().default("latest"),
+      config: z.record(z.string(), z.unknown()).optional(),
+    })
+  ).default({}),
 });
 
 export type PresetConfig = z.infer<typeof PresetConfigSchema>;

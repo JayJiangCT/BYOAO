@@ -201,7 +201,34 @@ export function printEventDetail(text: string): void {
   console.log(`    ${text}`);
 }
 
+/** Print a completed event detail with checkmark: ✓ text */
+export function printEventCheck(text: string): void {
+  console.log(`    ${chalk.green("✓")} ${text}`);
+}
+
 /** Print a completed event: ◆ label */
 export function printEventDone(label: string): void {
   console.log(`  ${chalk.green("◆")} ${chalk.bold(label)}`);
+}
+
+/** Animated spinner for long-running operations. Call stop() when done. */
+export function startSpinner(label: string): { stop: (finalLabel?: string) => void } {
+  const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+  let i = 0;
+  const stream = process.stderr;
+
+  const interval = setInterval(() => {
+    stream.write(`\r  ${chalk.cyan(frames[i % frames.length])} ${chalk.bold(label)}`);
+    i++;
+  }, 80);
+
+  return {
+    stop(finalLabel?: string) {
+      clearInterval(interval);
+      stream.write(`\r${"".padEnd(label.length + 10)}\r`);
+      if (finalLabel) {
+        printEventDone(finalLabel);
+      }
+    },
+  };
 }

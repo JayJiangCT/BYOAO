@@ -10,6 +10,10 @@ vi.mock("../mcp.js", () => ({
   configureMcp: vi.fn().mockResolvedValue(null),
 }));
 
+vi.mock("../obsidian-plugins.js", () => ({
+  configureObsidianPlugins: vi.fn().mockResolvedValue(null),
+}));
+
 let tmpDir: string;
 
 beforeEach(async () => {

@@ -1,8 +1,11 @@
 {
   "name": "@jayjiang/byoao",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Build Your Own AI OS — Obsidian + AI Agent",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {

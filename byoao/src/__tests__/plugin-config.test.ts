@@ -97,4 +97,60 @@ describe("PresetConfigSchema", () => {
       PresetConfigSchema.parse({ name: "test" })
     ).toThrow();
   });
+
+  it("validates obsidianPlugins field", () => {
+    const result = PresetConfigSchema.parse({
+      name: "test",
+      displayName: "Test",
+      description: "d",
+      agentDescription: "a",
+      obsidianPlugins: {
+        "obsidian-agent-client": {
+          repo: "RAIT-09/obsidian-agent-client",
+          version: "latest",
+        },
+      },
+    });
+    expect(result.obsidianPlugins["obsidian-agent-client"].repo).toBe(
+      "RAIT-09/obsidian-agent-client"
+    );
+    expect(result.obsidianPlugins["obsidian-agent-client"].version).toBe("latest");
+  });
+
+  it("defaults obsidianPlugins to empty object", () => {
+    const result = PresetConfigSchema.parse({
+      name: "test",
+      displayName: "Test",
+      description: "d",
+      agentDescription: "a",
+    });
+    expect(result.obsidianPlugins).toEqual({});
+  });
+
+  it("defaults version to latest", () => {
+    const result = PresetConfigSchema.parse({
+      name: "test",
+      displayName: "Test",
+      description: "d",
+      agentDescription: "a",
+      obsidianPlugins: {
+        "my-plugin": { repo: "owner/repo" },
+      },
+    });
+    expect(result.obsidianPlugins["my-plugin"].version).toBe("latest");
+  });
+
+  it("rejects invalid repo format in obsidianPlugins", () => {
+    expect(() =>
+      PresetConfigSchema.parse({
+        name: "test",
+        displayName: "Test",
+        description: "d",
+        agentDescription: "a",
+        obsidianPlugins: {
+          "bad": { repo: "not-a-valid-repo" },
+        },
+      })
+    ).toThrow();
+  });
 });

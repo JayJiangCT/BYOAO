@@ -14,5 +14,23 @@
       "type": "remote",
       "url": "https://mcp.atlassian.com/v1/sse"
     }
+  },
+  "obsidianPlugins": {
+    "agent-client": {
+      "repo": "RAIT-09/obsidian-agent-client",
+      "version": "latest",
+      "config": {
+        "defaultAgentId": "opencode-acp",
+        "customAgents": [
+          {
+            "id": "opencode-acp",
+            "displayName": "OpenCode",
+            "command": "opencode",
+            "args": ["acp"],
+            "env": []
+          }
+        ]
+      }
+    }
   }
 }

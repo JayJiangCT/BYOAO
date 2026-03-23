@@ -31,6 +31,13 @@ BYOAO-Architecture.canvas
 
 # OpenCode local config (installed by `byoao install`)
 .opencode/
+byoao/.opencode.json
+
+# Obsidian community plugins list (generated per-machine)
+.obsidian/community-plugins.json
+
+# Vitest cache
+byoao/src/node_modules/
 
 # Web clipper templates (not yet distributed)
 byoao/src/assets/web-clipper/
