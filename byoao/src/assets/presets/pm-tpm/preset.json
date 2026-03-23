@@ -20,15 +20,16 @@
       "repo": "RAIT-09/obsidian-agent-client",
       "version": "latest",
       "config": {
-        "defaultAgent": "opencode",
-        "agents": {
-          "opencode": {
-            "name": "OpenCode",
+        "defaultAgentId": "opencode-acp",
+        "customAgents": [
+          {
+            "id": "opencode-acp",
+            "displayName": "OpenCode",
             "command": "opencode",
-            "args": [],
-            "protocol": "acp"
+            "args": ["acp"],
+            "env": []
           }
-        }
+        ]
       }
     }
   }
