@@ -16,7 +16,7 @@
     }
   },
   "obsidianPlugins": {
-    "obsidian-agent-client": {
+    "agent-client": {
       "repo": "RAIT-09/obsidian-agent-client",
       "version": "latest",
       "config": {
