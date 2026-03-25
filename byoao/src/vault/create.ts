@@ -4,6 +4,7 @@ import { renderTemplate, today } from "./template.js";
 import { loadPreset, getCommonDir } from "./preset.js";
 import { configureMcp, type ConfigureMcpResult } from "./mcp.js";
 import { configureObsidianPlugins, type ConfigurePluginsResult } from "./obsidian-plugins.js";
+import { configureProvider, type ConfigureProviderResult } from "./provider.js";
 import type { VaultConfig } from "../plugin-config.js";
 
 function countWikilinks(content: string): number {
@@ -33,6 +34,7 @@ export interface CreateVaultResult {
   directories: string[];
   mcpResult: ConfigureMcpResult | null;
   pluginsResult: ConfigurePluginsResult | null;
+  providerResult: ConfigureProviderResult | null;
 }
 
 export async function createVault(config: VaultConfig): Promise<CreateVaultResult> {
@@ -305,10 +307,19 @@ tags: [team]
   // 12. Configure MCP servers in global OpenCode config
   const mcpResult = await configureMcp(presetConfig);
 
-  // 12. Install Obsidian community plugins from preset
+  // 13. Install Obsidian community plugins from preset
   const pluginsResult = await configureObsidianPlugins(vaultPath, presetConfig);
 
-  // 13. Count wikilinks from all generated markdown files
+  // 14. Configure AI provider in global OpenCode config
+  let providerResult: ConfigureProviderResult | null = null;
+  if (config.provider && config.provider !== "skip") {
+    providerResult = await configureProvider(
+      config.provider,
+      config.provider === "gemini" ? config.gcpProjectId : undefined
+    );
+  }
+
+  // 15. Count wikilinks from all generated markdown files
   let wikilinksCreated = 0;
   const entries = await fs.readdir(vaultPath, { recursive: true });
   for (const entry of entries) {
@@ -326,6 +337,7 @@ tags: [team]
     directories: allDirectories,
     mcpResult,
     pluginsResult,
+    providerResult,
   };
 }
 

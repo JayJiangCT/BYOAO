@@ -1,20 +1,9 @@
-import fs from "fs-extra";
-import path from "node:path";
-import os from "node:os";
 import type { PresetConfig } from "../plugin-config.js";
-
-const OPENCODE_CONFIG_PATHS = [
-  path.join(os.homedir(), ".config/opencode/opencode.json"),
-  path.join(os.homedir(), ".config/opencode/.opencode.json"),
-];
-
-function findOpencodeConfig(): string {
-  for (const p of OPENCODE_CONFIG_PATHS) {
-    if (fs.existsSync(p)) return p;
-  }
-  // Default to primary path if none exists yet
-  return OPENCODE_CONFIG_PATHS[0];
-}
+import {
+  findOpencodeConfig,
+  readOpencodeConfig,
+  writeOpencodeConfig,
+} from "./opencode-config.js";
 
 export interface ConfigureMcpResult {
   configPath: string;
@@ -35,16 +24,7 @@ export async function configureMcp(
   }
 
   const configPath = findOpencodeConfig();
-  await fs.ensureDir(path.dirname(configPath));
-
-  let config: Record<string, unknown> = {};
-  if (await fs.pathExists(configPath)) {
-    try {
-      config = await fs.readJson(configPath);
-    } catch {
-      // Invalid JSON — start fresh
-    }
-  }
+  const config = await readOpencodeConfig();
 
   const existingMcp = (config.mcp as Record<string, unknown>) || {};
   const serversAdded: string[] = [];
@@ -61,7 +41,7 @@ export async function configureMcp(
 
   if (serversAdded.length > 0) {
     config.mcp = existingMcp;
-    await fs.writeJson(configPath, config, { spaces: 2 });
+    await writeOpencodeConfig(config);
   }
 
   return { configPath, serversAdded, serversSkipped };

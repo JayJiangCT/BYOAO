@@ -14,6 +14,10 @@ vi.mock("../obsidian-plugins.js", () => ({
   configureObsidianPlugins: vi.fn().mockResolvedValue(null),
 }));
 
+vi.mock("../provider.js", () => ({
+  configureProvider: vi.fn().mockResolvedValue(null),
+}));
+
 let tmpDir: string;
 
 beforeEach(async () => {
@@ -34,6 +38,8 @@ function makeConfig(overrides: Partial<VaultConfig> = {}): VaultConfig {
     jiraHost: "",
     jiraProject: "",
     preset: "pm-tpm",
+    provider: "skip",
+    gcpProjectId: "",
     ...overrides,
   };
 }

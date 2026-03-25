@@ -24,6 +24,8 @@ export const VaultConfigSchema = z.object({
   jiraHost: z.string().default(""),
   jiraProject: z.string().default(""),
   preset: z.string().default("pm-tpm"),
+  provider: z.enum(["copilot", "gemini", "skip"]).default("skip"),
+  gcpProjectId: z.string().default(""),
 });
 
 export type Member = z.infer<typeof MemberSchema>;
