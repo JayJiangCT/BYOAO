@@ -1,11 +1,8 @@
-import fs from "fs-extra";
-import path from "node:path";
-import os from "node:os";
-
-const OPENCODE_CONFIG_PATHS = [
-  path.join(os.homedir(), ".config/opencode/opencode.json"),
-  path.join(os.homedir(), ".config/opencode/.opencode.json"),
-];
+import {
+  findOpencodeConfig,
+  readOpencodeConfig,
+  writeOpencodeConfig,
+} from "./opencode-config.js";
 
 const GEMINI_AUTH_PLUGIN = "opencode-gemini-auth";
 
@@ -18,13 +15,6 @@ export interface ConfigureProviderResult {
   pluginSkipped: boolean;
   projectIdSet: boolean;
   projectIdSkipped: boolean;
-}
-
-function findOpencodeConfig(): string {
-  for (const p of OPENCODE_CONFIG_PATHS) {
-    if (fs.existsSync(p)) return p;
-  }
-  return OPENCODE_CONFIG_PATHS[0];
 }
 
 /**
@@ -55,16 +45,7 @@ export async function configureProvider(
     throw new Error("GCP Project ID is required for Google Gemini provider");
   }
 
-  await fs.ensureDir(path.dirname(configPath));
-
-  let config: Record<string, unknown> = {};
-  if (await fs.pathExists(configPath)) {
-    try {
-      config = await fs.readJson(configPath);
-    } catch {
-      // Invalid JSON — start fresh
-    }
-  }
+  const config = await readOpencodeConfig();
 
   // 1. Add plugin
   const plugins = (config.plugin as string[] | undefined) || [];
@@ -100,7 +81,7 @@ export async function configureProvider(
   config.provider = providerConfig;
 
   if (pluginAdded || projectIdSet) {
-    await fs.writeJson(configPath, config, { spaces: 2 });
+    await writeOpencodeConfig(config);
   }
 
   return {

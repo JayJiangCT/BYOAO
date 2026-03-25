@@ -1,19 +1,9 @@
 import { tool } from "@opencode-ai/plugin/tool";
-import fs from "fs-extra";
-import path from "node:path";
-import os from "node:os";
-
-const OPENCODE_CONFIG_PATHS = [
-  path.join(os.homedir(), ".config/opencode/opencode.json"),
-  path.join(os.homedir(), ".config/opencode/.opencode.json"),
-];
-
-function findOpencodeConfig(): string {
-  for (const p of OPENCODE_CONFIG_PATHS) {
-    if (fs.existsSync(p)) return p;
-  }
-  return OPENCODE_CONFIG_PATHS[0];
-}
+import {
+  findOpencodeConfig,
+  readOpencodeConfig,
+  writeOpencodeConfig,
+} from "../vault/opencode-config.js";
 
 export const byoao_switch_provider = tool({
   description:
@@ -34,15 +24,7 @@ export const byoao_switch_provider = tool({
   },
   async execute(args) {
     const configPath = findOpencodeConfig();
-
-    let config: Record<string, unknown> = {};
-    if (await fs.pathExists(configPath)) {
-      try {
-        config = await fs.readJson(configPath);
-      } catch {
-        // Invalid JSON — start fresh
-      }
-    }
+    const config = await readOpencodeConfig();
 
     const previousModel = (config.model as string) || "(default)";
     config.model = args.model;
@@ -51,7 +33,7 @@ export const byoao_switch_provider = tool({
       config.small_model = args.smallModel;
     }
 
-    await fs.writeJson(configPath, config, { spaces: 2 });
+    await writeOpencodeConfig(config);
 
     let output = `✓ Model switched: ${previousModel} → ${args.model}`;
     if (args.smallModel) {
