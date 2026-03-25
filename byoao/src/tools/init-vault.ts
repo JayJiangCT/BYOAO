@@ -125,6 +125,25 @@ export const byoao_init_vault = tool({
       }
     }
 
+    if (result.providerResult) {
+      output += `\n\n✓ AI provider configured: ${result.providerResult.provider}`;
+      if (result.providerResult.pluginAdded) {
+        output += `\n  Plugin added: opencode-gemini-auth`;
+      }
+      if (result.providerResult.pluginSkipped) {
+        output += `\n  Plugin skipped (already installed)`;
+      }
+      if (result.providerResult.projectIdSet) {
+        output += `\n  GCP Project configured`;
+      }
+      if (result.providerResult.projectIdSkipped) {
+        output += `\n  GCP Project skipped (already configured)`;
+      }
+      if (!result.providerResult.provider || result.providerResult.provider === "copilot") {
+        output += `\n  ℹ Run "opencode auth login" in terminal to complete authentication`;
+      }
+    }
+
     if (!obsidianStatus.running) {
       output += `\n\n${formatObsidianStatus(obsidianStatus)}`;
       output += `\n\nAfter opening Obsidian, use "Open folder as vault" → select "${result.vaultPath}"`;
