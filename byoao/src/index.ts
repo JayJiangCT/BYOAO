@@ -9,6 +9,7 @@ import { byoao_add_project } from "./tools/add-project.js";
 import { byoao_add_glossary_term } from "./tools/add-glossary-term.js";
 import { byoao_vault_status } from "./tools/vault-status.js";
 import { byoao_vault_doctor } from "./tools/vault-doctor.js";
+import { byoao_switch_provider } from "./tools/switch-provider.js";
 import { systemTransformHook } from "./hooks/system-transform.js";
 import { getIdleSuggestion } from "./hooks/idle-suggestions.js";
 
@@ -24,6 +25,7 @@ const BYOAOPlugin: Plugin = async (ctx) => {
       byoao_add_glossary_term,
       byoao_vault_status,
       byoao_vault_doctor,
+      byoao_switch_provider,
     },
     "experimental.chat.system.transform": systemTransformHook,
     event: async ({ event }) => {
