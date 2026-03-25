@@ -266,6 +266,11 @@ program
 
     vaultPath = vaultPath || path.join(os.homedir(), "Documents", `${teamName} Workspace`);
 
+    if (opts.provider === "gemini" && !opts.gcpProject) {
+      console.error("Error: --gcp-project is required when --provider=gemini");
+      process.exit(1);
+    }
+
     const providerOpt = opts.provider || "skip";
     let gcpProjectOpt = opts.gcpProject || "";
 
@@ -433,7 +438,12 @@ program
     printEventDetail(`     ${result.vaultPath}`);
     printEventDetail('  2. Read "Start Here.md" — it explains the vault structure');
     printEventDetail("  3. Start adding notes — meeting notes, project docs, daily notes");
-    printEventDetail(`  4. When ready for AI features: cd "${result.vaultPath}" && opencode`);
+    if (providerForAuth !== "skip") {
+      printEventDetail(`  4. When ready for AI: cd "${result.vaultPath}" && opencode`);
+    } else {
+      printEventDetail(`  4. Set up AI: opencode auth login`);
+      printEventDetail(`  5. When ready: cd "${result.vaultPath}" && opencode`);
+    }
   });
 
 // ── byoao status ─────────────────────────────────────────────────
