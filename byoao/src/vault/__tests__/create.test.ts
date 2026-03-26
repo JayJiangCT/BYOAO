@@ -214,4 +214,19 @@ describe("createVault", () => {
     expect(glossary).toContain("**API**");
     expect(glossary).toContain("Application interface");
   });
+
+  it("writes .byoao/manifest.json after vault creation", async () => {
+    const result = await createVault(makeConfig());
+    const vp = result.vaultPath;
+
+    const manifestPath = path.join(vp, ".byoao", "manifest.json");
+    expect(await fs.pathExists(manifestPath)).toBe(true);
+
+    const manifest = await fs.readJson(manifestPath);
+    expect(manifest.version).toBeDefined();
+    expect(manifest.preset).toBe("pm-tpm");
+    expect(manifest.infrastructure.skills.length).toBeGreaterThan(0);
+    expect(manifest.infrastructure.commands.length).toBeGreaterThan(0);
+    expect(manifest.infrastructure.templates.length).toBeGreaterThan(0);
+  });
 });
