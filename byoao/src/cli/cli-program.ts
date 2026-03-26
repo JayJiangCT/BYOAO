@@ -8,8 +8,12 @@ import { checkObsidian, formatObsidianStatus } from "../vault/obsidian-check.js"
 import { listPresets } from "../vault/preset.js";
 import { VaultConfigSchema } from "../plugin-config.js";
 import { spawn } from "node:child_process";
+import { createRequire } from "node:module";
 import path from "node:path";
 import os from "node:os";
+
+const require = createRequire(import.meta.url);
+const PKG_VERSION: string = (require("../../package.json") as Record<string, unknown>).version as string;
 
 const AUTH_COMMANDS: Record<string, { args: string[] }> = {
   copilot: { args: ["auth", "login", "-p", "github-copilot"] },
@@ -56,7 +60,7 @@ program
     "  3. byoao status <path>  Check vault health\n\n" +
     "For more info visit https://github.com/JayJiangCT/BYOAO"
   )
-  .version("0.3.0");
+  .version(PKG_VERSION);
 
 // ── byoao install ────────────────────────────────────────────────
 program
@@ -71,7 +75,7 @@ program
   .option("--project-dir <path>", "Project directory (default: current directory)")
   .action(async (opts) => {
     printLogo();
-    printVersion("0.3.0");
+    printVersion(PKG_VERSION);
 
     let installGlobal = opts.global;
     let installSkills = opts.skills !== false;
