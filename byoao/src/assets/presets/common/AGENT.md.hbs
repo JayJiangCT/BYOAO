@@ -27,3 +27,54 @@ Complex domain concepts with rich wikilinks. Created as terms graduate from the 
 
 Use Obsidian's template plugin (Ctrl/Cmd+T) to insert:
 {{{TEMPLATE_LIST}}}
+
+## Document Conventions
+
+Rules for creating and modifying notes in this vault.
+
+### Required Frontmatter
+
+Every note must include:
+
+```yaml
+---
+title: ""
+type: ""        # see Note Types below
+status: ""      # draft | active | completed | archived
+date: YYYY-MM-DD
+tags: []
+---
+```
+
+### Note Types & Directory Mapping
+
+| type | Directory | Additional Required Fields |
+|------|-----------|---------------------------|
+| `feature` | `Projects/` | `project`, `jira`, `stakeholders`, `priority` |
+| `sprint-handoff` | `Sprints/` | `sprint`, `sprint-dates`, `jira-board` |
+| `meeting` | Caller's choice | `participants`, `meeting-type` |
+| `investigation` | Associated project folder | `jira`, `hypothesis` |
+| `decision` | Associated project folder | `decision`, `decided-by` |
+| `daily` | `Daily/` | — |
+| `reference` | `Knowledge/` | — |
+| `person` | `People/` | `team`, `role` |
+
+### File Creation Rules
+
+- Use `obsidian create template=<TemplateName>` when a matching template exists
+- If no template matches, manually construct frontmatter per the Required Frontmatter spec
+- File naming: Title Case or kebab-case{{#if HAS_JIRA}}, JIRA tickets use `{{JIRA_PROJECT}}-XXXX-Description.md`{{/if}}
+- Place files in the directory matching their `type` (see table above)
+
+### Wikilink Rules
+
+- People → `[[Person Name]]`
+- Projects → `[[Project Name]]`
+- Domain terms → check `[[Glossary]]` before defining inline
+- Teams → link to the team index note in `People/`
+
+### Non-Compliant Documents
+
+- User-created documents may not follow these conventions
+- Use `/enrich-document` to add missing frontmatter and wikilinks
+- Use `/vault-doctor` to diagnose vault-wide compliance issues

@@ -156,6 +156,32 @@ describe("createVault", () => {
     expect(teamIndex).toContain("[[Bob]]");
   });
 
+  it("includes Document Conventions section in AGENT.md", async () => {
+    const result = await createVault(makeConfig());
+    const agentContent = await fs.readFile(
+      path.join(result.vaultPath, "AGENT.md"),
+      "utf-8"
+    );
+    expect(agentContent).toContain("## Document Conventions");
+    expect(agentContent).toContain("### Required Frontmatter");
+    expect(agentContent).toContain("### Note Types");
+    expect(agentContent).toContain("### File Creation Rules");
+    expect(agentContent).toContain("### Wikilink Rules");
+  });
+
+  it("includes JIRA naming convention when JIRA is configured", async () => {
+    const config = makeConfig({
+      jiraHost: "wonder.atlassian.net",
+      jiraProject: "DELI",
+    });
+    const result = await createVault(config);
+    const agentContent = await fs.readFile(
+      path.join(result.vaultPath, "AGENT.md"),
+      "utf-8"
+    );
+    expect(agentContent).toContain("DELI-XXXX-Description.md");
+  });
+
   it("includes glossary entries when provided", async () => {
     const config = makeConfig({
       glossaryEntries: [{ term: "API", definition: "Application interface" }],
