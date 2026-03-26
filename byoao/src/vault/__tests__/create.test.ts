@@ -182,6 +182,17 @@ describe("createVault", () => {
     expect(agentContent).toContain("DELI-XXXX-Description.md");
   });
 
+  it("copies byoao-conventions skill to .opencode/skills/", async () => {
+    const result = await createVault(makeConfig());
+    const skillPath = path.join(
+      result.vaultPath,
+      ".opencode/skills/byoao-conventions.md"
+    );
+    expect(await fs.pathExists(skillPath)).toBe(true);
+    const content = await fs.readFile(skillPath, "utf-8");
+    expect(content).toContain("BYOAO Document Conventions");
+  });
+
   it("includes glossary entries when provided", async () => {
     const config = makeConfig({
       glossaryEntries: [{ term: "API", definition: "Application interface" }],
