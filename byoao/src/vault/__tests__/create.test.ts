@@ -156,6 +156,52 @@ describe("createVault", () => {
     expect(teamIndex).toContain("[[Bob]]");
   });
 
+  it("includes Document Conventions section in AGENT.md", async () => {
+    const result = await createVault(makeConfig());
+    const agentContent = await fs.readFile(
+      path.join(result.vaultPath, "AGENT.md"),
+      "utf-8"
+    );
+    expect(agentContent).toContain("## Document Conventions");
+    expect(agentContent).toContain("### Required Frontmatter");
+    expect(agentContent).toContain("### Note Types");
+    expect(agentContent).toContain("### File Creation Rules");
+    expect(agentContent).toContain("### Wikilink Rules");
+  });
+
+  it("includes JIRA naming convention when JIRA is configured", async () => {
+    const config = makeConfig({
+      jiraHost: "wonder.atlassian.net",
+      jiraProject: "DELI",
+    });
+    const result = await createVault(config);
+    const agentContent = await fs.readFile(
+      path.join(result.vaultPath, "AGENT.md"),
+      "utf-8"
+    );
+    expect(agentContent).toContain("DELI-XXXX-Description.md");
+  });
+
+  it("copies byoao-conventions skill to .opencode/skills/", async () => {
+    const result = await createVault(makeConfig());
+    const skillPath = path.join(
+      result.vaultPath,
+      ".opencode/skills/byoao-conventions.md"
+    );
+    expect(await fs.pathExists(skillPath)).toBe(true);
+    const content = await fs.readFile(skillPath, "utf-8");
+    expect(content).toContain("BYOAO Document Conventions");
+  });
+
+  it("does not copy init-knowledge-base command", async () => {
+    const result = await createVault(makeConfig());
+    const cmdPath = path.join(
+      result.vaultPath,
+      ".opencode/commands/init-knowledge-base.md"
+    );
+    expect(await fs.pathExists(cmdPath)).toBe(false);
+  });
+
   it("includes glossary entries when provided", async () => {
     const config = makeConfig({
       glossaryEntries: [{ term: "API", definition: "Application interface" }],

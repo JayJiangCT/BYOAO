@@ -155,7 +155,7 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
       PROJECTS: projectsList,
       JIRA_HOST: jiraHost,
       JIRA_PROJECT: jiraProject,
-      HAS_JIRA: jiraHost && jiraProject,
+      HAS_JIRA: !!(jiraHost && jiraProject),
     });
   }
 
@@ -178,6 +178,8 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
     ROLE_SECTION: roleSection,
     TEAM_TABLE: teamTable,
     TEMPLATE_LIST: templateList,
+    JIRA_PROJECT: jiraProject,
+    HAS_JIRA: !!(jiraHost && jiraProject),
   });
   const agentMdPath = path.join(vaultPath, "AGENT.md");
   const claudeMdPath = path.join(vaultPath, "CLAUDE.md");
