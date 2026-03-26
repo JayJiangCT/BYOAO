@@ -193,6 +193,15 @@ describe("createVault", () => {
     expect(content).toContain("BYOAO Document Conventions");
   });
 
+  it("does not copy init-knowledge-base command", async () => {
+    const result = await createVault(makeConfig());
+    const cmdPath = path.join(
+      result.vaultPath,
+      ".opencode/commands/init-knowledge-base.md"
+    );
+    expect(await fs.pathExists(cmdPath)).toBe(false);
+  });
+
   it("includes glossary entries when provided", async () => {
     const config = makeConfig({
       glossaryEntries: [{ term: "API", definition: "Application interface" }],
