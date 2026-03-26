@@ -68,12 +68,13 @@ export async function writeManifest(
   vaultPath: string,
   preset: string,
   installedFiles: InstalledFiles,
+  versionOverride?: string,
 ): Promise<void> {
   const mp = manifestPath(vaultPath);
   const existing = await readManifest(vaultPath);
 
   const manifest: Manifest = {
-    version: PKG_VERSION,
+    version: versionOverride ?? PKG_VERSION,
     preset,
     createdAt: existing?.createdAt ?? today(),
     updatedAt: today(),
