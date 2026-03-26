@@ -5,6 +5,7 @@ import { loadPreset, getCommonDir } from "./preset.js";
 import { configureMcp, type ConfigureMcpResult } from "./mcp.js";
 import { configureObsidianPlugins, type ConfigurePluginsResult } from "./obsidian-plugins.js";
 import { configureProvider, type ConfigureProviderResult } from "./provider.js";
+import { writeManifest, type InstalledFiles } from "./manifest.js";
 import type { VaultConfig } from "../plugin-config.js";
 
 function countWikilinks(content: string): number {
@@ -44,6 +45,12 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
   const commonDir = getCommonDir();
   const presetDir = path.join(presetsDir, presetName);
   let filesCreated = 0;
+  const installedFiles: InstalledFiles = {
+    skills: [],
+    commands: [],
+    obsidianConfig: [],
+    templates: [],
+  };
 
   // Merge directories: common + preset-specific
   const allDirectories = [...COMMON_DIRECTORIES, ...presetConfig.directories];
@@ -59,6 +66,10 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
   if (await fs.pathExists(obsidianSrc)) {
     await fs.copy(obsidianSrc, path.join(vaultPath, ".obsidian"), { overwrite: false });
     filesCreated += (await fs.readdir(obsidianSrc)).length;
+    const obsidianFiles = await fs.readdir(obsidianSrc);
+    for (const f of obsidianFiles) {
+      installedFiles.obsidianConfig.push(`.obsidian/${f}`);
+    }
   }
 
   // 3. Copy note templates: common first, then preset overlay
@@ -77,6 +88,7 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
       );
       allTemplateNames.push(file.replace(/\.md$/, ""));
       filesCreated++;
+      installedFiles.templates.push(`Knowledge/templates/${file}`);
     }
   }
 
@@ -92,6 +104,7 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
       );
       allTemplateNames.push(file.replace(/\.md$/, ""));
       filesCreated++;
+      installedFiles.templates.push(`Knowledge/templates/${file}`);
     }
   }
 
@@ -304,7 +317,7 @@ tags: [team]
   }
 
   // 11. Configure vault as OpenCode project (plugin + skills + commands)
-  await configureOpenCodeProject(vaultPath);
+  await configureOpenCodeProject(vaultPath, installedFiles);
 
   // 12. Configure MCP servers in global OpenCode config
   const mcpResult = await configureMcp(presetConfig);
@@ -321,7 +334,10 @@ tags: [team]
     );
   }
 
-  // 15. Count wikilinks from all generated markdown files
+  // 15. Write BYOAO manifest
+  await writeManifest(vaultPath, presetName, installedFiles);
+
+  // 16. Count wikilinks from all generated markdown files
   let wikilinksCreated = 0;
   const entries = await fs.readdir(vaultPath, { recursive: true });
   for (const entry of entries) {
@@ -349,7 +365,10 @@ tags: [team]
  * and copies skills + commands so BYOAO tools work when
  * OpenCode is launched from the vault (including via Agent Client).
  */
-async function configureOpenCodeProject(vaultPath: string): Promise<void> {
+async function configureOpenCodeProject(
+  vaultPath: string,
+  installedFiles: InstalledFiles,
+): Promise<void> {
   // 1. Write .opencode.json with BYOAO plugin
   const configPath = path.join(vaultPath, ".opencode.json");
   let config: Record<string, unknown> = {};
@@ -382,6 +401,7 @@ async function configureOpenCodeProject(vaultPath: string): Promise<void> {
           path.join(skillsDest, file),
           { overwrite: true }
         );
+        installedFiles.skills.push(`.opencode/skills/${file}`);
       }
     }
   }
@@ -400,6 +420,7 @@ async function configureOpenCodeProject(vaultPath: string): Promise<void> {
           path.join(commandsDest, file),
           { overwrite: true }
         );
+        installedFiles.commands.push(`.opencode/commands/${file}`);
       }
     }
   }
