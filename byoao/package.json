@@ -50,12 +50,14 @@
     "gray-matter": "^4.0.0",
     "handlebars": "^4.7.0",
     "inquirer": "^9.0.0",
+    "semver": "^7.7.4",
     "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.0",
     "@types/inquirer": "^9.0.0",
     "@types/node": "^20.0.0",
+    "@types/semver": "^7.7.1",
     "tsx": "^4.21.0",
     "typescript": "^5.4.0",
     "vitest": "^4.1.0"
