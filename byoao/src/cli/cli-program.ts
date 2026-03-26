@@ -11,6 +11,8 @@ import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import path from "node:path";
 import os from "node:os";
+import { upgradeVault } from "../vault/upgrade.js";
+import { detectVaultContext } from "../vault/vault-detect.js";
 
 const require = createRequire(import.meta.url);
 const PKG_VERSION: string = (require("../../package.json") as Record<string, unknown>).version as string;
@@ -476,5 +478,134 @@ program
     const status = checkObsidian();
     console.log(formatObsidianStatus(status));
   });
+
+// ── byoao upgrade ────────────────────────────────────────────────
+program
+  .command("upgrade")
+  .argument("[path]", "Path to vault root (default: detect from current directory)")
+  .description(
+    "Upgrade vault infrastructure to the latest BYOAO version — updates skills, " +
+    "commands, templates, and Obsidian config"
+  )
+  .option("-y, --yes", "Skip confirmation prompt", false)
+  .option("--dry-run", "Show upgrade plan without executing", false)
+  .option("--force", "Run even if versions match or on downgrade", false)
+  .option("--preset <name>", "Override preset during bootstrap (ignored if manifest exists)")
+  .action(async (vaultArg, opts) => {
+    printLogo();
+    printVersion(PKG_VERSION);
+
+    // 1. Detect vault
+    const targetPath = vaultArg ?? process.cwd();
+    const vaultRoot = detectVaultContext(targetPath);
+    if (!vaultRoot) {
+      printWarning("No BYOAO vault found. Run `byoao init` to create one.");
+      process.exit(1);
+    }
+
+    printEvent("Upgrading vault");
+    printEventDetail(`Vault: ${vaultRoot}`);
+
+    try {
+      // Try dry run first to show the plan
+      const preview = await upgradeVault(vaultRoot, {
+        preset: opts.preset,
+        dryRun: true,
+        force: opts.force,
+      });
+
+      // Up-to-date check
+      if (
+        preview.added.length === 0 &&
+        preview.updated.length === 0 &&
+        preview.deprecated.length === 0
+      ) {
+        printEventDone(`Vault is already up to date at v${preview.toVersion}`);
+        if (!opts.force) return;
+      }
+
+      printEventDetail(`From v${preview.fromVersion} → v${preview.toVersion}`);
+      console.log();
+
+      // Show plan
+      printEvent("Upgrade plan");
+      for (const f of preview.added) {
+        printEventDetail(`+ ${path.basename(f)}  (add → ${getCategoryLabel(f)})`);
+      }
+      for (const f of preview.updated) {
+        printEventDetail(`~ ${path.basename(f)}  (update → ${getCategoryLabel(f)})`);
+      }
+      for (const f of preview.deprecated) {
+        printEventDetail(`○ ${path.basename(f)}  (deprecated → ${getCategoryLabel(f)})`);
+      }
+
+      const total = preview.added.length + preview.updated.length + preview.deprecated.length;
+      console.log();
+      printEventDetail(
+        `${total} changes (${preview.added.length} add, ${preview.updated.length} update, ${preview.deprecated.length} deprecated)`
+      );
+
+      if (opts.dryRun) return;
+
+      // Confirm
+      if (!opts.yes && process.stdout.isTTY) {
+        try {
+          const { default: inquirer } = await import("inquirer");
+          const { proceed } = await inquirer.prompt([{
+            type: "confirm",
+            name: "proceed",
+            message: "Proceed with upgrade?",
+            default: true,
+          }]);
+          if (!proceed) {
+            console.log("Cancelled.");
+            return;
+          }
+        } catch {
+          // inquirer not available — proceed
+        }
+      }
+
+      console.log();
+      const spinner = startSpinner("Upgrading vault...");
+
+      const result = await upgradeVault(vaultRoot, {
+        preset: opts.preset,
+        force: opts.force,
+      });
+
+      spinner.stop("Upgrade complete");
+
+      if (result.added.length > 0) {
+        printEventCheck(`${result.added.length} files added`);
+      }
+      if (result.updated.length > 0) {
+        printEventCheck(`${result.updated.length} files updated`);
+      }
+      if (result.errors.length > 0) {
+        for (const e of result.errors) {
+          printWarning(`Failed: ${e.file} (${e.error})`);
+        }
+        printWarning("Re-run upgrade to retry failed files");
+      }
+      printEventCheck(`Manifest updated to v${result.toVersion}`);
+      console.log();
+      printEventDone("Done");
+
+      if (result.errors.length > 0) process.exit(1);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      printWarning(msg);
+      process.exit(1);
+    }
+  });
+
+function getCategoryLabel(filePath: string): string {
+  if (filePath.startsWith(".opencode/skills/")) return "skills";
+  if (filePath.startsWith(".opencode/commands/")) return "commands";
+  if (filePath.startsWith(".obsidian/")) return "obsidian config";
+  if (filePath.startsWith("Knowledge/templates/")) return "templates";
+  return "other";
+}
 
 program.parse();
