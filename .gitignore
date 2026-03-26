@@ -42,3 +42,4 @@ byoao/src/node_modules/
 # Web clipper templates (not yet distributed)
 byoao/src/assets/web-clipper/
 /docs
+AGENTS.md
