@@ -8,12 +8,14 @@ export const byoao_add_glossary_term = tool({
     vaultPath: tool.schema.string().describe("Path to the Obsidian vault"),
     term: tool.schema.string().describe("The domain term to add"),
     definition: tool.schema.string().describe("Brief definition (1-2 sentences)"),
+    domain: tool.schema.string().optional().describe("Knowledge domain (e.g. analytics, infrastructure)"),
   },
   async execute(args) {
     const result = await addGlossaryTerm({
       vaultPath: args.vaultPath,
       term: args.term,
       definition: args.definition,
+      domain: args.domain ?? "",
     });
 
     return `✓ Added glossary term: ${result.termAdded}\n  File: ${result.glossaryPath}`;

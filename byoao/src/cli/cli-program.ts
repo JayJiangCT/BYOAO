@@ -12,30 +12,19 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import os from "node:os";
 import { upgradeVault } from "../vault/upgrade.js";
-import { detectVaultContext } from "../vault/vault-detect.js";
+import { detectVaultContext, detectInitMode } from "../vault/vault-detect.js";
 
 const require = createRequire(import.meta.url);
 const PKG_VERSION: string = (require("../../package.json") as Record<string, unknown>).version as string;
 
-const AUTH_COMMANDS: Record<string, { args: string[] }> = {
-  copilot: { args: ["auth", "login", "-p", "github-copilot"] },
-  gemini: {
-    args: ["auth", "login", "-p", "google", "-m", "OAuth with Google (Gemini CLI)"],
-  },
-};
-
-function getAuthCommand(provider: string): string {
-  const cmd = AUTH_COMMANDS[provider];
-  if (!cmd) return `opencode auth login`;
-  return `opencode ${cmd.args.join(" ")}`;
-}
-
-function runProviderAuth(provider: string): Promise<boolean> {
-  const cmd = AUTH_COMMANDS[provider];
-  if (!cmd) return Promise.resolve(false);
-
+/**
+ * Run `opencode auth login` — launches the interactive provider selector.
+ * The old `-p <provider>` flag was removed in newer opencode versions;
+ * the CLI now presents a built-in picker when called without arguments.
+ */
+function runProviderAuth(): Promise<boolean> {
   return new Promise((resolve) => {
-    const child = spawn("opencode", cmd.args, {
+    const child = spawn("opencode", ["auth", "login"], {
       stdio: "inherit",
       env: { ...process.env },
     });
@@ -159,13 +148,15 @@ program
 program
   .command("init")
   .description(
-    "Create a new Obsidian knowledge base for your team — sets up folders, templates, " +
-    "glossary, and an AI routing index (AGENT.md)"
+    "Create a personal knowledge base — sets up folders, templates, " +
+    "glossary, and an AI routing index (AGENT.md). Works with empty " +
+    "directories or adopts existing folders."
   )
-  .option("--team <name>", "Team name (skips interactive prompt)")
-  .option("--name <name>", "Your name — creates a person note (default: OS username in non-interactive mode)")
-  .option("--path <path>", "Where to create the vault (default: ~/Documents/<team> Workspace)")
-  .option("--preset <name>", "Role preset — determines folder structure and templates (default: pm-tpm)")
+  .option("--kb <name>", "Knowledge base name (skips interactive prompt)")
+  .option("--name <name>", "Your name (default: OS username in non-interactive mode)")
+  .option("--path <path>", "Where to create the vault (default: ~/Documents/<kb name>)")
+  .option("--from <path>", "Adopt an existing folder as a knowledge base")
+  .option("--preset <name>", "Role preset — determines folder structure and templates (default: minimal)")
   .option("--provider <name>", "AI provider: copilot, gemini, or skip (default: skip in non-interactive)")
   .option("--gcp-project <id>", "GCP Project ID (required when --provider=gemini)")
   .action(async (opts) => {
@@ -177,100 +168,136 @@ program
       process.exit(1);
     }
 
-    let teamName = opts.team;
-    let vaultPath = opts.path;
-    let presetName = opts.preset || "pm-tpm";
+    let kbName = opts.kb;
+    let ownerName = opts.name || "";
+    let vaultPath = opts.path || opts.from;
+    let presetName = opts.preset || "minimal";
     let members: { name: string; role: string }[] = [];
 
-    // Interactive TUI when --team is not provided and stdout is TTY
-    if (!teamName && process.stdout.isTTY) {
+    // Interactive TUI when --kb is not provided and stdout is TTY
+    if (!kbName && process.stdout.isTTY) {
       try {
         const { default: inquirer } = await import("inquirer");
 
-        printEvent("Creating a new knowledge base");
-        console.log();
+        // Auto-detect mode from --from or cwd
+        const targetForDetection = opts.from || vaultPath;
+        const initMode = targetForDetection ? detectInitMode(path.resolve(targetForDetection)) : "fresh";
 
-        // 1. Role selection
-        const presets = listPresets();
-        const { selectedPreset } = await inquirer.prompt([{
-          type: "list",
-          name: "selectedPreset",
-          message: "Choose your role",
-          choices: [
-            ...presets.map(p => ({
-              name: `${p.displayName} — ${p.description}`,
-              value: p.name,
-            })),
-            new inquirer.Separator(),
-            { name: "Engineer (coming soon)", disabled: true },
-            { name: "Designer (coming soon)", disabled: true },
-          ],
-        }]);
-        presetName = selectedPreset;
+        if (initMode === "existing" || initMode === "obsidian-vault") {
+          const resolvedFrom = path.resolve(targetForDetection);
+          const fileCount = (await import("fs-extra")).default.readdirSync(resolvedFrom, { recursive: true })
+            .filter((f) => String(f).endsWith(".md")).length;
 
-        // 2. Team name
-        const teamAnswer = await inquirer.prompt([{
-          type: "input",
-          name: "teamName",
-          message: "Team name:",
-          validate: (v: string) => v.trim() ? true : "Team name is required",
-        }]);
-        teamName = teamAnswer.teamName;
+          printEvent("Adopting existing folder as knowledge base");
+          console.log();
 
-        // 3. Your name (creates your own People note)
+          if (initMode === "obsidian-vault") {
+            printEventDetail("Detected existing Obsidian vault — .obsidian/ config will be preserved");
+          }
+
+          const { confirmAdopt } = await inquirer.prompt([{
+            type: "confirm",
+            name: "confirmAdopt",
+            message: `Detected ${fileCount} markdown files. Set up this folder as a knowledge base?`,
+            default: true,
+          }]);
+          if (!confirmAdopt) {
+            console.log("Cancelled.");
+            return;
+          }
+          vaultPath = resolvedFrom;
+        } else {
+          printEvent("Creating a new knowledge base");
+          console.log();
+        }
+
+        // 1. Your name
         const { yourName } = await inquirer.prompt([{
           type: "input",
           name: "yourName",
           message: "Your name:",
           validate: (v: string) => v.trim() ? true : "Your name is required",
         }]);
-        if (yourName.trim()) {
-          members.push({ name: yourName.trim(), role: presetName === "pm-tpm" ? "PM/TPM" : "Team Member" });
+        ownerName = yourName.trim();
+
+        // 2. Knowledge base name
+        const defaultKbName = vaultPath
+          ? path.basename(vaultPath)
+          : `${ownerName}'s KB`;
+        const { enteredKbName } = await inquirer.prompt([{
+          type: "input",
+          name: "enteredKbName",
+          message: "Knowledge base name:",
+          default: defaultKbName,
+          validate: (v: string) => v.trim() ? true : "Name is required",
+        }]);
+        kbName = enteredKbName.trim();
+
+        // 3. Vault path (skip if adopting existing folder)
+        if (!vaultPath) {
+          const defaultPath = path.join(os.homedir(), "Documents", kbName);
+          const { pathChoice } = await inquirer.prompt([{
+            type: "list",
+            name: "pathChoice",
+            message: "Vault location",
+            choices: [
+              { name: `Use default (${defaultPath})`, value: "default" },
+              { name: "Choose custom path", value: "custom" },
+            ],
+          }]);
+          vaultPath = defaultPath;
+          if (pathChoice === "custom") {
+            const { customPath } = await inquirer.prompt([{
+              type: "input",
+              name: "customPath",
+              message: "Custom path:",
+            }]);
+            vaultPath = customPath;
+          }
         }
 
-        // 4. Vault path
-        const defaultPath = path.join(os.homedir(), "Documents", `${teamName} Workspace`);
-        const { pathChoice } = await inquirer.prompt([{
-          type: "list",
-          name: "pathChoice",
-          message: "Vault location",
-          choices: [
-            { name: `Use default (${defaultPath})`, value: "default" },
-            { name: "Choose custom path", value: "custom" },
-          ],
-        }]);
-        vaultPath = defaultPath;
-        if (pathChoice === "custom") {
-          const { customPath } = await inquirer.prompt([{
-            type: "input",
-            name: "customPath",
-            message: "Custom path:",
+        // 4. Optional work preset
+        const presets = listPresets().filter(p => p.name !== "minimal");
+        if (presets.length > 0) {
+          const { selectedPreset } = await inquirer.prompt([{
+            type: "list",
+            name: "selectedPreset",
+            message: "Add a work preset? (optional)",
+            choices: [
+              { name: "No — start with a minimal personal KB", value: "minimal" },
+              ...presets.map(p => ({
+                name: `${p.displayName} — ${p.description}`,
+                value: p.name,
+              })),
+            ],
           }]);
-          vaultPath = customPath;
+          presetName = selectedPreset;
+        }
+
+        // Create owner as a member if a preset with People/ is selected
+        if (ownerName && presetName !== "minimal") {
+          members.push({ name: ownerName, role: presetName === "pm-tpm" ? "PM/TPM" : "Team Member" });
         }
       } catch {
-        // inquirer not available — fall through to require --team
-        if (!teamName) {
-          console.error("Error: --team flag is required in non-interactive mode");
+        // inquirer not available — fall through to require --kb
+        if (!kbName) {
+          console.error("Error: --kb flag is required in non-interactive mode");
           process.exit(1);
         }
       }
     }
 
-    if (!teamName) {
-      console.error("Error: --team flag is required");
+    if (!kbName) {
+      console.error("Error: --kb flag is required");
       process.exit(1);
     }
 
     // In non-interactive mode, use --name flag or fall back to OS username
-    if (members.length === 0) {
-      const userName = opts.name || os.userInfo().username;
-      if (userName) {
-        members.push({ name: userName, role: presetName === "pm-tpm" ? "PM/TPM" : "Team Member" });
-      }
+    if (!ownerName) {
+      ownerName = os.userInfo().username || "";
     }
 
-    vaultPath = vaultPath || path.join(os.homedir(), "Documents", `${teamName} Workspace`);
+    vaultPath = vaultPath || path.join(os.homedir(), "Documents", kbName);
 
     if (opts.provider === "gemini" && !opts.gcpProject) {
       console.error("Error: --gcp-project is required when --provider=gemini");
@@ -278,10 +305,11 @@ program
     }
 
     const providerOpt = opts.provider || "skip";
-    let gcpProjectOpt = opts.gcpProject || "";
+    const gcpProjectOpt = opts.gcpProject || "";
 
     const config = VaultConfigSchema.parse({
-      teamName,
+      kbName,
+      ownerName,
       vaultPath,
       members,
       projects: [],
@@ -290,9 +318,9 @@ program
       gcpProjectId: gcpProjectOpt,
     });
 
-    const spinner = startSpinner(`Creating vault for "${teamName}"`);
+    const spinner = startSpinner(`Creating knowledge base "${kbName}"`);
     const result = await createVault(config);
-    spinner.stop(`Vault created`);
+    spinner.stop(`Knowledge base ready`);
     printEventCheck(`Path: ${result.vaultPath}`);
     printEventCheck(`Files: ${result.filesCreated}`);
     printEventCheck(`Wikilinks: ${result.wikilinksCreated}`);
@@ -342,8 +370,6 @@ program
       }
     }
 
-    // ── AI Provider Display (non-interactive path) ───────────────
-    // This fires when --provider flag was set and createVault ran configureProvider.
     if (result.providerResult) {
       console.log();
       printEventDone(`AI provider configured: ${result.providerResult.provider}`);
@@ -362,94 +388,48 @@ program
       printEventCheck(`Config: ${result.providerResult.configPath}`);
     }
 
-    // ── Interactive Provider Prompt (TTY only, --provider not set) ──
-    // This is a NEW inquirer session AFTER vault creation. No conflict
-    // with the earlier prompts since those are already finished.
-    let providerForAuth: "copilot" | "gemini" | "skip" = config.provider;
-    if (providerForAuth === "skip" && process.stdout.isTTY && !opts.provider) {
+    // ── Auth Prompt (TTY only) ─────────────────────────────────
+    let wantsAuth = config.provider !== "skip";
+    if (!wantsAuth && process.stdout.isTTY && !opts.provider) {
       try {
         const { default: inquirer } = await import("inquirer");
         console.log();
-        const { selectedProvider } = await inquirer.prompt([{
-          type: "list",
-          name: "selectedProvider",
-          message: "Set up AI provider (optional)",
-          choices: [
-            {
-              name: "GitHub Copilot — authenticate via GitHub account",
-              value: "copilot",
-            },
-            {
-              name: "Google Gemini — authenticate via GCP project + Google account",
-              value: "gemini",
-            },
-            {
-              name: "Skip — configure later",
-              value: "skip",
-            },
-          ],
+        const { doAuth } = await inquirer.prompt([{
+          type: "confirm",
+          name: "doAuth",
+          message: "Set up AI provider now? (you can always run 'opencode auth login' later)",
+          default: true,
         }]);
-        providerForAuth = selectedProvider;
-
-        if (providerForAuth === "gemini" && !gcpProjectOpt) {
-          const { projectId } = await inquirer.prompt([{
-            type: "input",
-            name: "projectId",
-            message: "GCP Project ID (ask your engineering lead, e.g. wonder-sandbox):",
-            validate: (v: string) => v.trim() ? true : "Project ID is required for Gemini",
-          }]);
-          gcpProjectOpt = projectId.trim();
-
-          // Write the Gemini config now (vault already created without it)
-          const { configureProvider } = await import("../vault/provider.js");
-          const lateProviderResult = await configureProvider("gemini", gcpProjectOpt);
-          if (lateProviderResult) {
-            printEventDone("AI provider configured: gemini");
-            if (lateProviderResult.pluginAdded) {
-              printEventCheck("Plugin added: opencode-gemini-auth");
-            }
-            printEventCheck(`GCP Project: ${gcpProjectOpt}`);
-          }
-        }
-        // Copilot needs no config — just auth (handled below)
-        if (providerForAuth === "copilot") {
-          printEventDone("AI provider: Copilot (built-in, no config changes needed)");
-        }
+        wantsAuth = doAuth;
       } catch {
         // inquirer not available — skip
       }
     }
 
-    // ── Auth Spawn (both paths) ──────────────────────────────────
-    // Uses providerForAuth which is set by either:
-    //   - Non-interactive: providerOpt from --provider flag
-    //   - Interactive: selectedProvider from the prompt above
-    if (providerForAuth !== "skip" && process.stdout.isTTY) {
+    if (wantsAuth && process.stdout.isTTY) {
       console.log();
-      printEvent("Authenticating with AI provider...");
-      const authSuccess = await runProviderAuth(providerForAuth);
+      printEvent("Launching AI provider authentication...");
+      const authSuccess = await runProviderAuth();
       if (authSuccess) {
         printEventDone("Authentication complete");
       } else {
         printWarning(
           "Authentication was not completed. Your vault is ready — run this later:\n" +
-          getAuthCommand(providerForAuth)
+          "opencode auth login"
         );
       }
     }
 
+    // ── Onboarding sequence ──────────────────────────────────
+    console.log();
+    printEventDone(`Knowledge base ready at ${result.vaultPath}`);
     console.log();
     printEventDetail("Next steps:");
     printEventDetail("  1. Open Obsidian → Manage vaults → Open folder as vault");
     printEventDetail(`     ${result.vaultPath}`);
-    printEventDetail('  2. Read "Start Here.md" — it explains the vault structure');
-    printEventDetail("  3. Start adding notes — meeting notes, project docs, daily notes");
-    if (providerForAuth !== "skip") {
-      printEventDetail(`  4. When ready for AI: cd "${result.vaultPath}" && opencode`);
-    } else {
-      printEventDetail(`  4. Set up AI: opencode auth login`);
-      printEventDetail(`  5. When ready: cd "${result.vaultPath}" && opencode`);
-    }
+    printEventDetail("  2. Enable Obsidian CLI: Settings → General → Advanced → Command-line interface");
+    printEventDetail('  3. Read "Start Here.md" for a quick orientation');
+    printEventDetail("  4. Open the Agent Client panel and run /weave to connect your notes");
   });
 
 // ── byoao status ─────────────────────────────────────────────────

@@ -4,37 +4,39 @@ import { VaultConfigSchema, PresetConfigSchema } from "../plugin-config.js";
 describe("VaultConfigSchema", () => {
   it("validates minimal config with defaults", () => {
     const result = VaultConfigSchema.parse({
-      teamName: "MyTeam",
+      kbName: "My KB",
       vaultPath: "/tmp/vault",
     });
-    expect(result.teamName).toBe("MyTeam");
+    expect(result.kbName).toBe("My KB");
+    expect(result.ownerName).toBe("");
     expect(result.members).toEqual([]);
     expect(result.projects).toEqual([]);
     expect(result.glossaryEntries).toEqual([]);
-    expect(result.preset).toBe("pm-tpm");
+    expect(result.preset).toBe("minimal");
   });
 
-  it("rejects missing teamName", () => {
+  it("rejects missing kbName", () => {
     expect(() =>
       VaultConfigSchema.parse({ vaultPath: "/tmp" })
     ).toThrow();
   });
 
-  it("rejects empty teamName", () => {
+  it("rejects empty kbName", () => {
     expect(() =>
-      VaultConfigSchema.parse({ teamName: "", vaultPath: "/tmp" })
+      VaultConfigSchema.parse({ kbName: "", vaultPath: "/tmp" })
     ).toThrow();
   });
 
   it("rejects missing vaultPath", () => {
     expect(() =>
-      VaultConfigSchema.parse({ teamName: "Team" })
+      VaultConfigSchema.parse({ kbName: "KB" })
     ).toThrow();
   });
 
   it("validates full config", () => {
     const result = VaultConfigSchema.parse({
-      teamName: "Alpha",
+      kbName: "Alpha KB",
+      ownerName: "Alice",
       vaultPath: "/v",
       members: [{ name: "A", role: "Eng" }],
       projects: [{ name: "P" }],
@@ -45,6 +47,7 @@ describe("VaultConfigSchema", () => {
     });
     expect(result.members).toHaveLength(1);
     expect(result.projects[0].description).toBe("");
+    expect(result.ownerName).toBe("Alice");
   });
 });
 

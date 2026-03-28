@@ -72,8 +72,7 @@ type: reference
     expect(updated).toContain("PM");
   });
 
-  it("updates AGENT.md and CLAUDE.md wikilinks", async () => {
-    // Create AGENT.md and CLAUDE.md with placeholder
+  it("updates AGENT.md wikilinks", async () => {
     const agentContent = `# Agent
 
 ## Team
@@ -81,7 +80,6 @@ type: reference
 (No members added yet — create notes in People/)
 `;
     await fs.writeFile(path.join(tmpDir, "AGENT.md"), agentContent);
-    await fs.writeFile(path.join(tmpDir, "CLAUDE.md"), agentContent);
 
     const result = await addMember({
       vaultPath: tmpDir,
@@ -90,7 +88,7 @@ type: reference
       team: "Platform",
     });
 
-    expect(result.wikilinksAdded).toBeGreaterThanOrEqual(2);
+    expect(result.wikilinksAdded).toBeGreaterThanOrEqual(1);
 
     const agent = await fs.readFile(path.join(tmpDir, "AGENT.md"), "utf-8");
     expect(agent).toContain("[[Carol]]");

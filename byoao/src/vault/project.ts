@@ -62,7 +62,7 @@ ${description}
   }
 
   // 3. Update AGENT.md wikilinks
-  for (const agentFile of ["AGENT.md", "CLAUDE.md"]) {
+  for (const agentFile of ["AGENT.md"]) {
     const agentPath = path.join(vaultPath, agentFile);
     if (await fs.pathExists(agentPath)) {
       let agentContent = await fs.readFile(agentPath, "utf-8");

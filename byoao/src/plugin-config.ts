@@ -13,17 +13,19 @@ export const ProjectSchema = z.object({
 export const GlossaryEntrySchema = z.object({
   term: z.string(),
   definition: z.string(),
+  domain: z.string().default(""),
 });
 
 export const VaultConfigSchema = z.object({
-  teamName: z.string().min(1),
+  kbName: z.string().min(1),
+  ownerName: z.string().default(""),
   vaultPath: z.string(),
   members: z.array(MemberSchema).default([]),
   projects: z.array(ProjectSchema).default([]),
   glossaryEntries: z.array(GlossaryEntrySchema).default([]),
   jiraHost: z.string().default(""),
   jiraProject: z.string().default(""),
-  preset: z.string().default("pm-tpm"),
+  preset: z.string().default("minimal"),
   provider: z.enum(["copilot", "gemini", "skip"]).default("skip"),
   gcpProjectId: z.string().default(""),
 });
@@ -51,6 +53,7 @@ export const AddGlossaryTermSchema = z.object({
   vaultPath: z.string(),
   term: z.string(),
   definition: z.string(),
+  domain: z.string().default(""),
 });
 
 export const VaultStatusSchema = z.object({

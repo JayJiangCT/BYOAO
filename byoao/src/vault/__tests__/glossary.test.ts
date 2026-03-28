@@ -16,28 +16,24 @@ afterEach(async () => {
 });
 
 const GLOSSARY_TEMPLATE = `---
-title: "Test Glossary"
+title: Glossary
 type: reference
-tags: [glossary]
+status: active
+tags: [glossary, reference]
 ---
 
-# Test Glossary
+# Glossary
 
-## Core Terms
+Domain terms and key concepts in this knowledge base.
+Maintained by /weave — run it to discover and add new terms.
 
-| Term | Definition |
-|------|-----------|
-| **API** | Application programming interface |
-
----
-
-## How to Add a New Term
-
-Just add it.
+| Term | Definition | Domain |
+|------|-----------|--------|
+| **API** | Application programming interface | engineering |
 `;
 
 describe("addGlossaryTerm", () => {
-  it("appends term to existing Core Terms table", async () => {
+  it("appends term to existing glossary table", async () => {
     await fs.writeFile(
       path.join(tmpDir, "Knowledge/Glossary.md"),
       GLOSSARY_TEMPLATE
@@ -47,6 +43,7 @@ describe("addGlossaryTerm", () => {
       vaultPath: tmpDir,
       term: "SDK",
       definition: "Software development kit",
+      domain: "engineering",
     });
 
     expect(result.termAdded).toBe("SDK");
@@ -57,8 +54,31 @@ describe("addGlossaryTerm", () => {
     );
     expect(content).toContain("**SDK**");
     expect(content).toContain("Software development kit");
+    expect(content).toContain("| engineering |");
     // Original term still present
     expect(content).toContain("**API**");
+  });
+
+  it("appends term with empty domain when domain not provided", async () => {
+    await fs.writeFile(
+      path.join(tmpDir, "Knowledge/Glossary.md"),
+      GLOSSARY_TEMPLATE
+    );
+
+    const result = await addGlossaryTerm({
+      vaultPath: tmpDir,
+      term: "TDD",
+      definition: "Test-driven development",
+      domain: "",
+    });
+
+    expect(result.termAdded).toBe("TDD");
+
+    const content = await fs.readFile(
+      path.join(tmpDir, "Knowledge/Glossary.md"),
+      "utf-8"
+    );
+    expect(content).toContain("**TDD**");
   });
 
   it("throws when Glossary.md does not exist", async () => {
@@ -67,6 +87,7 @@ describe("addGlossaryTerm", () => {
         vaultPath: tmpDir,
         term: "Test",
         definition: "A test",
+        domain: "",
       })
     ).rejects.toThrow("Glossary not found");
   });

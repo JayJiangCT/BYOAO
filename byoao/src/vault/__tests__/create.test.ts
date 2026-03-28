@@ -2,7 +2,16 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import fs from "fs-extra";
 import path from "node:path";
 import os from "node:os";
-import { createVault } from "../create.js";
+import {
+  createVault,
+  createMinimalCore,
+  applyPresetOverlay,
+  createPeopleNotes,
+  createProjectNotes,
+  createTeamIndex,
+  createAgentMd,
+} from "../create.js";
+import { detectInitMode } from "../vault-detect.js";
 import type { VaultConfig } from "../../plugin-config.js";
 
 // Mock mcp.ts so we don't touch real OpenCode config
@@ -30,7 +39,8 @@ afterEach(async () => {
 
 function makeConfig(overrides: Partial<VaultConfig> = {}): VaultConfig {
   return {
-    teamName: "TestTeam",
+    kbName: "TestKB",
+    ownerName: "",
     vaultPath: path.join(tmpDir, "vault"),
     members: [],
     projects: [],
@@ -48,26 +58,23 @@ describe("createVault", () => {
   it("creates expected directory structure", async () => {
     const result = await createVault(makeConfig());
 
-    expect(result.directories).toContain("Inbox");
     expect(result.directories).toContain("Knowledge");
-    expect(result.directories).toContain("People");
-    expect(result.directories).toContain("Projects");
-    expect(result.directories).toContain("Sprints");
+    expect(result.directories).toContain("Daily");
 
     for (const dir of result.directories) {
       expect(await fs.pathExists(path.join(result.vaultPath, dir))).toBe(true);
     }
   });
 
-  it("generates AGENT.md and CLAUDE.md", async () => {
+  it("generates AGENT.md (no CLAUDE.md)", async () => {
     const result = await createVault(makeConfig());
     const vp = result.vaultPath;
 
     expect(await fs.pathExists(path.join(vp, "AGENT.md"))).toBe(true);
-    expect(await fs.pathExists(path.join(vp, "CLAUDE.md"))).toBe(true);
+    expect(await fs.pathExists(path.join(vp, "CLAUDE.md"))).toBe(false);
 
     const agentContent = await fs.readFile(path.join(vp, "AGENT.md"), "utf-8");
-    expect(agentContent).toContain("TestTeam");
+    expect(agentContent).toContain("TestKB");
   });
 
   it("generates Start Here.md and Glossary.md", async () => {
@@ -83,7 +90,7 @@ describe("createVault", () => {
       path.join(vp, "Start Here.md"),
       "utf-8"
     );
-    expect(startHere).toContain("TestTeam");
+    expect(startHere).toContain("TestKB");
   });
 
   it("creates people notes from members config", async () => {
@@ -149,62 +156,16 @@ describe("createVault", () => {
     });
     const result = await createVault(config);
     const teamIndex = await fs.readFile(
-      path.join(result.vaultPath, "People/TestTeam Team.md"),
+      path.join(result.vaultPath, "People/TestKB Team.md"),
       "utf-8"
     );
     expect(teamIndex).toContain("[[Alice]]");
     expect(teamIndex).toContain("[[Bob]]");
   });
 
-  it("includes Document Conventions section in AGENT.md", async () => {
-    const result = await createVault(makeConfig());
-    const agentContent = await fs.readFile(
-      path.join(result.vaultPath, "AGENT.md"),
-      "utf-8"
-    );
-    expect(agentContent).toContain("## Document Conventions");
-    expect(agentContent).toContain("### Required Frontmatter");
-    expect(agentContent).toContain("### Note Types");
-    expect(agentContent).toContain("### File Creation Rules");
-    expect(agentContent).toContain("### Wikilink Rules");
-  });
-
-  it("includes JIRA naming convention when JIRA is configured", async () => {
-    const config = makeConfig({
-      jiraHost: "wonder.atlassian.net",
-      jiraProject: "DELI",
-    });
-    const result = await createVault(config);
-    const agentContent = await fs.readFile(
-      path.join(result.vaultPath, "AGENT.md"),
-      "utf-8"
-    );
-    expect(agentContent).toContain("DELI-XXXX-Description.md");
-  });
-
-  it("copies byoao-conventions skill to .opencode/skills/", async () => {
-    const result = await createVault(makeConfig());
-    const skillPath = path.join(
-      result.vaultPath,
-      ".opencode/skills/byoao-conventions.md"
-    );
-    expect(await fs.pathExists(skillPath)).toBe(true);
-    const content = await fs.readFile(skillPath, "utf-8");
-    expect(content).toContain("BYOAO Document Conventions");
-  });
-
-  it("does not copy init-knowledge-base command", async () => {
-    const result = await createVault(makeConfig());
-    const cmdPath = path.join(
-      result.vaultPath,
-      ".opencode/commands/init-knowledge-base.md"
-    );
-    expect(await fs.pathExists(cmdPath)).toBe(false);
-  });
-
   it("includes glossary entries when provided", async () => {
     const config = makeConfig({
-      glossaryEntries: [{ term: "API", definition: "Application interface" }],
+      glossaryEntries: [{ term: "API", definition: "Application interface", domain: "engineering" }],
     });
     const result = await createVault(config);
     const glossary = await fs.readFile(
@@ -228,5 +189,112 @@ describe("createVault", () => {
     expect(manifest.infrastructure.skills.length).toBeGreaterThan(0);
     expect(manifest.infrastructure.commands.length).toBeGreaterThan(0);
     expect(manifest.infrastructure.templates.length).toBeGreaterThan(0);
+  });
+
+  it("minimal preset creates only minimal directories", async () => {
+    const config = makeConfig({ preset: "minimal" });
+    const result = await createVault(config);
+
+    expect(result.directories).toContain("Daily");
+    expect(result.directories).toContain("Knowledge");
+    expect(result.directories).toContain("Knowledge/templates");
+    // Minimal preset should NOT create these
+    expect(result.directories).not.toContain("Inbox");
+    expect(result.directories).not.toContain("Systems");
+    expect(result.directories).not.toContain("Archive");
+  });
+
+  it("minimal preset without members skips team index", async () => {
+    const config = makeConfig({ preset: "minimal", members: [] });
+    const result = await createVault(config);
+    const vp = result.vaultPath;
+
+    expect(await fs.pathExists(path.join(vp, "People"))).toBe(false);
+    expect(await fs.pathExists(path.join(vp, "People/TestKB Team.md"))).toBe(false);
+  });
+
+  it("minimal preset with members creates People/ and team index", async () => {
+    const config = makeConfig({
+      preset: "minimal",
+      members: [{ name: "Jay", role: "Owner" }],
+    });
+    const result = await createVault(config);
+    const vp = result.vaultPath;
+
+    expect(await fs.pathExists(path.join(vp, "People/Jay.md"))).toBe(true);
+    expect(await fs.pathExists(path.join(vp, "People/TestKB Team.md"))).toBe(true);
+  });
+
+  it("pm-tpm preset includes Projects and Sprints directories", async () => {
+    const config = makeConfig({ preset: "pm-tpm" });
+    const result = await createVault(config);
+
+    expect(result.directories).toContain("Projects");
+    expect(result.directories).toContain("Sprints");
+  });
+
+  it("preserves existing .obsidian/ when initializing in an Obsidian vault", async () => {
+    const vp = path.join(tmpDir, "vault");
+    // Pre-create an existing Obsidian vault with custom config
+    await fs.ensureDir(path.join(vp, ".obsidian"));
+    await fs.writeFile(path.join(vp, ".obsidian", "custom-theme.json"), '{"custom": true}');
+    await fs.writeFile(path.join(vp, "existing-note.md"), "# My Note\n\nHello");
+
+    const config = makeConfig({ preset: "minimal" });
+    const result = await createVault(config);
+
+    // .obsidian/ should be untouched — custom file preserved, no BYOAO configs injected
+    const customTheme = await fs.readFile(path.join(vp, ".obsidian", "custom-theme.json"), "utf-8");
+    expect(customTheme).toContain('"custom": true');
+
+    // BYOAO files should still be created
+    expect(await fs.pathExists(path.join(vp, "AGENT.md"))).toBe(true);
+    expect(await fs.pathExists(path.join(vp, "Knowledge/Glossary.md"))).toBe(true);
+
+    // Existing note should be untouched
+    const existingNote = await fs.readFile(path.join(vp, "existing-note.md"), "utf-8");
+    expect(existingNote).toContain("My Note");
+  });
+
+  it("does not overwrite existing AGENT.md or Start Here.md", async () => {
+    const vp = path.join(tmpDir, "vault");
+    await fs.ensureDir(vp);
+    await fs.writeFile(path.join(vp, "AGENT.md"), "# Custom Agent Config");
+    await fs.writeFile(path.join(vp, "Start Here.md"), "# My Custom Start");
+
+    const config = makeConfig({ preset: "minimal" });
+    await createVault(config);
+
+    const agentContent = await fs.readFile(path.join(vp, "AGENT.md"), "utf-8");
+    expect(agentContent).toBe("# Custom Agent Config");
+
+    const startHere = await fs.readFile(path.join(vp, "Start Here.md"), "utf-8");
+    expect(startHere).toBe("# My Custom Start");
+  });
+});
+
+describe("detectInitMode", () => {
+
+  it("returns 'fresh' for non-existent path", () => {
+    expect(detectInitMode(path.join(tmpDir, "nonexistent"))).toBe("fresh");
+  });
+
+  it("returns 'fresh' for empty directory", async () => {
+    const emptyDir = path.join(tmpDir, "empty");
+    await fs.ensureDir(emptyDir);
+    expect(detectInitMode(emptyDir)).toBe("fresh");
+  });
+
+  it("returns 'existing' when .md files are present", async () => {
+    const dir = path.join(tmpDir, "notes");
+    await fs.ensureDir(dir);
+    await fs.writeFile(path.join(dir, "note.md"), "# Hello");
+    expect(detectInitMode(dir)).toBe("existing");
+  });
+
+  it("returns 'obsidian-vault' when .obsidian/ exists", async () => {
+    const dir = path.join(tmpDir, "vault");
+    await fs.ensureDir(path.join(dir, ".obsidian"));
+    expect(detectInitMode(dir)).toBe("obsidian-vault");
   });
 });

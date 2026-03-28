@@ -26,7 +26,42 @@ export function readAgentMdFromCwd(): string | null {
 }
 
 /**
- * Hook: inject AGENT.md and vault retrieval context into system prompt.
+ * Lightweight navigation strategy injected into the system prompt.
+ * CLI command reference is handled by obsidian-skills (kepano/obsidian-skills).
+ * This hook only teaches the agent WHY and WHEN to use specific patterns.
+ */
+function buildNavigationStrategy(vaultPath: string): string {
+  return [
+    "\n---",
+    "## BYOAO Navigation Strategy",
+    "",
+    `You are in a BYOAO knowledge base at: ${vaultPath}`,
+    "Use the Obsidian CLI (see /obsidian-cli skill) for all vault queries.",
+    "Never use grep/cat/ls for vault content — Obsidian CLI is graph-aware.",
+    "",
+    "### Navigation Pattern (Progressive Disclosure)",
+    "",
+    "1. Read [[Glossary]] first — the entity dictionary for this knowledge base.",
+    "   Every term is a key concept the user cares about.",
+    "2. Use `obsidian properties sort=count counts` to understand vault structure",
+    "3. Search by `domain` property or tags to find relevant notes",
+    "4. Read the `references` frontmatter of found notes for deeper context",
+    "5. Use `obsidian backlinks` to discover related notes the user didn't mention",
+    "6. Chain: Glossary → domain notes → references → backlinks → details",
+    "",
+    "### Key Frontmatter Fields",
+    "",
+    "| Field        | Purpose                                          |",
+    "|-------------|--------------------------------------------------|",
+    "| `domain`    | Knowledge area — use to find related notes       |",
+    "| `references`| Related notes — follow for deeper context        |",
+    "| `type`      | Note kind (meeting, idea, reference, daily, etc) |",
+    "| `tags`      | Flexible categorization                          |",
+  ].join("\n");
+}
+
+/**
+ * Hook: inject AGENT.md and vault navigation strategy into system prompt.
  * Mutating pattern — modifies output.system in place.
  */
 export async function systemTransformHook(
@@ -41,22 +76,9 @@ export async function systemTransformHook(
     );
   }
 
-  // 2. Inject vault retrieval tool guidance
+  // 2. Inject navigation strategy (lightweight — CLI syntax is obsidian-skills' job)
   const vaultPath = detectVaultContext(process.cwd());
   if (vaultPath) {
-    output.system.push(
-      [
-        "\n---",
-        "## BYOAO Vault Retrieval Context",
-        "",
-        `You are in a BYOAO Obsidian vault at: ${vaultPath}`,
-        "For vault knowledge queries (notes, tags, links, properties, graph health), prefer the BYOAO vault tools:",
-        "- byoao_search_vault — text search across vault notes",
-        "- byoao_note_read — read a specific note by name",
-        "- byoao_graph_health — find orphans, unresolved links, dead ends",
-        "",
-        "Use grep/rg only for source code searches or when BYOAO tools return runtime_unavailable.",
-      ].join("\n")
-    );
+    output.system.push(buildNavigationStrategy(vaultPath));
   }
 }
