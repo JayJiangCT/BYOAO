@@ -248,13 +248,6 @@ byoao/
 
 ---
 
-## Documentation
-
-- **[Trial Guide](docs/trial-guide.md)** — 15-minute hands-on walkthrough
-- **[v0.6 Plan](docs/v0.6-plan.md)** — Design document for the personal knowledge OS pivot
-
----
-
 ## Roadmap
 
 - [x] Personal KB with minimal preset (v0.6)
