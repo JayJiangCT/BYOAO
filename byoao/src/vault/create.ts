@@ -6,7 +6,8 @@ import { configureMcp, type ConfigureMcpResult } from "./mcp.js";
 import { configureObsidianPlugins, type ConfigurePluginsResult } from "./obsidian-plugins.js";
 import { configureProvider, type ConfigureProviderResult } from "./provider.js";
 import { writeManifest, type InstalledFiles } from "./manifest.js";
-import type { VaultConfig } from "../plugin-config.js";
+import type { VaultConfig, PresetConfig, Member, Project, GlossaryEntry } from "../plugin-config.js";
+import { detectInitMode } from "./vault-detect.js";
 
 function countWikilinks(content: string): number {
   const stripped = content
@@ -16,16 +17,11 @@ function countWikilinks(content: string): number {
   return matches ? matches.length : 0;
 }
 
-// Common directories shared by all presets
-const COMMON_DIRECTORIES = [
-  "Inbox",
-  "Knowledge",
-  "Knowledge/concepts",
-  "Knowledge/templates",
-  "People",
-  "Systems",
-  "Archive",
+// Minimal directories: the core of every knowledge base
+const MINIMAL_DIRECTORIES = [
   "Daily",
+  "Knowledge",
+  "Knowledge/templates",
 ];
 
 export interface CreateVaultResult {
@@ -38,114 +34,135 @@ export interface CreateVaultResult {
   providerResult: ConfigureProviderResult | null;
 }
 
-export async function createVault(config: VaultConfig): Promise<CreateVaultResult> {
-  const { teamName, vaultPath, members, projects, glossaryEntries, jiraHost, jiraProject, preset } = config;
-  const presetName = preset ?? "pm-tpm"; // Fallback if config wasn't parsed through Zod
-  const { config: presetConfig, presetsDir } = loadPreset(presetName);
-  const commonDir = getCommonDir();
-  const presetDir = path.join(presetsDir, presetName);
-  let filesCreated = 0;
-  const installedFiles: InstalledFiles = {
-    skills: [],
-    commands: [],
-    obsidianConfig: [],
-    templates: [],
+/**
+ * Mutable context passed through composable creation functions.
+ */
+interface CreateContext {
+  vaultPath: string;
+  kbName: string;
+  commonDir: string;
+  /** When true, .obsidian/ already exists — skip overwriting it */
+  preserveObsidian: boolean;
+  filesCreated: number;
+  directories: string[];
+  installedFiles: InstalledFiles;
+}
+
+function makeContext(vaultPath: string, kbName: string, preserveObsidian = false): CreateContext {
+  return {
+    vaultPath,
+    kbName,
+    commonDir: getCommonDir(),
+    preserveObsidian,
+    filesCreated: 0,
+    directories: [],
+    installedFiles: {
+      skills: [],
+      commands: [],
+      obsidianConfig: [],
+      templates: [],
+    },
   };
+}
 
-  // Merge directories: common + preset-specific
-  const allDirectories = [...COMMON_DIRECTORIES, ...presetConfig.directories];
+// ---------------------------------------------------------------------------
+// Composable creation functions
+// ---------------------------------------------------------------------------
 
-  // 1. Create directories
-  for (const dir of allDirectories) {
-    await fs.ensureDir(path.join(vaultPath, dir));
+/**
+ * Create the minimal core: directories, .obsidian/ config, common templates,
+ * Glossary.md, Start Here.md.
+ */
+export async function createMinimalCore(
+  ctx: CreateContext,
+  glossaryEntries: GlossaryEntry[] = [],
+): Promise<void> {
+  // 1. Create minimal directories
+  for (const dir of MINIMAL_DIRECTORIES) {
+    await fs.ensureDir(path.join(ctx.vaultPath, dir));
   }
+  ctx.directories.push(...MINIMAL_DIRECTORIES);
 
-  // 2. Copy .obsidian config from common
-  await fs.ensureDir(path.join(vaultPath, ".obsidian"));
-  const obsidianSrc = path.join(commonDir, "obsidian");
-  if (await fs.pathExists(obsidianSrc)) {
-    await fs.copy(obsidianSrc, path.join(vaultPath, ".obsidian"), { overwrite: false });
-    filesCreated += (await fs.readdir(obsidianSrc)).length;
-    const obsidianFiles = await fs.readdir(obsidianSrc);
-    for (const f of obsidianFiles) {
-      installedFiles.obsidianConfig.push(`.obsidian/${f}`);
+  // 2. Copy .obsidian config from common (skip if preserving existing vault config)
+  if (!ctx.preserveObsidian) {
+    await fs.ensureDir(path.join(ctx.vaultPath, ".obsidian"));
+    const obsidianSrc = path.join(ctx.commonDir, "obsidian");
+    if (await fs.pathExists(obsidianSrc)) {
+      await fs.copy(obsidianSrc, path.join(ctx.vaultPath, ".obsidian"), { overwrite: false });
+      const obsidianFiles = await fs.readdir(obsidianSrc);
+      ctx.filesCreated += obsidianFiles.length;
+      for (const f of obsidianFiles) {
+        ctx.installedFiles.obsidianConfig.push(`.obsidian/${f}`);
+      }
     }
   }
 
-  // 3. Copy note templates: common first, then preset overlay
-  const templateDest = path.join(vaultPath, "Knowledge/templates");
-  const allTemplateNames: string[] = [];
-
-  // Common templates
-  const commonTemplatesDir = path.join(commonDir, "templates");
+  // 3. Copy common templates
+  const templateDest = path.join(ctx.vaultPath, "Knowledge/templates");
+  const commonTemplatesDir = path.join(ctx.commonDir, "templates");
   if (await fs.pathExists(commonTemplatesDir)) {
     const files = await fs.readdir(commonTemplatesDir);
     for (const file of files) {
       await fs.copy(
         path.join(commonTemplatesDir, file),
         path.join(templateDest, file),
-        { overwrite: false }
+        { overwrite: false },
       );
-      allTemplateNames.push(file.replace(/\.md$/, ""));
-      filesCreated++;
-      installedFiles.templates.push(`Knowledge/templates/${file}`);
-    }
-  }
-
-  // Preset templates
-  const presetTemplatesDir = path.join(presetDir, "templates");
-  if (await fs.pathExists(presetTemplatesDir)) {
-    const files = await fs.readdir(presetTemplatesDir);
-    for (const file of files) {
-      await fs.copy(
-        path.join(presetTemplatesDir, file),
-        path.join(templateDest, file),
-        { overwrite: false }
-      );
-      allTemplateNames.push(file.replace(/\.md$/, ""));
-      filesCreated++;
-      installedFiles.templates.push(`Knowledge/templates/${file}`);
+      ctx.filesCreated++;
+      ctx.installedFiles.templates.push(`Knowledge/templates/${file}`);
     }
   }
 
   // 4. Generate Glossary.md
   const glossaryTemplate = await fs.readFile(
-    path.join(commonDir, "Glossary.md.hbs"),
-    "utf-8"
+    path.join(ctx.commonDir, "Glossary.md.hbs"),
+    "utf-8",
   );
   let glossaryRows = "";
   if (glossaryEntries.length > 0) {
     glossaryRows = glossaryEntries
-      .map((e) => `| **${e.term}** | ${e.definition} |`)
+      .map((e) => `| **${e.term}** | ${e.definition} | ${e.domain} |`)
       .join("\n");
   }
   const glossaryContent = renderTemplate(glossaryTemplate, {
-    TEAM_NAME: teamName,
+    KB_NAME: ctx.kbName,
     date: today(),
     GLOSSARY_ENTRIES: glossaryRows,
   });
-  const glossaryPath = path.join(vaultPath, "Knowledge/Glossary.md");
+  const glossaryPath = path.join(ctx.vaultPath, "Knowledge/Glossary.md");
   if (!(await fs.pathExists(glossaryPath))) {
     await fs.writeFile(glossaryPath, glossaryContent);
-    filesCreated++;
+    ctx.filesCreated++;
   }
 
   // 5. Generate Start Here.md
   const startHereTemplate = await fs.readFile(
-    path.join(commonDir, "Start Here.md.hbs"),
-    "utf-8"
+    path.join(ctx.commonDir, "Start Here.md.hbs"),
+    "utf-8",
   );
-  const startHereContent = renderTemplate(startHereTemplate, { TEAM_NAME: teamName });
-  const startHerePath = path.join(vaultPath, "Start Here.md");
+  const startHereContent = renderTemplate(startHereTemplate, { KB_NAME: ctx.kbName });
+  const startHerePath = path.join(ctx.vaultPath, "Start Here.md");
   if (!(await fs.pathExists(startHerePath))) {
     await fs.writeFile(startHerePath, startHereContent);
-    filesCreated++;
+    ctx.filesCreated++;
   }
+}
 
-  // 6. Generate AGENT.md (two-layer: common skeleton + preset section)
+/**
+ * Generate AGENT.md from the common skeleton + preset section.
+ */
+export async function createAgentMd(
+  ctx: CreateContext,
+  ownerName: string,
+  presetConfig: PresetConfig,
+  presetDir: string,
+  projects: Project[],
+  jiraHost: string,
+  jiraProject: string,
+): Promise<void> {
   const agentSkeletonTemplate = await fs.readFile(
-    path.join(commonDir, "AGENT.md.hbs"),
-    "utf-8"
+    path.join(ctx.commonDir, "AGENT.md.hbs"),
+    "utf-8",
   );
 
   // Render preset agent-section
@@ -159,7 +176,6 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
       projectsList = projects
         .map((p) => `- [[${p.name}]] — ${p.description}`)
         .join("\n");
-
     } else {
       projectsList = "(No projects added yet — create notes in Projects/)";
     }
@@ -172,45 +188,87 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
     });
   }
 
-  // Build team table
-  let teamTable: string;
-  if (members.length > 0) {
-    const rows = members.map((m) => `| [[${m.name}]] | ${m.role} |`).join("\n");
-    teamTable = `| Name | Role |\n|------|------|\n${rows}`;
-
-  } else {
-    teamTable = "(No members added yet — create notes in People/)";
-  }
-
-  // Build template list string
-  const templateList = allTemplateNames.map((t) => `- ${t}`).join("\n");
-
   const agentContent = renderTemplate(agentSkeletonTemplate, {
-    TEAM_NAME: teamName,
-    AGENT_DESCRIPTION: presetConfig.agentDescription,
+    KB_NAME: ctx.kbName,
+    OWNER_NAME: ownerName,
     ROLE_SECTION: roleSection,
-    TEAM_TABLE: teamTable,
-    TEMPLATE_LIST: templateList,
-    JIRA_PROJECT: jiraProject,
-    HAS_JIRA: !!(jiraHost && jiraProject),
   });
-  const agentMdPath = path.join(vaultPath, "AGENT.md");
-  const claudeMdPath = path.join(vaultPath, "CLAUDE.md");
+
+  const agentMdPath = path.join(ctx.vaultPath, "AGENT.md");
   if (!(await fs.pathExists(agentMdPath))) {
     await fs.writeFile(agentMdPath, agentContent);
-    filesCreated++;
+    ctx.filesCreated++;
   }
-  if (!(await fs.pathExists(claudeMdPath))) {
-    await fs.writeFile(claudeMdPath, agentContent);
-    filesCreated++;
+}
+
+/**
+ * Apply preset overlay: create preset-specific directories and copy preset templates.
+ * Returns the list of all template names (common + preset) for AGENT.md generation.
+ */
+export async function applyPresetOverlay(
+  ctx: CreateContext,
+  presetConfig: PresetConfig,
+  presetDir: string,
+): Promise<string[]> {
+  // Create preset-specific directories
+  for (const dir of presetConfig.directories) {
+    await fs.ensureDir(path.join(ctx.vaultPath, dir));
+  }
+  ctx.directories.push(...presetConfig.directories);
+
+  // Collect common template names already installed
+  const templateDest = path.join(ctx.vaultPath, "Knowledge/templates");
+  const allTemplateNames: string[] = [];
+
+  // Read existing common templates (already copied by createMinimalCore)
+  if (await fs.pathExists(templateDest)) {
+    const existing = await fs.readdir(templateDest);
+    for (const file of existing) {
+      if (file.endsWith(".md")) {
+        allTemplateNames.push(file.replace(/\.md$/, ""));
+      }
+    }
   }
 
-  // 7. Create people notes
+  // Copy preset templates
+  const presetTemplatesDir = path.join(presetDir, "templates");
+  if (await fs.pathExists(presetTemplatesDir)) {
+    const files = await fs.readdir(presetTemplatesDir);
+    for (const file of files) {
+      await fs.copy(
+        path.join(presetTemplatesDir, file),
+        path.join(templateDest, file),
+        { overwrite: false },
+      );
+      allTemplateNames.push(file.replace(/\.md$/, ""));
+      ctx.filesCreated++;
+      ctx.installedFiles.templates.push(`Knowledge/templates/${file}`);
+    }
+  }
+
+  return allTemplateNames;
+}
+
+/**
+ * Create people notes from members config.
+ * Ensures People/ directory exists.
+ */
+export async function createPeopleNotes(
+  ctx: CreateContext,
+  members: Member[],
+): Promise<void> {
+  if (members.length === 0) return;
+
+  await fs.ensureDir(path.join(ctx.vaultPath, "People"));
+  if (!ctx.directories.includes("People")) {
+    ctx.directories.push("People");
+  }
+
   for (const member of members) {
     const content = `---
 title: "${member.name}"
 type: person
-team: "${teamName}"
+team: "${ctx.kbName}"
 role: "${member.role}"
 status: active
 tags: [person]
@@ -219,23 +277,38 @@ tags: [person]
 # ${member.name}
 
 **Role**: ${member.role}
-**Team**: ${teamName}
+**Team**: ${ctx.kbName}
 `;
-    const memberPath = path.join(vaultPath, `People/${member.name}.md`);
+    const memberPath = path.join(ctx.vaultPath, `People/${member.name}.md`);
     if (!(await fs.pathExists(memberPath))) {
       await fs.writeFile(memberPath, content);
-      filesCreated++;
+      ctx.filesCreated++;
     }
   }
+}
 
-  // 8. Create project notes
+/**
+ * Create project notes from projects config.
+ * Ensures Projects/ directory exists.
+ */
+export async function createProjectNotes(
+  ctx: CreateContext,
+  projects: Project[],
+): Promise<void> {
+  if (projects.length === 0) return;
+
+  await fs.ensureDir(path.join(ctx.vaultPath, "Projects"));
+  if (!ctx.directories.includes("Projects")) {
+    ctx.directories.push("Projects");
+  }
+
   for (const project of projects) {
     const content = `---
 title: "${project.name}"
 type: feature
 status: active
 date: ${today()}
-team: "${teamName}"
+team: "${ctx.kbName}"
 jira: ""
 stakeholders: []
 priority: ""
@@ -246,113 +319,136 @@ tags: [project]
 
 ${project.description}
 `;
-    const projectPath = path.join(vaultPath, `Projects/${project.name}.md`);
+    const projectPath = path.join(ctx.vaultPath, `Projects/${project.name}.md`);
     if (!(await fs.pathExists(projectPath))) {
       await fs.writeFile(projectPath, content);
-      filesCreated++;
+      ctx.filesCreated++;
     }
   }
+}
 
-  // 9. Create team index (always, since Start Here.md links to it)
-  {
-    let teamIndexContent = `---
-title: "${teamName} Team"
+/**
+ * Create team index note in People/.
+ * Only call when the vault has a People/ directory (preset includes it or members exist).
+ */
+export async function createTeamIndex(
+  ctx: CreateContext,
+  members: Member[],
+  projects: Project[],
+): Promise<void> {
+  await fs.ensureDir(path.join(ctx.vaultPath, "People"));
+  if (!ctx.directories.includes("People")) {
+    ctx.directories.push("People");
+  }
+
+  let teamIndexContent = `---
+title: "${ctx.kbName} Team"
 type: reference
-team: "${teamName}"
+team: "${ctx.kbName}"
 tags: [team]
 ---
 
-# ${teamName} Team
+# ${ctx.kbName} Team
 
 ## Members
 
 `;
-    if (members.length > 0) {
-      teamIndexContent += "| Name | Role |\n|------|------|\n";
-      teamIndexContent += members.map((m) => `| [[${m.name}]] | ${m.role} |`).join("\n");
-  
-    } else {
-      teamIndexContent += "(No members added yet)";
-    }
-
-    teamIndexContent += "\n\n## Active Projects\n\n";
-    if (projects.length > 0) {
-      teamIndexContent += projects
-        .map((p) => `- [[${p.name}]] — ${p.description}`)
-        .join("\n");
-
-    } else {
-      teamIndexContent += "(No projects added yet)";
-    }
-    teamIndexContent += "\n";
-
-    const teamIndexPath = path.join(vaultPath, `People/${teamName} Team.md`);
-    if (!(await fs.pathExists(teamIndexPath))) {
-      await fs.writeFile(teamIndexPath, teamIndexContent);
-      filesCreated++;
-    }
+  if (members.length > 0) {
+    teamIndexContent += "| Name | Role |\n|------|------|\n";
+    teamIndexContent += members.map((m) => `| [[${m.name}]] | ${m.role} |`).join("\n");
+  } else {
+    teamIndexContent += "(No members added yet)";
   }
 
-  // 10. Create .gitkeep in empty directories
-  const dirsNeedingGitkeep = [
-    "Inbox",
-    "Knowledge/concepts",
-    "Systems",
-    "Archive",
-    "Daily",
-  ];
-  // Add preset-specific dirs if they're empty
-  for (const dir of presetConfig.directories) {
-    dirsNeedingGitkeep.push(dir);
+  teamIndexContent += "\n\n## Active Projects\n\n";
+  if (projects.length > 0) {
+    teamIndexContent += projects
+      .map((p) => `- [[${p.name}]] — ${p.description}`)
+      .join("\n");
+  } else {
+    teamIndexContent += "(No projects added yet)";
+  }
+  teamIndexContent += "\n";
+
+  const teamIndexPath = path.join(ctx.vaultPath, `People/${ctx.kbName} Team.md`);
+  if (!(await fs.pathExists(teamIndexPath))) {
+    await fs.writeFile(teamIndexPath, teamIndexContent);
+    ctx.filesCreated++;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Main orchestrator
+// ---------------------------------------------------------------------------
+
+export async function createVault(config: VaultConfig): Promise<CreateVaultResult> {
+  const { kbName, vaultPath, members, projects, glossaryEntries, jiraHost, jiraProject, preset } = config;
+  const presetName = preset ?? "pm-tpm"; // Fallback if config wasn't parsed through Zod
+  const { config: presetConfig, presetsDir } = loadPreset(presetName);
+  const presetDir = path.join(presetsDir, presetName);
+
+  const initMode = detectInitMode(vaultPath);
+  const preserveObsidian = initMode === "obsidian-vault";
+  const ctx = makeContext(vaultPath, kbName, preserveObsidian);
+
+  // 1. Create minimal core (dirs, .obsidian, common templates, Glossary, Start Here)
+  await createMinimalCore(ctx, glossaryEntries);
+
+  // 2. Apply preset overlay (preset dirs + preset templates)
+  const allTemplateNames = await applyPresetOverlay(ctx, presetConfig, presetDir);
+
+  // 3. Generate AGENT.md
+  await createAgentMd(ctx, config.ownerName, presetConfig, presetDir, projects, jiraHost, jiraProject);
+
+  // 4. Create people notes (conditional)
+  await createPeopleNotes(ctx, members);
+
+  // 5. Create project notes (conditional)
+  await createProjectNotes(ctx, projects);
+
+  // 6. Create team index (only when preset declares People/ or members exist)
+  const hasPeopleDir = presetConfig.directories.includes("People") || members.length > 0;
+  if (hasPeopleDir) {
+    await createTeamIndex(ctx, members, projects);
   }
 
-  for (const dir of dirsNeedingGitkeep) {
-    const dirPath = path.join(vaultPath, dir);
-    if (await fs.pathExists(dirPath)) {
-      const files = await fs.readdir(dirPath);
-      if (files.length === 0) {
-        await fs.writeFile(path.join(dirPath, ".gitkeep"), "");
-      }
-    }
-  }
+  // 7. Configure vault as OpenCode project (plugin + skills + commands)
+  await configureOpenCodeProject(ctx.vaultPath, ctx.installedFiles);
 
-  // 11. Configure vault as OpenCode project (plugin + skills + commands)
-  await configureOpenCodeProject(vaultPath, installedFiles);
-
-  // 12. Configure MCP servers in global OpenCode config
+  // 8. Configure MCP servers in global OpenCode config
   const mcpResult = await configureMcp(presetConfig);
 
-  // 13. Install Obsidian community plugins from preset
-  const pluginsResult = await configureObsidianPlugins(vaultPath, presetConfig);
+  // 9. Install Obsidian community plugins from preset
+  const pluginsResult = await configureObsidianPlugins(ctx.vaultPath, presetConfig);
 
-  // 14. Configure AI provider in global OpenCode config
+  // 10. Configure AI provider in global OpenCode config
   let providerResult: ConfigureProviderResult | null = null;
   if (config.provider && config.provider !== "skip") {
     providerResult = await configureProvider(
       config.provider,
-      config.provider === "gemini" ? config.gcpProjectId : undefined
+      config.provider === "gemini" ? config.gcpProjectId : undefined,
     );
   }
 
-  // 15. Write BYOAO manifest
-  await writeManifest(vaultPath, presetName, installedFiles);
+  // 11. Write BYOAO manifest
+  await writeManifest(ctx.vaultPath, presetName, ctx.installedFiles);
 
-  // 16. Count wikilinks from all generated markdown files
+  // 12. Count wikilinks from all generated markdown files
   let wikilinksCreated = 0;
-  const entries = await fs.readdir(vaultPath, { recursive: true });
+  const entries = await fs.readdir(ctx.vaultPath, { recursive: true });
   for (const entry of entries) {
     const entryStr = String(entry);
     if (entryStr.endsWith(".md") && !entryStr.startsWith(".obsidian")) {
-      const content = await fs.readFile(path.join(vaultPath, entryStr), "utf-8");
+      const content = await fs.readFile(path.join(ctx.vaultPath, entryStr), "utf-8");
       wikilinksCreated += countWikilinks(content);
     }
   }
 
   return {
-    vaultPath,
-    filesCreated,
+    vaultPath: ctx.vaultPath,
+    filesCreated: ctx.filesCreated,
     wikilinksCreated,
-    directories: allDirectories,
+    directories: ctx.directories,
     mcpResult,
     pluginsResult,
     providerResult,
@@ -399,7 +495,7 @@ async function configureOpenCodeProject(
         await fs.copy(
           path.join(obsidianSkillsSrc, file),
           path.join(skillsDest, file),
-          { overwrite: true }
+          { overwrite: true },
         );
         installedFiles.skills.push(`.opencode/skills/${file}`);
       }
@@ -418,7 +514,7 @@ async function configureOpenCodeProject(
         await fs.copy(
           path.join(byoaoSkillsSrc, file),
           path.join(commandsDest, file),
-          { overwrite: true }
+          { overwrite: true },
         );
         installedFiles.commands.push(`.opencode/commands/${file}`);
       }
@@ -429,7 +525,7 @@ async function configureOpenCodeProject(
 function resolveAssetsDir(): string {
   const srcAssets = path.resolve(import.meta.dirname, "..", "assets");
   const distAssets = path.resolve(
-    import.meta.dirname, "..", "..", "src", "assets"
+    import.meta.dirname, "..", "..", "src", "assets",
   );
   if (fs.existsSync(srcAssets)) return srcAssets;
   if (fs.existsSync(distAssets)) return distAssets;

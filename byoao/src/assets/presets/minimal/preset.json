@@ -1,0 +1,28 @@
+{
+  "name": "minimal",
+  "displayName": "Personal Knowledge Base",
+  "description": "A minimal personal knowledge base — just Daily notes, templates, and Glossary. Add structure as you go.",
+  "directories": [],
+  "agentDescription": "Personal knowledge base. Notes are connected through wikilinks and frontmatter. Use /weave to discover and strengthen connections.",
+  "frontmatterExtras": {},
+  "templates": [],
+  "mcpServers": {},
+  "obsidianPlugins": {
+    "agent-client": {
+      "repo": "RAIT-09/obsidian-agent-client",
+      "version": "latest",
+      "config": {
+        "defaultAgentId": "opencode-acp",
+        "customAgents": [
+          {
+            "id": "opencode-acp",
+            "displayName": "OpenCode",
+            "command": "opencode",
+            "args": ["acp"],
+            "env": []
+          }
+        ]
+      }
+    }
+  }
+}

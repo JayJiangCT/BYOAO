@@ -4,7 +4,7 @@
 
 import type { Plugin } from "@opencode-ai/plugin";
 import { byoao_init_vault } from "./tools/init-vault.js";
-import { byoao_add_member } from "./tools/add-member.js";
+import { byoao_add_person } from "./tools/add-person.js";
 import { byoao_add_project } from "./tools/add-project.js";
 import { byoao_add_glossary_term } from "./tools/add-glossary-term.js";
 import { byoao_vault_status } from "./tools/vault-status.js";
@@ -24,7 +24,7 @@ const BYOAOPlugin: Plugin = async (ctx) => {
   return {
     tool: {
       byoao_init_vault,
-      byoao_add_member,
+      byoao_add_person,
       byoao_add_project,
       byoao_add_glossary_term,
       byoao_vault_status,

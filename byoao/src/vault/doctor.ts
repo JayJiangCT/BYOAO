@@ -128,7 +128,7 @@ export async function getVaultDiagnosis(vaultPath: string): Promise<DiagnosticRe
   for (const filePath of allFiles) {
     const relativePath = path.relative(vaultPath, filePath);
     if (relativePath.startsWith("Knowledge/templates/")) continue;
-    if (relativePath === "AGENT.md" || relativePath === "CLAUDE.md") continue;
+    if (relativePath === "AGENT.md") continue;
 
     const name = path.basename(filePath, ".md");
     const outgoing = allLinksMap.get(name) || new Set();

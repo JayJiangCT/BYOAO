@@ -7,14 +7,15 @@ import os from "node:os";
 
 export const byoao_init_vault = tool({
   description:
-    "Create a fully configured Obsidian vault for any team. Creates directory structure, templates, glossary, agent routing file, and optional people/project notes with wikilinks. Checks that Obsidian is installed first.",
+    "Create a personal knowledge base in Obsidian. Creates directory structure, templates, glossary, agent routing file (AGENT.md), and optional people/project notes with wikilinks. Checks that Obsidian is installed first.",
   args: {
-    teamName: tool.schema.string().describe("Team name (e.g. 'HDR Operations')"),
+    kbName: tool.schema.string().describe("Knowledge base name (e.g. \"Jay's KB\")"),
+    ownerName: tool.schema.string().optional().describe("Owner's name"),
     vaultPath: tool.schema
       .string()
       .optional()
       .describe(
-        "Where to create the vault. Defaults to ~/Documents/{teamName} Workspace"
+        "Where to create the vault. Defaults to ~/Documents/{kbName}"
       ),
     members: tool.schema
       .array(
@@ -24,7 +25,7 @@ export const byoao_init_vault = tool({
         })
       )
       .optional()
-      .describe("Team members to create people notes for"),
+      .describe("People to create notes for"),
     projects: tool.schema
       .array(
         tool.schema.object({
@@ -54,7 +55,7 @@ export const byoao_init_vault = tool({
     preset: tool.schema
       .string()
       .optional()
-      .describe("Role preset (default: 'pm-tpm')"),
+      .describe("Role preset (default: 'minimal'). Use 'pm-tpm' for project management."),
   },
   async execute(args) {
     // Check Obsidian first
@@ -65,22 +66,23 @@ export const byoao_init_vault = tool({
 
     const resolvedPath =
       args.vaultPath ||
-      path.join(os.homedir(), "Documents", `${args.teamName} Workspace`);
+      path.join(os.homedir(), "Documents", args.kbName);
 
     const config = VaultConfigSchema.parse({
-      teamName: args.teamName,
+      kbName: args.kbName,
+      ownerName: args.ownerName || "",
       vaultPath: resolvedPath,
       members: args.members || [],
       projects: args.projects || [],
       glossaryEntries: args.glossaryEntries || [],
       jiraHost: args.jiraHost || "",
       jiraProject: args.jiraProject || "",
-      preset: args.preset || "pm-tpm",
+      preset: args.preset || "minimal",
     });
 
     const result = await createVault(config);
 
-    let output = `✓ Vault created at: ${result.vaultPath}\n`;
+    let output = `✓ Knowledge base created at: ${result.vaultPath}\n`;
     output += `  Files created: ${result.filesCreated}\n`;
     output += `  Wikilinks: ${result.wikilinksCreated}\n`;
     output += `  Directories: ${result.directories.length}`;

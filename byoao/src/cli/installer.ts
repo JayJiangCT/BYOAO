@@ -283,24 +283,10 @@ export async function install(
   }
 
   // ── Getting Started ───────────────────────────────────────────
-  const gettingStartedItems: { cmd: string; desc: string }[] = [];
-
-  if (openCodeStatus.installed) {
-    gettingStartedItems.push(
-      { cmd: "opencode", desc: "# Launch OpenCode" },
-      { cmd: "/init-knowledge-base", desc: "# Create your first knowledge base" }
-    );
-  } else {
-    gettingStartedItems.push({
-      cmd: "npx opencode@latest",
-      desc: "# Install & launch OpenCode",
-    });
-  }
-
-  gettingStartedItems.push(
+  const gettingStartedItems: { cmd: string; desc: string }[] = [
     { cmd: "byoao init", desc: "# Create a knowledge base" },
     { cmd: "byoao status <path>", desc: "# Check vault health" },
-  );
+  ];
 
   printGettingStarted(gettingStartedItems);
   printInfo("Recommended: Obsidian Web Clipper → https://obsidian.md/clipper");
