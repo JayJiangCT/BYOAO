@@ -1,6 +1,6 @@
 ---
 name: diagnose
-description: Diagnose knowledge graph health — find missing frontmatter, orphan notes, broken wikilinks, and AGENT.md drift. Suggests fixes and asks for confirmation before making changes.
+description: Diagnose knowledge graph health — find missing frontmatter, orphan notes, broken wikilinks, and AGENT.md drift. Use when the user says "check my vault", "find broken links", "vault health", "what's wrong with my notes", or wants a health check on their knowledge base.
 ---
 
 # /diagnose — Knowledge Graph Health Check
