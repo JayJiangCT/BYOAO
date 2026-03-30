@@ -93,19 +93,23 @@ byoao status ~/my-kb      # 检查指定路径
 
 ## byoao upgrade
 
-将知识库基础设施（skills、commands、模板、Obsidian 配置）升级到最新 BYOAO 版本。
+升级 BYOAO CLI 和知识库基础设施（skills、commands、模板、Obsidian 配置）到最新版本。
+
+命令分两阶段执行：先检查 npm 上是否有更新的 CLI 版本并提示更新，然后升级知识库内容。如果 CLI 更新成功，进程会退出，再次运行 `byoao upgrade` 即可完成知识库升级。
 
 ```bash
-byoao upgrade             # 升级当前目录的知识库
-byoao upgrade ~/my-kb     # 升级指定知识库
+byoao upgrade             # 升级 CLI + 当前目录的知识库
+byoao upgrade ~/my-kb     # 升级 CLI + 指定知识库
 byoao upgrade --dry-run   # 预览变更，不执行
+byoao upgrade --skip-cli  # 仅升级知识库，跳过 CLI 更新
 ```
 
 | 参数 | 说明 |
 |------|------|
-| `-y, --yes` | 跳过确认 |
+| `-y, --yes` | 跳过确认提示 |
 | `--dry-run` | 只显示计划，不执行 |
 | `--force` | 即使版本一致也执行 |
+| `--skip-cli` | 跳过 CLI 自我更新，仅升级知识库 |
 | `--preset <name>` | 初始化时覆盖预设 |
 
 ---

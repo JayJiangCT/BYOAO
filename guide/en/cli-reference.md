@@ -91,19 +91,23 @@ byoao status ~/my-kb      # Check specific path
 
 ## byoao upgrade
 
-Upgrade vault infrastructure (skills, commands, templates, Obsidian config) to the latest BYOAO version.
+Upgrade the BYOAO CLI and vault infrastructure (skills, commands, templates, Obsidian config) to the latest version.
+
+The command runs in two phases: first it checks for a newer CLI version on npm and offers to update it, then it upgrades the vault content. If the CLI is updated, the process exits and you run `byoao upgrade` again to complete the vault upgrade.
 
 ```bash
-byoao upgrade             # Upgrade vault in current directory
-byoao upgrade ~/my-kb     # Upgrade specific vault
+byoao upgrade             # Upgrade CLI + vault in current directory
+byoao upgrade ~/my-kb     # Upgrade CLI + specific vault
 byoao upgrade --dry-run   # Preview changes without applying
+byoao upgrade --skip-cli  # Only upgrade vault, skip CLI update
 ```
 
 | Flag | Description |
 |------|-------------|
-| `-y, --yes` | Skip confirmation |
+| `-y, --yes` | Skip confirmation prompts |
 | `--dry-run` | Show plan without executing |
 | `--force` | Run even if versions match |
+| `--skip-cli` | Skip CLI self-update, only upgrade vault |
 | `--preset <name>` | Override preset during bootstrap |
 
 ---

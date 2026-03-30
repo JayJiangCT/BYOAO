@@ -12,6 +12,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import os from "node:os";
 import { upgradeVault } from "../vault/upgrade.js";
+import { checkForCliUpdate, selfUpdateCli } from "../vault/self-update.js";
 import { detectVaultContext, detectInitMode } from "../vault/vault-detect.js";
 import { loadPreset } from "../vault/preset.js";
 
@@ -504,23 +505,81 @@ program
   .command("upgrade")
   .argument("[path]", "Path to vault root (default: detect from current directory)")
   .description(
-    "Upgrade vault infrastructure to the latest BYOAO version — updates skills, " +
-    "commands, templates, and Obsidian config"
+    "Upgrade BYOAO CLI and vault infrastructure to the latest version"
   )
-  .option("-y, --yes", "Skip confirmation prompt", false)
+  .option("-y, --yes", "Skip confirmation prompts", false)
   .option("--dry-run", "Show upgrade plan without executing", false)
   .option("--force", "Run even if versions match or on downgrade", false)
+  .option("--skip-cli", "Skip CLI self-update, only upgrade vault", false)
   .option("--preset <name>", "Override preset during bootstrap (ignored if manifest exists)")
   .action(async (vaultArg, opts) => {
     printLogo();
     printVersion(PKG_VERSION);
 
-    // 1. Detect vault
+    // ── Phase 1: CLI self-update ──────────────────────────────────
+    let cliUpdated = false;
+
+    if (!opts.skipCli) {
+      printEvent("Checking CLI version");
+      const check = await checkForCliUpdate();
+
+      if (check.updateAvailable) {
+        printEventDetail(`Update available: v${check.current} → v${check.latest}`);
+
+        if (opts.dryRun) {
+          printEventDetail("(dry-run: skipping CLI update)");
+        } else {
+          // Confirm CLI update
+          let confirmed = opts.yes;
+          if (!confirmed && process.stdout.isTTY) {
+            try {
+              const { default: inquirer } = await import("inquirer");
+              const { proceed } = await inquirer.prompt([{
+                type: "confirm",
+                name: "proceed",
+                message: "Update CLI?",
+                default: true,
+              }]);
+              confirmed = proceed;
+            } catch {
+              confirmed = true;
+            }
+          } else if (!confirmed) {
+            confirmed = true;
+          }
+
+          if (confirmed) {
+            const spinner = startSpinner(`Updating CLI to v${check.latest}...`);
+            const updateResult = await selfUpdateCli(check.latest);
+
+            if (updateResult.success) {
+              spinner.stop(`CLI updated to v${check.latest}`);
+              printEventCheck(`CLI updated to v${check.latest}`);
+              console.log();
+              printEventDone("Run `byoao upgrade` again to upgrade vault content.");
+              process.exit(0);
+            } else {
+              spinner.stop("CLI update failed");
+              printWarning(updateResult.error!);
+            }
+          }
+        }
+      } else {
+        printEventCheck(`CLI is up to date (v${check.current})`);
+      }
+
+      console.log();
+    }
+
+    // ── Phase 2: Vault upgrade ────────────────────────────────────
     const targetPath = vaultArg ?? process.cwd();
     const vaultRoot = detectVaultContext(targetPath);
+
     if (!vaultRoot) {
-      printWarning("No BYOAO vault found. Run `byoao init` to create one.");
-      process.exit(1);
+      if (!cliUpdated) {
+        printWarning("No BYOAO vault found. Run `byoao init` to create one.");
+      }
+      return;
     }
 
     printEvent("Upgrading vault");
@@ -567,14 +626,14 @@ program
 
       if (opts.dryRun) return;
 
-      // Confirm
+      // Confirm vault upgrade
       if (!opts.yes && process.stdout.isTTY) {
         try {
           const { default: inquirer } = await import("inquirer");
           const { proceed } = await inquirer.prompt([{
             type: "confirm",
             name: "proceed",
-            message: "Proceed with upgrade?",
+            message: "Proceed with vault upgrade?",
             default: true,
           }]);
           if (!proceed) {
