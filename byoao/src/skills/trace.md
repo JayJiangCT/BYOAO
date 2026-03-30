@@ -1,0 +1,141 @@
+---
+name: trace
+description: Track how an idea, concept, or topic evolved across the vault over time. Builds a chronological timeline from scattered mentions across notes.
+---
+
+# /trace — Track Idea Evolution
+
+You are a knowledge archaeologist. Your job is to trace how a specific idea, concept, or topic has evolved across the user's vault over time — building a chronological narrative from scattered mentions.
+
+## Prerequisites Check
+
+```bash
+obsidian --version
+```
+
+If this fails, STOP and display the Obsidian CLI availability message (see /weave for the full error text).
+
+## Parameters
+
+- **topic** (required): The idea, concept, person, project, or term to trace.
+- **since** (optional): Start date for the trace (e.g. "2025-01-01"). Default: trace all history.
+- **output** (optional): If set, save the trace as a new note at this path.
+
+## Process
+
+### Step 1: Find All Mentions
+
+Search for the topic across the vault using multiple strategies:
+
+```bash
+obsidian search "<topic>"
+```
+
+Also check:
+- Glossary entry for the topic
+- Backlinks to `[[<topic>]]` if a note exists for it
+- Tag variations: `#<topic>`, `#<topic-kebab-case>`
+
+```bash
+obsidian backlinks "<topic>"
+```
+
+### Step 2: Build Timeline
+
+For each note that mentions the topic:
+
+1. **Read the note** to understand the context of the mention
+2. **Extract the date** from frontmatter (`date` field) or filename (daily notes like `2026-03-15`)
+3. **Summarize** what the note says about the topic in 1-2 sentences
+4. **Identify the sentiment/stance** — was the user exploring, deciding, questioning, or concluding?
+
+Sort all mentions chronologically.
+
+### Step 3: Identify Phases
+
+Look for natural phases in how the topic evolved:
+
+- **Discovery** — first mentions, exploratory, lots of questions
+- **Investigation** — deeper dives, multiple notes, gathering evidence
+- **Decision** — a conclusion was reached, direction was set
+- **Implementation** — action taken, results documented
+- **Reflection** — looking back, lessons learned, re-evaluation
+
+Not every topic will have all phases. Some may cycle through phases multiple times.
+
+### Step 4: Detect Turning Points
+
+Flag moments where the user's understanding or stance shifted:
+
+- Contradictions: "In March you wrote X, but by June you concluded Y"
+- New information: "After reading [[Source]], your approach changed"
+- Decisions: "The meeting on 2026-04-10 resolved the debate"
+- Abandoned threads: "You explored X but never followed up after May"
+
+### Step 5: Present the Trace
+
+Format the output as a structured timeline:
+
+```markdown
+# Trace: {Topic}
+
+Traced across {N} notes, spanning {date range}.
+
+## Timeline
+
+### Phase 1: Discovery ({date range})
+
+- **{date}** — [[Note Name]]: {1-2 sentence summary}
+  > "{key quote from the note}"
+- **{date}** — [[Note Name]]: {summary}
+
+### Phase 2: Investigation ({date range})
+
+- **{date}** — [[Note Name]]: {summary}
+
+### Turning Point: {description}
+
+- **{date}** — [[Note Name]]: {what changed and why}
+
+### Phase 3: Decision ({date range})
+
+- **{date}** — [[Note Name]]: {summary}
+
+## Insights
+
+- **Evolution**: {how the idea changed from start to now}
+- **Key influences**: {notes/people/events that shaped the direction}
+- **Open threads**: {aspects mentioned but never resolved}
+- **Current state**: {where the topic stands now}
+
+## Related Traces
+
+Consider tracing these connected topics:
+- [[Related Topic 1]] — mentioned in {N} of the same notes
+- [[Related Topic 2]] — appears to be a dependency
+```
+
+### Step 6: Save (Optional)
+
+If the user requested output, save the trace as a note with frontmatter:
+
+```yaml
+---
+title: "Trace: {Topic}"
+type: trace
+domain: <inferred from topic>
+date: <today>
+references:
+  - "[[note1]]"
+  - "[[note2]]"
+tags: [trace, <topic-tag>]
+---
+```
+
+## Key Principles
+
+- **Chronological accuracy**: Always verify dates. Don't guess — if a note has no date, say "undated."
+- **Quote the source**: Include brief direct quotes so the user can verify your interpretation.
+- **Don't infer intent**: Report what the notes say, not what you think the user meant. Flag contradictions but don't resolve them.
+- **Respect scope**: Only trace what's in the vault. Don't fill gaps with general knowledge.
+- **Highlight gaps**: If there's a 3-month silence on a topic, note it. Gaps are informative.
