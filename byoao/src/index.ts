@@ -14,6 +14,7 @@ import { byoao_search_vault } from "./tools/search-vault.js";
 import { byoao_note_read } from "./tools/note-read.js";
 import { byoao_graph_health } from "./tools/graph-health.js";
 import { byoao_vault_upgrade } from "./tools/vault-upgrade.js";
+import { byoao_mcp_auth } from "./tools/mcp-auth.js";
 import { systemTransformHook } from "./hooks/system-transform.js";
 import { getIdleSuggestion } from "./hooks/idle-suggestions.js";
 
@@ -34,6 +35,7 @@ const BYOAOPlugin: Plugin = async (ctx) => {
       byoao_note_read,
       byoao_graph_health,
       byoao_vault_upgrade,
+      byoao_mcp_auth,
     },
     "experimental.chat.system.transform": systemTransformHook,
     event: async ({ event }) => {

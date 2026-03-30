@@ -8,6 +8,19 @@
 
 ---
 
+## Agent Client 卡在"Connecting to OpenCode..."
+
+**症状：** Obsidian 中的 Agent Client 面板一直显示 "Connecting to OpenCode..."，无法连接。
+
+**解决：**
+1. 按 `Cmd+P` → 输入 "Reload app without saving" → 回车
+2. 重新打开 Agent Client 面板
+3. 如果仍然无法连接，完全关闭 Obsidian 后重新打开
+4. 在终端验证 OpenCode 是否正常：`cd /path/to/vault && opencode acp`
+5. 如果看到配置错误，检查 `~/.config/opencode/opencode.json` 是否有无效条目
+
+---
+
 ## Obsidian CLI 不可用
 
 **症状：** /weave 或其他技能报错 "Obsidian CLI is not available."
@@ -106,6 +119,35 @@ cp .byoao/backups/2026-03-29T14-30/my-note.md ./my-note.md
 ```bash
 ls -la .byoao/backups/
 ```
+
+---
+
+## MCP 服务连接过期（Atlassian / BigQuery）
+
+**症状：** Agent 提示 "Atlassian connection failed" 或 BigQuery 查询返回认证错误。
+
+**解决：**
+1. 点击 Agent Client 面板右上角 "..." 菜单 → **Restart agent**
+2. 浏览器会弹出重新认证页面
+4. Google 服务请确保选择正确的 Google 账号（工作账号，非个人账号）
+5. 完成登录后返回 Obsidian
+6. 让 agent 重试之前的请求
+
+如果仍然不行，完全重启 Obsidian。
+
+---
+
+## BigQuery：需要认证
+
+**症状：** Agent 提示 BigQuery 工具不可用，或查询时返回认证错误。
+
+BigQuery 认证是延迟触发的——当你第一次让 agent 查询 BigQuery 时，它会通过 `byoao_mcp_auth` 工具自动调用 `gcloud auth application-default login`。
+
+**解决：**
+1. 确保已安装 gcloud CLI：https://cloud.google.com/sdk/docs/install
+2. 让 agent 执行一个 BigQuery 查询——它应该会自动调用 `byoao_mcp_auth`
+3. 在弹出的浏览器窗口中完成 Google 登录
+4. 点击 "..." → **Restart agent**，然后重试
 
 ---
 

@@ -4,6 +4,7 @@ import os from "node:os";
 import { execSync } from "node:child_process";
 import { checkObsidian } from "../vault/obsidian-check.js";
 import { checkOpenCode } from "../vault/opencode-check.js";
+import { checkGcloud } from "../vault/toolbox.js";
 import {
   printSectionHeader,
   printProgress,
@@ -163,6 +164,14 @@ export async function install(
   const obsidianDetail = obsidianStatus.running ? "running" : "installed, not running";
   printProgress(`Obsidian`, "ok", obsidianDetail);
 
+  // ── Optional: gcloud CLI ──
+  const gcloudStatus = checkGcloud();
+  if (gcloudStatus.installed) {
+    printProgress(`gcloud CLI`, "ok", `v${gcloudStatus.version}`);
+  } else {
+    printProgress(`gcloud CLI`, "skip", "not installed (optional — needed for BigQuery)");
+  }
+
   printBlank();
 
   // ── 2. Install components ─────────────────────────────────────
@@ -197,8 +206,8 @@ export async function install(
     }
 
     const plugins = (config.plugin as string[] | undefined) || [];
-    if (!plugins.includes("byoao")) {
-      plugins.push("byoao");
+    if (!plugins.includes("@jayjiang/byoao")) {
+      plugins.push("@jayjiang/byoao");
       config.plugin = plugins;
       await fs.writeJson(configPath, config, { spaces: 2 });
     }
@@ -322,7 +331,7 @@ export async function uninstall(
       try {
         const config = await fs.readJson(configPath);
         const plugins = (config.plugin as string[] | undefined) || [];
-        const idx = plugins.indexOf("byoao");
+        const idx = plugins.indexOf("@jayjiang/byoao");
         if (idx !== -1) {
           plugins.splice(idx, 1);
           config.plugin = plugins;

@@ -27,7 +27,10 @@ export const VaultConfigSchema = z.object({
   jiraProject: z.string().default(""),
   preset: z.string().default("minimal"),
   provider: z.enum(["copilot", "gemini", "skip"]).default("skip"),
+  /** GCP Project ID — used for BigQuery MCP env and Gemini provider config */
   gcpProjectId: z.string().default(""),
+  /** MCP server names to skip (user deselected in init flow) */
+  mcpSkip: z.array(z.string()).default([]),
 });
 
 export type Member = z.infer<typeof MemberSchema>;
@@ -72,10 +75,17 @@ export const PresetConfigSchema = z.object({
   templates: z.array(z.string()).default([]),
   mcpServers: z.record(
     z.string(),
-    z.object({
-      type: z.literal("remote"),
-      url: z.string().url(),
-    })
+    z.discriminatedUnion("type", [
+      z.object({
+        type: z.literal("remote"),
+        url: z.string().url(),
+      }),
+      z.object({
+        type: z.literal("local"),
+        command: z.array(z.string()).min(1),
+        environment: z.record(z.string(), z.string()).optional(),
+      }),
+    ])
   ).default({}),
   obsidianPlugins: z.record(
     z.string(),

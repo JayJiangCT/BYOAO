@@ -6,6 +6,19 @@ Common issues and how to fix them.
 
 ---
 
+## Agent Client stuck on "Connecting to OpenCode..."
+
+**Symptom:** The Agent Client panel in Obsidian shows "Connecting to OpenCode..." and never connects.
+
+**Fix:**
+1. Press `Cmd+P` → type "Reload app without saving" → Enter
+2. Reopen the Agent Client panel
+3. If still stuck, close Obsidian completely and reopen it
+4. Verify OpenCode works from the vault directory: `cd /path/to/vault && opencode acp`
+5. If you see a config error, check `~/.config/opencode/opencode.json` for invalid entries
+
+---
+
 ## Obsidian CLI not available
 
 **Symptom:** /weave or other skills fail with "Obsidian CLI is not available."
@@ -104,6 +117,35 @@ To find the latest backup:
 ```bash
 ls -la .byoao/backups/
 ```
+
+---
+
+## MCP service connection expired (Atlassian / BigQuery)
+
+**Symptom:** Agent says "Atlassian connection failed" or BigQuery queries return authentication errors.
+
+**Fix:**
+1. Click the "..." menu in the Agent Client panel → **Restart agent**
+2. A browser window should open for re-authentication
+4. For Google services, make sure to select your work account
+5. Complete the login, then return to Obsidian
+6. Ask the agent to retry your request
+
+If this doesn't work, restart Obsidian completely.
+
+---
+
+## BigQuery: authentication required
+
+**Symptom:** Agent says BigQuery tools are unavailable, or queries fail with authentication errors.
+
+BigQuery authentication happens lazily — the first time you ask the agent to query BigQuery, it will trigger `gcloud auth application-default login` via the `byoao_mcp_auth` tool.
+
+**Fix:**
+1. Make sure gcloud CLI is installed: https://cloud.google.com/sdk/docs/install
+2. Ask the agent to run a BigQuery query — it should call `byoao_mcp_auth` automatically
+3. Complete the Google login in the browser window that opens
+4. Click "..." → **Restart agent**, then retry
 
 ---
 

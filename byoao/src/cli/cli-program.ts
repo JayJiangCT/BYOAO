@@ -13,6 +13,7 @@ import path from "node:path";
 import os from "node:os";
 import { upgradeVault } from "../vault/upgrade.js";
 import { detectVaultContext, detectInitMode } from "../vault/vault-detect.js";
+import { loadPreset } from "../vault/preset.js";
 
 const require = createRequire(import.meta.url);
 const PKG_VERSION: string = (require("../../package.json") as Record<string, unknown>).version as string;
@@ -158,7 +159,8 @@ program
   .option("--from <path>", "Adopt an existing folder as a knowledge base")
   .option("--preset <name>", "Role preset — determines folder structure and templates (default: minimal)")
   .option("--provider <name>", "AI provider: copilot, gemini, or skip (default: skip in non-interactive)")
-  .option("--gcp-project <id>", "GCP Project ID (required when --provider=gemini)")
+  .option("--gcp-project <id>", "GCP Project ID for BigQuery")
+  .option("--mcp-skip <names...>", "MCP servers to skip (comma-separated)")
   .action(async (opts) => {
     // Check Obsidian first
     const obsidianStatus = checkObsidian();
@@ -173,6 +175,8 @@ program
     let vaultPath = opts.path || opts.from;
     let presetName = opts.preset || "minimal";
     let members: { name: string; role: string }[] = [];
+    let mcpSkip: string[] = opts.mcpSkip || [];
+    let gcpProjectId = opts.gcpProject || "";
 
     // Interactive TUI when --kb is not provided and stdout is TTY
     if (!kbName && process.stdout.isTTY) {
@@ -274,6 +278,47 @@ program
           presetName = selectedPreset;
         }
 
+        // 5. MCP service selection (only if preset has MCP servers)
+        if (presetName !== "minimal") {
+          const { config: presetCfg } = loadPreset(presetName);
+          const mcpEntries = Object.entries(presetCfg.mcpServers);
+          if (mcpEntries.length > 0) {
+            const mcpDisplayNames: Record<string, string> = {
+              atlassian: "Atlassian (Jira / Confluence)",
+              bigquery: "BigQuery (data warehouse queries)",
+            };
+
+            const { selectedMcp } = await inquirer.prompt([{
+              type: "checkbox",
+              name: "selectedMcp",
+              message: "Which services do you want to connect?",
+              choices: mcpEntries.map(([name]) => ({
+                name: mcpDisplayNames[name] || name,
+                value: name,
+                checked: true,
+              })),
+            }]);
+
+            const selectedSet = new Set(selectedMcp as string[]);
+            mcpSkip = mcpEntries
+              .map(([name]) => name)
+              .filter((name) => !selectedSet.has(name));
+
+            // BigQuery setup: collect GCP Project ID (auth is lazy — handled at runtime)
+            if (selectedSet.has("bigquery")) {
+              const { projectId } = await inquirer.prompt([{
+                type: "input",
+                name: "projectId",
+                message: "GCP Project ID:",
+                default: "wonder-raw-prod",
+              }]);
+              gcpProjectId = projectId.trim();
+              printEventCheck(`BigQuery configured for project: ${gcpProjectId}`);
+              printEventDetail("Authentication will happen when you first use BigQuery in Obsidian.");
+            }
+          }
+        }
+
         // Create owner as a member if a preset with People/ is selected
         if (ownerName && presetName !== "minimal") {
           members.push({ name: ownerName, role: presetName === "pm-tpm" ? "PM/TPM" : "Team Member" });
@@ -299,13 +344,7 @@ program
 
     vaultPath = vaultPath || path.join(os.homedir(), "Documents", kbName);
 
-    if (opts.provider === "gemini" && !opts.gcpProject) {
-      console.error("Error: --gcp-project is required when --provider=gemini");
-      process.exit(1);
-    }
-
     const providerOpt = opts.provider || "skip";
-    const gcpProjectOpt = opts.gcpProject || "";
 
     const config = VaultConfigSchema.parse({
       kbName,
@@ -315,7 +354,8 @@ program
       projects: [],
       preset: presetName,
       provider: providerOpt,
-      gcpProjectId: gcpProjectOpt,
+      gcpProjectId,
+      mcpSkip,
     });
 
     const spinner = startSpinner(`Creating knowledge base "${kbName}"`);
@@ -380,7 +420,7 @@ program
         printEventDetail(`Plugin skipped (already installed): opencode-gemini-auth`);
       }
       if (result.providerResult.projectIdSet) {
-        printEventCheck(`GCP Project: ${gcpProjectOpt}`);
+        printEventCheck(`GCP Project: ${config.gcpProjectId}`);
       }
       if (result.providerResult.projectIdSkipped) {
         printEventDetail(`GCP Project skipped (already configured)`);

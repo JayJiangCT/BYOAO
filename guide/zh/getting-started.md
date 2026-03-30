@@ -54,7 +54,8 @@ byoao init
 2. **知识库名称** — 默认 "{名字}'s KB"
 3. **存储位置** — 默认 `~/Documents/{知识库名}`
 4. **添加工作预设？** — 选 "No" 创建极简个人知识库，选 "PM/TPM" 添加 Projects/Sprints 文件夹
-5. **设置 AI 提供商？** — 现在认证或稍后操作
+5. **连接外部服务？** — 选了 PM/TPM 后，选择启用哪些 MCP 服务（Atlassian、BigQuery）。BigQuery 会提示输入 GCP Project ID 并自动完成认证
+6. **设置 AI 提供商？** — 现在认证或稍后操作
 
 ### 已有笔记？
 

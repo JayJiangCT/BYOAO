@@ -50,6 +50,7 @@ function makeConfig(overrides: Partial<VaultConfig> = {}): VaultConfig {
     preset: "pm-tpm",
     provider: "skip",
     gcpProjectId: "",
+    mcpSkip: [],
     ...overrides,
   };
 }

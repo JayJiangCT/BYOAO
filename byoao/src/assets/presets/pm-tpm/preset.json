@@ -1,7 +1,7 @@
 {
   "name": "pm-tpm",
   "displayName": "PM / TPM",
-  "description": "Project tracking, sprint cycles, stakeholder management",
+  "description": "Project tracking, sprint cycles, stakeholder management, data analysis",
   "directories": ["Projects", "Sprints"],
   "agentDescription": "PM/TPM knowledge base",
   "frontmatterExtras": {
@@ -13,6 +13,13 @@
     "atlassian": {
       "type": "remote",
       "url": "https://mcp.atlassian.com/v1/sse"
+    },
+    "bigquery": {
+      "type": "local",
+      "command": ["npx", "-y", "@toolbox-sdk/server", "--prebuilt=bigquery", "--stdio"],
+      "environment": {
+        "BIGQUERY_PROJECT": "${GCP_PROJECT_ID}"
+      }
     }
   },
   "obsidianPlugins": {

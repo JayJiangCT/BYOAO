@@ -63,6 +63,21 @@ that /weave discovered.
 | `/drift` | Compare intentions vs actions over time |
 | `/diagnose` | Check knowledge graph health |
 
+{{#if HAS_MCP_SERVICES}}
+
+---
+
+## Connected Services
+
+Your AI agent can access external services configured during setup:
+{{#each MCP_SERVICES}}
+- **{{this.name}}** — {{this.description}}
+{{/each}}
+
+These services authenticate via your browser. If a connection expires,
+tell the agent: "reconnect to {service name}".
+
+{{/if}}
 ---
 
 ## Key Files
