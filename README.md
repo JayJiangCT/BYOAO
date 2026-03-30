@@ -251,6 +251,12 @@ byoao/
 
 ---
 
+## Documentation
+
+- **[GUIDE_HELPER.md](GUIDE_HELPER.md)** — Bilingual quick start guide (EN/CN)
+
+---
+
 ## Roadmap
 
 - [x] Personal KB with minimal preset (v0.6)
