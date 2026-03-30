@@ -142,6 +142,9 @@ What `/weave` does in a single run:
 | Skill | What It Does |
 |-------|-------------|
 | `/weave` | Connect notes into a knowledge graph — frontmatter, wikilinks, Glossary maintenance |
+| `/trace` | Track how an idea evolved over time across your notes |
+| `/emerge` | Surface hidden patterns and unnoticed connections |
+| `/connect` | Bridge two seemingly unrelated topics using your link graph |
 | `/diagnose` | Check knowledge graph health — missing frontmatter, orphan notes, broken links |
 | `/explain` | Explain codebase systems in plain language, cached in your vault |
 
@@ -251,13 +254,15 @@ byoao/
 ## Roadmap
 
 - [x] Personal KB with minimal preset (v0.6)
-- [x] `/weave` skill — knowledge graph builder
-- [x] Mode A/B init (fresh + existing folder adoption)
-- [x] Obsidian Skills integration (obsidian-cli, obsidian-markdown)
-- [x] 141 tests across 17 files
-- [ ] `/trace` — Track how ideas evolve over time (v0.7)
-- [ ] `/emerge` — Surface hidden patterns (v0.7)
-- [ ] `/connect` — Bridge two domains (v0.7)
+- [x] `/weave` skill — knowledge graph builder (v0.6)
+- [x] Mode A/B init (fresh + existing folder adoption) (v0.6)
+- [x] Obsidian Skills integration (v0.6)
+- [x] `/trace` — Track how ideas evolve over time (v0.7)
+- [x] `/emerge` — Surface hidden patterns (v0.7)
+- [x] `/connect` — Bridge two domains (v0.7)
+- [ ] `/ideas` — Generate actionable ideas across domains (v0.8)
+- [ ] `/challenge` — Pressure-test beliefs using vault history (v0.8)
+- [ ] `/drift` — Compare intentions vs actual behavior (v0.8)
 - [ ] Engineer and Designer presets
 
 ---

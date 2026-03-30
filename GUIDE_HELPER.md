@@ -1,8 +1,8 @@
-# BYOAO v0.6 Guide Helper / 使用引导
+# BYOAO v0.7 Guide Helper / 使用引导
 
-A bilingual guide for getting started with BYOAO v0.6.
+A bilingual guide for getting started with BYOAO v0.7.
 
-双语使用引导，帮助快速上手 BYOAO v0.6。
+双语使用引导，帮助快速上手 BYOAO v0.7。
 
 ---
 
@@ -48,11 +48,24 @@ Open the Agent Client panel and run:
 
 This scans your notes, adds frontmatter + wikilinks, maintains the Glossary, and creates hub notes. Run it after adding new content to keep the knowledge graph growing.
 
-### Key Skills
+### 5. Think With Your Vault (new in v0.7)
+
+Once you have a connected knowledge graph, use the thinking tools:
+
+```
+/trace topic="rate limiting"     — see how this idea evolved over time
+/emerge                          — discover hidden patterns across all notes
+/connect from="payments" to="auth" — find the bridge between two topics
+```
+
+### All Skills
 
 | Command | What it does |
 |---------|-------------|
 | `/weave` | Connect notes into a knowledge graph |
+| `/trace` | Track how an idea evolved over time |
+| `/emerge` | Discover hidden patterns and forgotten threads |
+| `/connect` | Bridge two seemingly unrelated topics |
 | `/diagnose` | Check knowledge graph health |
 | `/explain` | Explain a codebase system in plain language |
 
@@ -69,16 +82,11 @@ This scans your notes, adds frontmatter + wikilinks, maintains the Glossary, and
   Start Here.md        # Onboarding guide
 ```
 
-### What Changed from v0.5
+### What Changed in v0.7
 
-- `teamName` → `kbName` (personal KB, not team workspace)
-- Default preset is now `minimal` (3 dirs instead of 10)
-- `/enrich-document` → `/weave` (batch + graph-aware)
-- `/vault-doctor` → `/diagnose`
-- `/system-explainer` → `/explain`
-- `byoao_add_member` → `byoao_add_person`
-- `CLAUDE.md` no longer generated
-- Glossary now has a Domain column
+- `/trace` — chronological timeline of how any concept evolved across your notes
+- `/emerge` — surfaces recurring questions, implicit decisions, contradictions, forgotten threads
+- `/connect` — finds shared notes, people, tags, and graph paths between two topics
 
 ---
 
@@ -124,11 +132,24 @@ byoao init --from ~/Documents/my-notes
 
 这会扫描你的笔记，添加 frontmatter + wikilinks，维护 Glossary，并创建 hub notes。每次添加新内容后运行，让知识图谱持续生长。
 
-### 核心技能
+### 5. 用知识库思考（v0.7 新功能）
+
+当知识图谱建立起来后，使用思维工具：
+
+```
+/trace topic="限流策略"          — 追踪这个想法如何随时间演变
+/emerge                          — 发现笔记中隐藏的模式
+/connect from="支付" to="认证"   — 找到两个主题之间的桥梁
+```
+
+### 全部技能
 
 | 命令 | 功能 |
 |------|------|
 | `/weave` | 将笔记编织成知识图谱 |
+| `/trace` | 追踪一个想法如何随时间演变 |
+| `/emerge` | 发现隐藏的模式和被遗忘的线索 |
+| `/connect` | 连接两个看似无关的主题 |
 | `/diagnose` | 检查知识图谱健康状况 |
 | `/explain` | 用通俗语言解释代码库系统 |
 
@@ -145,13 +166,8 @@ byoao init --from ~/Documents/my-notes
   Start Here.md        # 入门引导
 ```
 
-### 从 v0.5 升级须知
+### v0.7 新增内容
 
-- `teamName` → `kbName`（个人知识库，不再是团队工作空间）
-- 默认预设改为 `minimal`（3 个目录而非 10 个）
-- `/enrich-document` → `/weave`（批量 + 图谱感知）
-- `/vault-doctor` → `/diagnose`
-- `/system-explainer` → `/explain`
-- `byoao_add_member` → `byoao_add_person`
-- 不再生成 `CLAUDE.md`
-- Glossary 新增 Domain 列
+- `/trace` — 按时间线追踪任何概念在笔记中的演变，识别发现→调查→决策等阶段
+- `/emerge` — 发现反复出现的未回答问题、隐含决策、矛盾、被遗忘的线索
+- `/connect` — 通过共同笔记、人物、标签和图谱路径，找到两个主题间的联系
