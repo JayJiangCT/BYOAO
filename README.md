@@ -45,6 +45,9 @@ Then open in Obsidian, enable CLI, and run `/weave` to connect your notes.
 | `/trace` | Track how an idea evolved over time |
 | `/emerge` | Surface hidden patterns across your notes |
 | `/connect` | Bridge two seemingly unrelated topics |
+| `/ideas` | Generate actionable ideas from your vault |
+| `/challenge` | Pressure-test a belief against your own notes |
+| `/drift` | Compare stated intentions vs actual behavior |
 | `/diagnose` | Check knowledge graph health |
 | `/explain` | Explain codebase systems in plain language |
 
@@ -59,7 +62,7 @@ Then open in Obsidian, enable CLI, and run `/weave` to connect your notes.
 - [x] `/weave` — knowledge graph builder (v0.6)
 - [x] Mode A/B init — fresh + existing folder adoption (v0.6)
 - [x] `/trace`, `/emerge`, `/connect` — thinking tools (v0.7)
-- [ ] `/ideas`, `/challenge`, `/drift` — proactive intelligence (v0.8)
+- [x] `/ideas`, `/challenge`, `/drift` — proactive intelligence (v0.8)
 - [ ] Engineer and Designer presets
 
 ## License
