@@ -140,6 +140,84 @@ Real scenarios showing how to use BYOAO day-to-day. Each workflow introduces the
 
 ---
 
+## 6. Generating Ideas — What Should I Work On Next?
+
+**When:** Your vault has substantial content and you want creative, actionable suggestions.
+
+**Steps:**
+
+```
+/ideas
+/ideas focus="infrastructure"   # Focus on a domain
+```
+
+**What you get:**
+- **Synthesis ideas** — combine two existing threads into something new
+- **Gap ideas** — something the vault implies is needed but doesn't exist
+- **Connection ideas** — two people/projects that should be talking
+- **Amplification ideas** — take something small and scale it
+- **Challenge ideas** — question an assumption the vault takes for granted
+
+Every idea cites 2+ vault notes and includes a concrete next step.
+
+**When to use:**
+- Quarterly planning — "what opportunities does my vault reveal?"
+- Feeling stuck — let the vault suggest what to work on
+- Cross-domain innovation — find overlap between separate areas
+
+---
+
+## 7. Challenging a Belief — Am I Right About This?
+
+**When:** You're about to make a big decision and want to test it against your own history.
+
+**Example:** You believe "we should migrate to microservices."
+
+**Steps:**
+
+```
+/challenge belief="we should migrate to microservices"
+```
+
+**What you get:**
+- Supporting evidence from your notes (fair assessment first)
+- Counter-evidence: contradictions, position changes over time
+- Unstated assumptions your belief relies on
+- Missing perspectives (whose viewpoint is absent?)
+- Confidence rating: Strong / Moderate / Weak / Contradicted
+
+**When to use:**
+- Before major decisions — "does my vault support this?"
+- Resolving disagreements — "what do my own notes say?"
+- Retrospectives — "was this the right call?"
+
+---
+
+## 8. Detecting Drift — Am I Doing What I Said I Would?
+
+**When:** You want to compare your stated plans with what actually happened.
+
+**Steps:**
+
+```
+/drift                         # Last 30 days
+/drift period=60d              # Last 60 days
+/drift focus="API migration"   # Focus on a project
+```
+
+**What you get:**
+- Each intention categorized: aligned, delayed, drifted, abandoned, or emergent
+- Pattern detection: priority displacement, scope creep, goal abandonment
+- Emergent work recognized (unplanned but important)
+- Questions to consider (descriptive, not judgmental)
+
+**When to use:**
+- End of sprint/month — "did I follow through?"
+- Quarterly review — "where did my priorities actually go?"
+- When overwhelmed — "what's consuming my attention vs what I planned?"
+
+---
+
 ## Building a Routine
 
 Here's a rhythm that works well:
@@ -150,9 +228,11 @@ Here's a rhythm that works well:
 | Weekly | Connect new notes, check health | `/weave` + `/diagnose` |
 | When curious | Trace how a topic evolved | `/trace` |
 | Monthly | Look for patterns across the vault | `/emerge` |
+| Quarterly | Generate ideas, review drift | `/ideas` + `/drift` |
+| Before big decisions | Pressure-test your assumptions | `/challenge` |
 | As needed | Bridge two topics you're working on | `/connect` |
 
-The goal is not to run every skill every day. Write freely, weave weekly, think monthly.
+The goal is not to run every skill every day. Write freely, weave weekly, think monthly, reflect quarterly.
 
 ---
 
