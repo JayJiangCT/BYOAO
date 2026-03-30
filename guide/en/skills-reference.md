@@ -137,6 +137,82 @@ All 6 AI skills available in BYOAO. Run these in the Agent Client panel inside O
 
 ---
 
+## /ideas — Generate Actionable Ideas
+
+**What it does:** Deep vault scan that combines insights across domains to propose concrete, evidence-backed ideas.
+
+**How to run:**
+
+```
+/ideas                         # Ideas across all domains
+/ideas focus="infrastructure"  # Focus on a domain
+/ideas count=3                 # Limit to 3 ideas
+```
+
+**Idea types generated:**
+- **Synthesis** — Combine two existing threads into something new
+- **Gap** — Something the vault implies is needed but doesn't exist
+- **Connection** — Two people/projects that should be talking
+- **Amplification** — Take something small and scale it
+- **Challenge** — Question an assumption the vault takes for granted
+
+**Key rule:** Every idea must cite 2+ vault notes and include a concrete next step.
+
+---
+
+## /challenge — Pressure-Test Your Thinking
+
+**What it does:** Takes a belief or decision and rigorously tests it against your own vault — finding counter-evidence, contradictions, and unstated assumptions.
+
+**How to run:**
+
+```
+/challenge belief="We should use microservices for the new platform"
+/challenge belief="[[Decision Record]]" strength=gentle
+```
+
+**Parameters:**
+- `belief` (required) — statement or note reference to challenge
+- `strength` (optional) — "gentle" or "rigorous" (default)
+
+**What it finds:**
+- Supporting evidence (fair assessment first)
+- Direct contradictions in your own notes
+- Position changes over time
+- Unstated assumptions
+- Missing perspectives
+
+**Output:** Confidence rating (Strong / Moderate / Weak / Contradicted) with evidence and questions to consider.
+
+---
+
+## /drift — Detect Intention-Action Gaps
+
+**What it does:** Compares what you said you would do with what you actually did over a time period, using daily notes and project documents.
+
+**How to run:**
+
+```
+/drift                         # Last 30 days, all areas
+/drift period=60d              # Last 60 days
+/drift focus="API migration"   # Focus on a project
+```
+
+**Parameters:**
+- `period` (optional) — "7d", "30d" (default), "60d", "90d"
+- `focus` (optional) — project, domain, or goal to focus on
+
+**Categories tracked:**
+- **Aligned** — intention followed through
+- **Delayed** — behind schedule
+- **Drifted** — went in a different direction
+- **Abandoned** — stated but never acted on
+- **Emergent** — unplanned work that happened
+
+**Patterns detected:** Priority displacement, scope creep, energy leaks, goal abandonment, emergent priorities.
+
+---
+
 ## /explain — Explain Codebase Systems
 
 **What it does:** Explains codebases and systems in plain language, caching knowledge in your vault.
