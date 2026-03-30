@@ -52,7 +52,8 @@ The interactive setup asks:
 2. **Knowledge base name** — defaults to "{Name}'s KB"
 3. **Vault location** — defaults to `~/Documents/{KB name}`
 4. **Work preset?** — choose "No" for a minimal personal KB, or "PM/TPM" if you need Projects/Sprints folders
-5. **Set up AI provider?** — optionally authenticate now, or do it later
+5. **Connected services?** — if you chose PM/TPM, select which MCP services to enable (Atlassian, BigQuery). BigQuery will prompt for your GCP Project ID and handle authentication automatically
+6. **Set up AI provider?** — optionally authenticate now, or do it later
 
 ### Already have notes?
 

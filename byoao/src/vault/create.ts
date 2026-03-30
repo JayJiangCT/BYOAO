@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import path from "node:path";
 import { renderTemplate, today } from "./template.js";
 import { loadPreset, getCommonDir } from "./preset.js";
-import { configureMcp, type ConfigureMcpResult } from "./mcp.js";
+import { configureMcp, type ConfigureMcpResult, type ConfigureMcpOptions } from "./mcp.js";
 import { configureObsidianPlugins, type ConfigurePluginsResult } from "./obsidian-plugins.js";
 import { configureProvider, type ConfigureProviderResult } from "./provider.js";
 import { writeManifest, type InstalledFiles } from "./manifest.js";
@@ -37,6 +37,11 @@ export interface CreateVaultResult {
 /**
  * Mutable context passed through composable creation functions.
  */
+interface McpServiceInfo {
+  name: string;
+  description: string;
+}
+
 interface CreateContext {
   vaultPath: string;
   kbName: string;
@@ -46,6 +51,8 @@ interface CreateContext {
   filesCreated: number;
   directories: string[];
   installedFiles: InstalledFiles;
+  /** MCP services to display in Start Here.md */
+  mcpServices: McpServiceInfo[];
 }
 
 function makeContext(vaultPath: string, kbName: string, preserveObsidian = false): CreateContext {
@@ -62,8 +69,14 @@ function makeContext(vaultPath: string, kbName: string, preserveObsidian = false
       obsidianConfig: [],
       templates: [],
     },
+    mcpServices: [],
   };
 }
+
+const MCP_DISPLAY_NAMES: Record<string, { name: string; description: string }> = {
+  atlassian: { name: "Atlassian", description: "Jira issues, Confluence pages" },
+  bigquery: { name: "BigQuery", description: "Data warehouse queries and analysis" },
+};
 
 // ---------------------------------------------------------------------------
 // Composable creation functions
@@ -140,7 +153,11 @@ export async function createMinimalCore(
     path.join(ctx.commonDir, "Start Here.md.hbs"),
     "utf-8",
   );
-  const startHereContent = renderTemplate(startHereTemplate, { KB_NAME: ctx.kbName });
+  const startHereContent = renderTemplate(startHereTemplate, {
+    KB_NAME: ctx.kbName,
+    HAS_MCP_SERVICES: ctx.mcpServices.length > 0,
+    MCP_SERVICES: ctx.mcpServices,
+  });
   const startHerePath = path.join(ctx.vaultPath, "Start Here.md");
   if (!(await fs.pathExists(startHerePath))) {
     await fs.writeFile(startHerePath, startHereContent);
@@ -391,6 +408,15 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
   const preserveObsidian = initMode === "obsidian-vault";
   const ctx = makeContext(vaultPath, kbName, preserveObsidian);
 
+  // Populate MCP service info for Start Here.md rendering
+  const skipSet = new Set(config.mcpSkip ?? []);
+  for (const name of Object.keys(presetConfig.mcpServers)) {
+    if (!skipSet.has(name)) {
+      const info = MCP_DISPLAY_NAMES[name] ?? { name, description: `${name} service` };
+      ctx.mcpServices.push(info);
+    }
+  }
+
   // 1. Create minimal core (dirs, .obsidian, common templates, Glossary, Start Here)
   await createMinimalCore(ctx, glossaryEntries);
 
@@ -416,7 +442,14 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
   await configureOpenCodeProject(ctx.vaultPath, ctx.installedFiles);
 
   // 8. Configure MCP servers in global OpenCode config
-  const mcpResult = await configureMcp(presetConfig);
+  const mcpOptions: ConfigureMcpOptions = {};
+  if (config.mcpSkip && config.mcpSkip.length > 0) {
+    mcpOptions.skip = config.mcpSkip;
+  }
+  if (config.gcpProjectId) {
+    mcpOptions.vars = { GCP_PROJECT_ID: config.gcpProjectId };
+  }
+  const mcpResult = await configureMcp(presetConfig, mcpOptions);
 
   // 9. Install Obsidian community plugins from preset
   const pluginsResult = await configureObsidianPlugins(ctx.vaultPath, presetConfig);
@@ -476,8 +509,8 @@ async function configureOpenCodeProject(
     }
   }
   const plugins = (config.plugin as string[] | undefined) || [];
-  if (!plugins.includes("byoao")) {
-    plugins.push("byoao");
+  if (!plugins.includes("@jayjiang/byoao")) {
+    plugins.push("@jayjiang/byoao");
     config.plugin = plugins;
   }
   await fs.writeJson(configPath, config, { spaces: 2 });
