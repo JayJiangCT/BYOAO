@@ -1,6 +1,6 @@
 ---
 name: drift
-description: Compare stated intentions vs actual behavior over 30-60 days using daily notes and project documents. Reveals where actions diverge from plans.
+description: Compare stated intentions vs actual behavior over 30-60 days using daily notes and project documents. Use when the user asks "am I doing what I said I would", "what happened to my goals", "where did my time go", "check my follow-through", or wants to reflect on alignment between plans and actions.
 ---
 
 # /drift — Detect Intention-Action Gaps

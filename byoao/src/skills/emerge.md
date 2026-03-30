@@ -1,6 +1,6 @@
 ---
 name: emerge
-description: Surface conclusions, patterns, and insights the vault implies but never explicitly states. Analyzes clusters, orphans, and cross-domain connections.
+description: Surface conclusions, patterns, and insights the vault implies but never explicitly states. Analyzes clusters, orphans, and cross-domain connections. Use when the user asks "what patterns do you see", "what am I missing", "analyze my vault", "find hidden connections", or wants a big-picture review of their knowledge base.
 ---
 
 # /emerge — Surface Hidden Patterns
@@ -43,9 +43,7 @@ Identify:
 Use graph-level queries to identify interesting patterns:
 
 **Orphan notes** — notes with no links in or out:
-```bash
-obsidian search -orphans
-```
+Use `byoao_graph_health` or scan notes checking for those with zero wikilinks (no `[[` in content) and zero backlinks.
 Orphans may contain ideas the user hasn't connected yet.
 
 **Dead-end notes** — notes that link out but nobody links to them:

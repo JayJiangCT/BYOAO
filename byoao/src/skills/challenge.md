@@ -1,6 +1,6 @@
 ---
 name: challenge
-description: Pressure-test a belief, assumption, or decision using the vault's own history. Finds counter-evidence, contradictions, and blind spots.
+description: Pressure-test a belief, assumption, or decision using the vault's own history. Finds counter-evidence, contradictions, and blind spots. Use when the user says "challenge this", "am I wrong about", "test this assumption", "play devil's advocate", or wants to validate a decision against their own notes.
 ---
 
 # /challenge — Pressure-Test Your Thinking

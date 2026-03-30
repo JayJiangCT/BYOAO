@@ -1,6 +1,6 @@
 ---
 name: connect
-description: Bridge two seemingly unrelated topics or domains using the vault's link graph. Discovers hidden paths and shared contexts between concepts.
+description: Bridge two seemingly unrelated topics or domains using the vault's link graph. Discovers hidden paths and shared contexts. Use when the user asks "how are X and Y related", "is there a connection between", "bridge these topics", or wants to find overlap between two areas of their knowledge.
 ---
 
 # /connect — Bridge Two Domains

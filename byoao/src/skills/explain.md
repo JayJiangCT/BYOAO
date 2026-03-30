@@ -1,6 +1,6 @@
 ---
 name: explain
-description: Explain codebase systems and workflows in clear, non-jargon language. Uses engineer-generated overviews as baseline, reads local repo clones for details, caches knowledge in Obsidian vault.
+description: Explain codebase systems and workflows in clear, non-jargon language, cached in the Obsidian vault. Use when the user asks "how does this system work", "explain the architecture", "what does this service do", or needs a plain-language explanation of any codebase or technical system.
 ---
 
 # /explain — System Explainer

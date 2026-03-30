@@ -1,6 +1,6 @@
 ---
 name: ideas
-description: Deep vault scan to generate actionable ideas by combining insights across domains, finding gaps, and proposing concrete next steps.
+description: Deep vault scan to generate actionable ideas by combining insights across domains, finding gaps, and proposing concrete next steps. Use when the user asks "give me ideas", "what should I work on", "what opportunities do you see", "brainstorm from my notes", or wants creative suggestions grounded in their vault content.
 ---
 
 # /ideas — Generate Actionable Ideas

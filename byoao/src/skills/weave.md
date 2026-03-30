@@ -1,6 +1,6 @@
 ---
 name: weave
-description: Scan vault notes, enrich with frontmatter + wikilinks, maintain the Glossary, create hub notes — building a connected knowledge graph.
+description: Scan vault notes, enrich with frontmatter + wikilinks, maintain the Glossary, create hub notes — building a connected knowledge graph. Use when the user says "connect my notes", "add links", "enrich", "organize my vault", "run weave", or after importing new files into the vault.
 ---
 
 # /weave — Connect Your Notes

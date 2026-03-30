@@ -1,6 +1,6 @@
 ---
 name: trace
-description: Track how an idea, concept, or topic evolved across the vault over time. Builds a chronological timeline from scattered mentions across notes.
+description: Track how an idea, concept, or topic evolved across the vault over time. Builds a chronological timeline from scattered mentions. Use when the user asks "how did X evolve", "what's the history of", "when did we start thinking about", "trace this idea", or wants to understand the arc of a concept.
 ---
 
 # /trace — Track Idea Evolution
