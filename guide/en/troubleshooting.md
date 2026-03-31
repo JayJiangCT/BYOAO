@@ -149,8 +149,29 @@ BigQuery authentication happens lazily — the first time you ask the agent to q
 
 ---
 
+## Checking error logs
+
+If something isn't working but you're not sure what went wrong, check the error logs:
+
+```bash
+byoao logs
+```
+
+This shows recent errors from tools, hooks, and CLI commands. To share logs with the developer:
+
+```bash
+byoao logs --export ~/Desktop/byoao-logs.txt
+```
+
+The exported file includes your BYOAO version, Node version, and OS — everything needed for debugging. Review it before sharing to make sure it doesn't contain sensitive information.
+
+See [CLI Reference — byoao logs](cli-reference.md#byoao-logs) for all options.
+
+---
+
 ## Still stuck?
 
+- Run `byoao logs --export ~/Desktop/byoao-logs.txt` and attach the file to your report
 - Check [GitHub Issues](https://github.com/JayJiangCT/BYOAO/issues) for known problems
 - Open a new issue with: BYOAO version (`byoao --version`), Node version (`node --version`), OS, and steps to reproduce
 

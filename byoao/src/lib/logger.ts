@@ -145,4 +145,5 @@ export async function clearLogs(): Promise<void> {
   } catch {
     // File may not exist
   }
+  dirEnsured = false;
 }

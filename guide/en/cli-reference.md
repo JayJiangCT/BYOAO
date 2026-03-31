@@ -124,4 +124,27 @@ Reports: installed (yes/no), running (yes/no), version, vaults directory.
 
 ---
 
+## byoao logs
+
+View and manage BYOAO error logs. Errors from tools, hooks, and CLI commands are automatically recorded to `~/.byoao/logs/error.log`.
+
+```bash
+byoao logs                # Show recent 20 entries
+byoao logs --tail 50      # Show recent 50 entries
+byoao logs --json         # Output raw JSON (for scripting)
+byoao logs --export ~/Desktop/byoao-logs.txt   # Export to file
+byoao logs --clear        # Clear all logs
+```
+
+| Flag | Description |
+|------|-------------|
+| `--tail <n>` | Number of recent entries to show (default: 20) |
+| `--export <path>` | Export logs to a file (includes system info header) |
+| `--clear` | Clear all log files |
+| `--json` | Output entries as raw JSON lines |
+
+**Export format:** The exported file includes a header with BYOAO version, Node version, and OS info — useful when sharing logs for debugging.
+
+---
+
 **← Previous:** [Skills Reference](skills-reference.md) | **Next:** [Troubleshooting](troubleshooting.md) →

@@ -151,8 +151,29 @@ BigQuery 认证是延迟触发的——当你第一次让 agent 查询 BigQuery 
 
 ---
 
+## 查看错误日志
+
+如果遇到问题但不确定原因，可以查看错误日志：
+
+```bash
+byoao logs
+```
+
+这会显示工具、hook 和 CLI 命令的最近错误。如需将日志分享给开发者：
+
+```bash
+byoao logs --export ~/Desktop/byoao-logs.txt
+```
+
+导出的文件包含 BYOAO 版本、Node 版本和操作系统信息——排障所需的一切。分享前请检查文件内容，确保不含敏感信息。
+
+更多选项见 [CLI 参考 — byoao logs](cli-reference.md#byoao-logs)。
+
+---
+
 ## 还是解决不了？
 
+- 运行 `byoao logs --export ~/Desktop/byoao-logs.txt` 并将文件附在报告中
 - 查看 [GitHub Issues](https://github.com/JayJiangCT/BYOAO/issues) 了解已知问题
 - 提交新 issue，附带：BYOAO 版本（`byoao --version`）、Node 版本（`node --version`）、操作系统、复现步骤
 
