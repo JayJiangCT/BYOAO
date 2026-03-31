@@ -2,6 +2,7 @@ import fs from "fs-extra";
 import path from "node:path";
 import { detectVaultContext } from "../vault/vault-detect.js";
 import { readOpencodeConfig } from "../vault/opencode-config.js";
+import { log } from "../lib/logger.js";
 
 /**
  * Read AGENT.md from the current working directory.
@@ -18,6 +19,9 @@ export function readAgentMdFromCwd(): string | null {
       try {
         return fs.readFileSync(candidate, "utf-8");
       } catch {
+        void log("warn", "hook:system-transform", "Failed to read AGENT.md", {
+          context: { path: candidate },
+        }).catch(() => {});
         return null;
       }
     }
@@ -101,6 +105,7 @@ async function buildMcpAuthGuidance(): Promise<string | null> {
         : "",
     ].filter(Boolean).join("\n");
   } catch {
+    void log("warn", "hook:system-transform", "Failed to build MCP auth guidance").catch(() => {});
     return null;
   }
 }
