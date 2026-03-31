@@ -126,4 +126,27 @@ byoao check-obsidian
 
 ---
 
+## byoao logs
+
+查看和管理 BYOAO 错误日志。工具、hook 和 CLI 命令的错误会自动记录到 `~/.byoao/logs/error.log`。
+
+```bash
+byoao logs                # 显示最近 20 条
+byoao logs --tail 50      # 显示最近 50 条
+byoao logs --json         # 输出原始 JSON（便于脚本处理）
+byoao logs --export ~/Desktop/byoao-logs.txt   # 导出到文件
+byoao logs --clear        # 清空所有日志
+```
+
+| 参数 | 说明 |
+|------|------|
+| `--tail <n>` | 显示最近 N 条（默认：20） |
+| `--export <path>` | 导出日志到文件（包含系统信息头） |
+| `--clear` | 清空所有日志文件 |
+| `--json` | 以原始 JSON 行格式输出 |
+
+**导出格式：** 导出的文件包含 BYOAO 版本、Node 版本和操作系统信息——方便分享日志用于排障。
+
+---
+
 **← 上一步：** [技能参考](skills-reference.md) | **下一步：** [故障排除](troubleshooting.md) →

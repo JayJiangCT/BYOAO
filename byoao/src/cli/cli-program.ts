@@ -15,6 +15,7 @@ import { upgradeVault } from "../vault/upgrade.js";
 import { checkForCliUpdate, selfUpdateCli } from "../vault/self-update.js";
 import { detectVaultContext, detectInitMode } from "../vault/vault-detect.js";
 import { loadPreset } from "../vault/preset.js";
+import { log, readLogs, exportLogs, clearLogs } from "../lib/logger.js";
 
 const require = createRequire(import.meta.url);
 const PKG_VERSION: string = (require("../../package.json") as Record<string, unknown>).version as string;
@@ -674,6 +675,9 @@ program
       if (result.errors.length > 0) process.exit(1);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
+      void log("error", "cli:upgrade", msg, {
+        error: err instanceof Error ? err : undefined,
+      }).catch(() => {});
       printWarning(msg);
       process.exit(1);
     }
@@ -686,5 +690,85 @@ function getCategoryLabel(filePath: string): string {
   if (filePath.startsWith("Knowledge/templates/")) return "templates";
   return "other";
 }
+
+// ── byoao logs ──────────────────────────────────────────────────
+program
+  .command("logs")
+  .description("View and manage BYOAO error logs")
+  .option("--tail <n>", "Show the most recent N entries", "20")
+  .option("--export <path>", "Export logs to a file")
+  .option("--clear", "Clear all logs")
+  .option("--json", "Output raw JSON format")
+  .action(async (opts) => {
+    if (opts.clear) {
+      await clearLogs();
+      console.log("Logs cleared.");
+      return;
+    }
+
+    if (opts.export) {
+      const raw = await exportLogs();
+      if (!raw) {
+        console.log("No logs to export.");
+        return;
+      }
+
+      const header = [
+        "BYOAO Error Log Export",
+        `Generated: ${new Date().toISOString()}`,
+        `BYOAO Version: ${PKG_VERSION}`,
+        `Node Version: ${process.version}`,
+        `OS: ${process.platform} ${process.arch}`,
+        "━".repeat(40),
+        "",
+      ].join("\n");
+
+      const { writeFile } = await import("node:fs/promises");
+      const outPath = (await import("node:path")).default.resolve(opts.export);
+      await writeFile(outPath, header + raw);
+
+      const lineCount = raw.trim().split("\n").length;
+      console.log(`Exported to ${outPath} (${lineCount} entries)`);
+      console.log(
+        "Warning: Please review the file before sharing to ensure it contains no sensitive information.",
+      );
+      return;
+    }
+
+    const limit = parseInt(opts.tail, 10) || 20;
+    const entries = await readLogs(limit);
+
+    if (entries.length === 0) {
+      console.log("No log entries found.");
+      return;
+    }
+
+    if (opts.json) {
+      for (const entry of entries) {
+        console.log(JSON.stringify(entry));
+      }
+      return;
+    }
+
+    console.log(`\nBYOAO Error Log (recent ${entries.length} entries)`);
+    console.log("━".repeat(40));
+
+    for (const entry of entries) {
+      const time = entry.ts.replace("T", " ").replace(/\.\d+Z$/, "");
+      const level = entry.level.toUpperCase().padEnd(5);
+      console.log(`\n[${time}] ${level} ${entry.source}`);
+      console.log(`  ${entry.message}`);
+      if (entry.context) {
+        for (const [k, v] of Object.entries(entry.context)) {
+          console.log(`  ${k}: ${v}`);
+        }
+      }
+    }
+
+    console.log("\n" + "━".repeat(40));
+    console.log(
+      `${entries.length} entries | Log file: ~/.byoao/logs/error.log`,
+    );
+  });
 
 program.parse();
