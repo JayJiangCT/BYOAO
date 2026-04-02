@@ -18,7 +18,7 @@ describe("writeManifest", () => {
     const { writeManifest } = await import("../manifest.js");
 
     const installedFiles = {
-      skills: [".opencode/skills/byoao-conventions.md"],
+      skills: [".opencode/skills/byoao-conventions/SKILL.md"],
       commands: [".opencode/commands/vault-doctor.md"],
       obsidianConfig: [".obsidian/core-plugins.json"],
       templates: ["Knowledge/templates/Daily Note.md"],
@@ -34,7 +34,7 @@ describe("writeManifest", () => {
     expect(manifest.preset).toBe("pm-tpm");
     expect(manifest.createdAt).toBeDefined();
     expect(manifest.updatedAt).toBeDefined();
-    expect(manifest.infrastructure.skills).toEqual([".opencode/skills/byoao-conventions.md"]);
+    expect(manifest.infrastructure.skills).toEqual([".opencode/skills/byoao-conventions/SKILL.md"]);
     expect(manifest.infrastructure.commands).toEqual([".opencode/commands/vault-doctor.md"]);
     expect(manifest.infrastructure.obsidianConfig).toEqual([".obsidian/core-plugins.json"]);
     expect(manifest.infrastructure.templates).toEqual(["Knowledge/templates/Daily Note.md"]);
@@ -56,7 +56,7 @@ describe("readManifest", () => {
     const { readManifest, writeManifest } = await import("../manifest.js");
 
     await writeManifest(tmpDir, "pm-tpm", {
-      skills: [".opencode/skills/test.md"],
+      skills: [".opencode/skills/test/SKILL.md"],
       commands: [],
       obsidianConfig: [],
       templates: [],
@@ -65,7 +65,7 @@ describe("readManifest", () => {
     const result = await readManifest(tmpDir);
     expect(result).not.toBeNull();
     expect(result!.preset).toBe("pm-tpm");
-    expect(result!.infrastructure.skills).toEqual([".opencode/skills/test.md"]);
+    expect(result!.infrastructure.skills).toEqual([".opencode/skills/test/SKILL.md"]);
   });
 
   it("returns null when manifest does not exist", async () => {

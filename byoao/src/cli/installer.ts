@@ -236,9 +236,12 @@ export async function install(
       let installedCount = 0;
       for (const file of skillFiles) {
         if (file.endsWith(".md")) {
+          const skillName = file.replace(/\.md$/, "");
+          const destDir = path.join(skillsDir, skillName);
+          await fs.ensureDir(destDir);
           await fs.copy(
             path.join(obsidianSkillsSrc, file),
-            path.join(skillsDir, file),
+            path.join(destDir, "SKILL.md"),
             { overwrite: true }
           );
           installedCount++;
@@ -361,9 +364,17 @@ export async function uninstall(
       if (!(await fs.pathExists(skillsDir))) continue;
       for (const file of skillFiles) {
         if (file.endsWith(".md")) {
-          const dest = path.join(skillsDir, file);
-          if (await fs.pathExists(dest)) {
-            await fs.remove(dest);
+          const skillName = file.replace(/\.md$/, "");
+          // New layout: skills/<name>/SKILL.md
+          const destDir = path.join(skillsDir, skillName);
+          if (await fs.pathExists(destDir)) {
+            await fs.remove(destDir);
+            removedCount++;
+          }
+          // Legacy layout: skills/<name>.md
+          const legacyDest = path.join(skillsDir, file);
+          if (await fs.pathExists(legacyDest)) {
+            await fs.remove(legacyDest);
             removedCount++;
           }
         }

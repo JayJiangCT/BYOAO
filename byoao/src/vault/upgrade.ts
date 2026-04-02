@@ -57,7 +57,7 @@ export interface UpgradeOptions {
 export async function scanInstalledAssets(
   vaultPath: string
 ): Promise<InstalledFiles> {
-  const skills = await scanDir(vaultPath, ".opencode/skills", ".md");
+  const skills = await scanSkillDirs(vaultPath);
   const commands = await scanDir(vaultPath, ".opencode/commands", ".md");
   const templates = await scanDir(vaultPath, "Knowledge/templates", ".md");
 
@@ -84,6 +84,24 @@ async function scanDir(
   return files
     .filter((f) => f.endsWith(ext))
     .map((f) => `${relDir}/${f}`);
+}
+
+/** Scan skills in the OpenCode skills/<name>/SKILL.md layout. */
+async function scanSkillDirs(vaultPath: string): Promise<string[]> {
+  const skillsRoot = path.join(vaultPath, ".opencode", "skills");
+  if (!(await fs.pathExists(skillsRoot))) return [];
+
+  const results: string[] = [];
+  const entries = await fs.readdir(skillsRoot, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      const skillMd = path.join(skillsRoot, entry.name, "SKILL.md");
+      if (await fs.pathExists(skillMd)) {
+        results.push(`.opencode/skills/${entry.name}/SKILL.md`);
+      }
+    }
+  }
+  return results;
 }
 
 // ── Bootstrap ───────────────────────────────────────────────────
@@ -201,13 +219,14 @@ function resolvePackageAssets(preset: string): PackageAssets {
   const obsidianConfig: PackageAssetEntry[] = [];
   const templates: PackageAssetEntry[] = [];
 
-  // 1. Obsidian skills → .opencode/skills/
+  // 1. Obsidian skills → .opencode/skills/<name>/SKILL.md
   const obsidianSkillsDir = path.join(assetsDir, "obsidian-skills");
   if (fs.existsSync(obsidianSkillsDir)) {
     for (const file of fs.readdirSync(obsidianSkillsDir)) {
       if (file.endsWith(".md")) {
+        const skillName = file.replace(/\.md$/, "");
         skills.push({
-          relativePath: `.opencode/skills/${file}`,
+          relativePath: `.opencode/skills/${skillName}/SKILL.md`,
           sourcePath: path.join(obsidianSkillsDir, file),
         });
       }

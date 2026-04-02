@@ -17,9 +17,9 @@ describe("scanInstalledAssets", () => {
   it("finds skills, commands, obsidian config, and templates", async () => {
     const { scanInstalledAssets } = await import("../upgrade.js");
 
-    // Set up vault with infrastructure files
-    await fs.ensureDir(path.join(tmpDir, ".opencode", "skills"));
-    await fs.writeFile(path.join(tmpDir, ".opencode", "skills", "test.md"), "# Skill");
+    // Set up vault with infrastructure files (skills/<name>/SKILL.md layout)
+    await fs.ensureDir(path.join(tmpDir, ".opencode", "skills", "test"));
+    await fs.writeFile(path.join(tmpDir, ".opencode", "skills", "test", "SKILL.md"), "# Skill");
     await fs.ensureDir(path.join(tmpDir, ".opencode", "commands"));
     await fs.writeFile(path.join(tmpDir, ".opencode", "commands", "cmd.md"), "# Cmd");
     await fs.ensureDir(path.join(tmpDir, ".obsidian"));
@@ -29,7 +29,7 @@ describe("scanInstalledAssets", () => {
 
     const result = await scanInstalledAssets(tmpDir);
 
-    expect(result.skills).toContain(".opencode/skills/test.md");
+    expect(result.skills).toContain(".opencode/skills/test/SKILL.md");
     expect(result.commands).toContain(".opencode/commands/cmd.md");
     expect(result.obsidianConfig).toContain(".obsidian/core-plugins.json");
     expect(result.templates).toContain("Knowledge/templates/Daily Note.md");
@@ -54,8 +54,8 @@ describe("bootstrapManifest", () => {
 
     await fs.ensureDir(path.join(tmpDir, ".obsidian"));
     await fs.writeFile(path.join(tmpDir, "AGENT.md"), "# Agent");
-    await fs.ensureDir(path.join(tmpDir, ".opencode", "skills"));
-    await fs.writeFile(path.join(tmpDir, ".opencode", "skills", "s.md"), "skill");
+    await fs.ensureDir(path.join(tmpDir, ".opencode", "skills", "s"));
+    await fs.writeFile(path.join(tmpDir, ".opencode", "skills", "s", "SKILL.md"), "skill");
 
     await bootstrapManifest(tmpDir);
 
@@ -63,7 +63,7 @@ describe("bootstrapManifest", () => {
     expect(manifest).not.toBeNull();
     expect(manifest!.version).toBe("0.0.0");
     expect(manifest!.preset).toBe("pm-tpm");
-    expect(manifest!.infrastructure.skills).toContain(".opencode/skills/s.md");
+    expect(manifest!.infrastructure.skills).toContain(".opencode/skills/s/SKILL.md");
   });
 
   it("accepts preset override", async () => {
@@ -81,10 +81,10 @@ describe("buildUpgradePlan", () => {
   it("marks missing files as add and existing files as update", async () => {
     const { buildUpgradePlan } = await import("../upgrade.js");
 
-    // Vault has one skill on disk
-    await fs.ensureDir(path.join(tmpDir, ".opencode", "skills"));
+    // Vault has one skill on disk (new layout)
+    await fs.ensureDir(path.join(tmpDir, ".opencode", "skills", "existing"));
     await fs.writeFile(
-      path.join(tmpDir, ".opencode", "skills", "existing.md"),
+      path.join(tmpDir, ".opencode", "skills", "existing", "SKILL.md"),
       "old content"
     );
 
@@ -94,18 +94,17 @@ describe("buildUpgradePlan", () => {
       createdAt: "2026-03-20",
       updatedAt: "2026-03-20",
       infrastructure: {
-        skills: [".opencode/skills/existing.md"],
+        skills: [".opencode/skills/existing/SKILL.md"],
         commands: [],
         obsidianConfig: [],
         templates: [],
       },
     };
 
-    // Package ships two skills: existing.md and new.md
     const packageAssets = {
       skills: [
-        { relativePath: ".opencode/skills/existing.md", sourcePath: "/fake/existing.md" },
-        { relativePath: ".opencode/skills/new.md", sourcePath: "/fake/new.md" },
+        { relativePath: ".opencode/skills/existing/SKILL.md", sourcePath: "/fake/existing.md" },
+        { relativePath: ".opencode/skills/new/SKILL.md", sourcePath: "/fake/new.md" },
       ],
       commands: [],
       obsidianConfig: [],
@@ -114,8 +113,8 @@ describe("buildUpgradePlan", () => {
 
     const plan = buildUpgradePlan(tmpDir, manifest, packageAssets);
 
-    const addItem = plan.items.find((i) => i.file === ".opencode/skills/new.md");
-    const updateItem = plan.items.find((i) => i.file === ".opencode/skills/existing.md");
+    const addItem = plan.items.find((i) => i.file === ".opencode/skills/new/SKILL.md");
+    const updateItem = plan.items.find((i) => i.file === ".opencode/skills/existing/SKILL.md");
 
     expect(addItem).toBeDefined();
     expect(addItem!.action).toBe("add");
@@ -132,7 +131,7 @@ describe("buildUpgradePlan", () => {
       createdAt: "2026-03-20",
       updatedAt: "2026-03-20",
       infrastructure: {
-        skills: [".opencode/skills/removed.md"],
+        skills: [".opencode/skills/removed/SKILL.md"],
         commands: [],
         obsidianConfig: [],
         templates: [],
@@ -148,7 +147,7 @@ describe("buildUpgradePlan", () => {
 
     const plan = buildUpgradePlan(tmpDir, manifest, packageAssets);
 
-    const deprecated = plan.items.find((i) => i.file === ".opencode/skills/removed.md");
+    const deprecated = plan.items.find((i) => i.file === ".opencode/skills/removed/SKILL.md");
     expect(deprecated).toBeDefined();
     expect(deprecated!.action).toBe("deprecated");
   });
