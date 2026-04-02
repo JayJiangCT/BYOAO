@@ -22,7 +22,7 @@ All 6 AI skills available in BYOAO. Run these in the Agent Client panel inside O
 
 **Process:**
 1. Reads Glossary to load known entities
-2. Scans files (respects exclusion rules and `.byoaoignore`)
+2. Scans files (respects exclusion rules)
 3. Identifies entities: people, projects, concepts, tools
 4. Proposes frontmatter additions (never overwrites existing fields)
 5. Proposes wikilinks (first occurrence only, not inside code blocks)
@@ -210,27 +210,6 @@ All 6 AI skills available in BYOAO. Run these in the Agent Client panel inside O
 - **Emergent** — unplanned work that happened
 
 **Patterns detected:** Priority displacement, scope creep, energy leaks, goal abandonment, emergent priorities.
-
----
-
-## /explain — Explain Codebase Systems
-
-**What it does:** Explains codebases and systems in plain language, caching knowledge in your vault.
-
-**How to run:**
-
-```
-/explain "How does the payment service handle refunds?"
-```
-
-**Process:**
-1. Loads baseline overview from `.opencode/context/repos/`
-2. Checks `Systems/` for cached knowledge
-3. Reads local repo clone for details if needed
-4. Synthesizes a clear explanation with Mermaid diagrams
-5. Saves to `Systems/` in your vault
-
-**Best for:** Knowledge workers who need to understand codebases without reading code directly.
 
 ---
 

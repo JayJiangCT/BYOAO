@@ -65,6 +65,11 @@ function buildNavigationStrategy(vaultPath: string): string {
     "| `references`| Related notes — follow for deeper context        |",
     "| `type`      | Note kind (meeting, idea, reference, daily, etc) |",
     "| `tags`      | Flexible categorization                          |",
+    "",
+    "### Vault Health",
+    "",
+    "If you notice broken wikilinks, orphan notes, or missing frontmatter while working,",
+    "suggest that the user run `/diagnose` to get a full vault health report.",
   ].join("\n");
 }
 

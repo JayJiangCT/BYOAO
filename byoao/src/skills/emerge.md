@@ -15,6 +15,10 @@ obsidian --version
 
 If this fails, STOP and display the Obsidian CLI availability message (see /weave for the full error text).
 
+## Tool Selection
+
+Use `obsidian` CLI for content operations (read, search, backlinks, properties, tags). Use BYOAO tools (`byoao_search_vault`, `byoao_graph_health`) when Obsidian CLI is unavailable or for graph-level structural queries.
+
 ## Parameters
 
 - **scope** (optional): Limit analysis to a folder, domain, or tag. Default: entire vault.
@@ -22,6 +26,10 @@ If this fails, STOP and display the Obsidian CLI availability message (see /weav
 - **output** (optional): If set, save findings as a note at this path.
 
 ## Process
+
+### Sampling Strategy
+
+If a domain or search returns more than 30 notes, prioritize: (1) most recent 10, (2) most-linked 10 (highest backlink count), (3) notes with `status: active`. Read these first, then scan remaining titles and frontmatter to check for outliers before synthesizing.
 
 ### Step 1: Map the Vault
 
