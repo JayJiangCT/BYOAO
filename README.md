@@ -42,6 +42,7 @@ Then open in Obsidian, enable CLI, and run `/weave` to connect your notes.
 | Component | Description |
 |-----------|-------------|
 | `/weave` | Connect notes into a knowledge graph — frontmatter, wikilinks, Glossary |
+| `/organize` | Reorganize vault directories safely via Obsidian CLI |
 | `/trace` | Track how an idea evolved over time |
 | `/emerge` | Surface hidden patterns across your notes |
 | `/connect` | Bridge two seemingly unrelated topics |

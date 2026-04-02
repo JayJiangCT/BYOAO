@@ -29,6 +29,7 @@ export interface CreateVaultResult {
   filesCreated: number;
   wikilinksCreated: number;
   directories: string[];
+  initMode: import("./vault-detect.js").InitMode;
   mcpResult: ConfigureMcpResult | null;
   pluginsResult: ConfigurePluginsResult | null;
   providerResult: ConfigureProviderResult | null;
@@ -482,6 +483,7 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
     filesCreated: ctx.filesCreated,
     wikilinksCreated,
     directories: ctx.directories,
+    initMode,
     mcpResult,
     pluginsResult,
     providerResult,

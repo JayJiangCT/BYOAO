@@ -100,11 +100,13 @@ Open the **Agent Client** panel (icon in the right sidebar) and type:
 ```
 
 This is where the magic happens. /weave scans your notes and:
-- Adds frontmatter (type, domain, tags, references)
+- Adds frontmatter (`title`, `date`, `type`, `domain`, `tags`, `references`) — `date` is always populated
+- Adds `source` field for notes originating from cloud documents
 - Converts mentions of known terms to `[[wikilinks]]`
 - Suggests new Glossary entries for recurring concepts
 - Creates hub notes for frequently mentioned topics
 - Backs up every file before modifying it
+- Suggests running `/organize` if directory restructuring would help
 
 After it runs, press `Cmd+G` to open Graph View and see your notes connected.
 
@@ -112,7 +114,7 @@ After it runs, press `Cmd+G` to open Graph View and see your notes connected.
 
 - **[Core Concepts](core-concepts.md)** — understand how BYOAO works under the hood
 - **[Workflows](workflows.md)** — common scenarios: weekly review, tracing ideas, discovering patterns
-- **[Skills Reference](skills-reference.md)** — all 6 AI skills in detail
+- **[Skills Reference](skills-reference.md)** — all 9 AI skills in detail
 
 ---
 

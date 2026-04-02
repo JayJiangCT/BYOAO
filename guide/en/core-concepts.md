@@ -61,7 +61,7 @@ The Glossary (`Knowledge/Glossary.md`) is not a reference document you maintain 
 
 **How /weave uses it:**
 - **Read**: Every Glossary term is an automatic wikilink candidate. If your note mentions "rate limiting" and the Glossary has "Rate Limiting", /weave creates `[[Rate Limiting]]`.
-- **Write**: If an entity appears in 3+ files but isn't in the Glossary, /weave suggests adding it.
+- **Write**: If an entity appears in 5+ files, /weave auto-suggests adding it to the Glossary. For entities in 3–4 files, /weave asks you to verify before adding.
 - **Graduate**: If a Glossary term is referenced by 5+ notes, /weave suggests creating a standalone concept note with its own frontmatter and references.
 
 ## Frontmatter — Metadata for AI Navigation
@@ -84,11 +84,14 @@ status: active
 
 | Field | Purpose |
 |-------|---------|
+| `title` | Descriptive note title |
+| `date` | YYYY-MM-DD — when the note was created (mandatory, inferred by /weave) |
 | `domain` | Knowledge area — AI uses this to find related notes |
 | `type` | Note kind (meeting, idea, reference, daily, project, person) |
 | `references` | Related notes — AI follows these for deeper context |
 | `tags` | Flexible categorization |
 | `status` | draft / active / completed / archived |
+| `source` | (optional) URL to cloud origin — Confluence, Google Doc, etc. |
 
 These fields enable **progressive disclosure**: AI reads AGENT.md first, then follows domains and references to find exactly what's relevant — no need to search blindly.
 

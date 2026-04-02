@@ -16,9 +16,13 @@ Before creating any note:
 3. Identify the correct template — match your note type to a template below
 4. Verify the target directory — place the file according to its `type`
 
-## Creating Notes with Templates
+## Creating Notes
 
-ALWAYS use `obsidian create` when a matching template exists:
+You MUST use `obsidian create` to create notes in the vault — never use
+file write tools directly. Obsidian CLI ensures the file is tracked by
+Obsidian and templates are applied correctly.
+
+When a matching template exists:
 
 ```
 obsidian create name="Feature Name" template="Feature Doc" path="Projects/"
@@ -29,16 +33,11 @@ obsidian create name="Decision Title" template="Decision Record"
 obsidian create name="YYYY-MM-DD" template="Daily Note" path="Daily/"
 ```
 
-If no template matches, construct frontmatter manually:
+If no template matches, construct frontmatter manually. `date` MUST be
+today's actual date — never a placeholder, never omitted:
 
-```yaml
----
-title: "Note Title"
-type: reference
-status: draft
-date: YYYY-MM-DD
-tags: []
----
+```
+obsidian create name="Note Title" content="---\ntitle: \"Note Title\"\ntype: reference\nstatus: draft\ndate: 2026-04-02\ntags: []\n---\n\n# Note Title\n" silent
 ```
 
 ## Required Frontmatter
