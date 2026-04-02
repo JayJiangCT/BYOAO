@@ -15,6 +15,10 @@ obsidian --version
 
 If this fails, STOP and display the Obsidian CLI availability message (see /weave for the full error text).
 
+## Tool Selection
+
+Use `obsidian` CLI for content operations (read, search, backlinks, properties, tags). Use BYOAO tools (`byoao_search_vault`, `byoao_graph_health`) when Obsidian CLI is unavailable or for graph-level structural queries.
+
 ## Parameters
 
 - **from** (required): The first topic, concept, domain, or note.

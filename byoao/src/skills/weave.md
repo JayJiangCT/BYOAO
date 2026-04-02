@@ -47,8 +47,6 @@ When scanning files, skip:
 | `AGENT.md` | BYOAO-managed file |
 | `Knowledge/templates/` | Template files — not user content |
 
-Also respect `.byoaoignore` if present (same format as `.gitignore`).
-
 Report skipped non-markdown files at the end: "Skipped N non-markdown files".
 
 ## Process

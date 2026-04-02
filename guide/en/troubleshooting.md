@@ -57,7 +57,7 @@ Common issues and how to fix them.
 **Possible reasons:**
 
 - **Files are excluded:** /weave skips `.obsidian/`, `.git/`, `node_modules/`, templates, AGENT.md, and binary files
-- **Custom exclusions:** Check if you have a `.byoaoignore` file with overly broad patterns
+- **Custom exclusions:** Check if the file matches a built-in exclusion pattern (see /weave documentation)
 - **Wrong vault:** Make sure the correct vault is open in Obsidian
 - **Non-markdown files:** /weave only processes `.md` files. PDFs, images, and other files are skipped (count reported at the end)
 

@@ -49,7 +49,6 @@ Then open in Obsidian, enable CLI, and run `/weave` to connect your notes.
 | `/challenge` | Pressure-test a belief against your own notes |
 | `/drift` | Compare stated intentions vs actual behavior |
 | `/diagnose` | Check knowledge graph health |
-| `/explain` | Explain codebase systems in plain language |
 
 ## Documentation
 

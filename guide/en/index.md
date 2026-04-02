@@ -15,6 +15,6 @@
 
 ## Reference
 
-- **[Skills Reference](skills-reference.md)** — All 9 AI skills: /weave, /trace, /emerge, /connect, /ideas, /challenge, /drift, /diagnose, /explain
+- **[Skills Reference](skills-reference.md)** — All 8 AI skills: /weave, /trace, /emerge, /connect, /ideas, /challenge, /drift, /diagnose
 - **[CLI Reference](cli-reference.md)** — All commands, flags, and examples
 - **[Troubleshooting](troubleshooting.md)** — Common issues and fixes

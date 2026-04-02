@@ -15,6 +15,6 @@
 
 ## 参考
 
-- **[技能参考](skills-reference.md)** — 9 个 AI 技能：/weave、/trace、/emerge、/connect、/ideas、/challenge、/drift、/diagnose、/explain
+- **[技能参考](skills-reference.md)** — 8 个 AI 技能：/weave、/trace、/emerge、/connect、/ideas、/challenge、/drift、/diagnose
 - **[CLI 参考](cli-reference.md)** — 所有命令、参数和示例
 - **[故障排除](troubleshooting.md)** — 常见问题与解决方案

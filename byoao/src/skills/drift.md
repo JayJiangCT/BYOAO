@@ -15,6 +15,10 @@ obsidian --version
 
 If this fails, STOP and display the Obsidian CLI availability message (see /weave for the full error text).
 
+## Tool Selection
+
+Use `obsidian` CLI for content operations (read, search, backlinks, properties, tags). Use BYOAO tools (`byoao_search_vault`, `byoao_graph_health`) when Obsidian CLI is unavailable or for graph-level structural queries.
+
 ## Parameters
 
 - **period** (optional): Time window to analyze. Default: "30d" (last 30 days). Accepts: "7d", "30d", "60d", "90d".
@@ -23,24 +27,39 @@ If this fails, STOP and display the Obsidian CLI availability message (see /weav
 
 ## Process
 
+### Date Range Resolution
+
+Calculate the cutoff date from the `period` parameter (e.g., "30d" = today minus 30 days). Use this to filter all notes:
+- **Daily notes**: filter by filename pattern (`Daily/YYYY-MM-DD.md`)
+- **Other notes**: filter by frontmatter `date` field
+- Notes without a date: include only if they are in an active project folder or have `status: active`
+
 ### Step 1: Collect Intentions
 
-Search for stated intentions, goals, and plans:
+Use a structured, layered approach to find stated intentions:
 
+**Layer 1 — Structured notes (most reliable):**
+```bash
+obsidian search "type: decision"
+obsidian search "type: plan"
+```
+Read sprint handoffs, project docs, and decision records within the period.
+
+**Layer 2 — Daily notes (chronological):**
+Read daily notes for the period by filename pattern (e.g., `Daily/2026-03-*.md`). Extract stated priorities, action items, and commitments.
+
+**Layer 3 — Keyword fallback (for vaults without structured frontmatter):**
+Only if Layers 1-2 produce fewer than 5 intentions:
 ```bash
 obsidian search "goal"
-obsidian search "plan"
-obsidian search "will do"
 obsidian search "next steps"
 obsidian search "TODO"
 obsidian search "priority"
 ```
 
 Also read:
-- Decision records — what was decided
-- Sprint/project plans — what was committed
-- Daily notes from the start of the period — stated priorities
-- Meeting notes — action items assigned
+- Meeting notes with action items assigned
+- Notes with tags like `#plan`, `#goal`, `#commitment`
 
 Extract a list of **stated intentions** with dates:
 - "{date}: Planned to {X}" (source: [[Note]])
@@ -88,6 +107,7 @@ Look for systemic patterns, not just individual misses:
 
 **Energy leaks** — Time going to undocumented work.
 > "Daily notes from weeks 3-5 rarely mention the stated priority. The gap suggests time is going somewhere not reflected in the vault."
+**Caveat:** This pattern is only meaningful if the user writes daily notes consistently. If daily notes are sparse or irregular, the absence of mentions is a documentation gap, not evidence of time spent elsewhere. Note this distinction in the report.
 
 **Goal abandonment** — Goals that silently disappeared.
 > "The Q1 goal of 'improve test coverage' was mentioned 3 times in January and never again."

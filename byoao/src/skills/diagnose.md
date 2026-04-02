@@ -58,7 +58,7 @@ For each issue category, suggest a concrete next action:
 
 ### Step 5: Update AGENT.md Timestamp
 
-After fixes are applied (with user consent), append or update a `Last Scanned` line at the bottom of AGENT.md:
+After fixes are applied, **ask the user** before updating AGENT.md. If confirmed, append or update a `Last Scanned` line at the bottom of AGENT.md:
 
 ```markdown
 ---

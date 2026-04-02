@@ -15,6 +15,10 @@ obsidian --version
 
 If this fails, STOP and display the Obsidian CLI availability message (see /weave for the full error text).
 
+## Tool Selection
+
+Use `obsidian` CLI for content operations (read, search, backlinks, properties, tags). Use BYOAO tools (`byoao_search_vault`, `byoao_graph_health`) when Obsidian CLI is unavailable or for graph-level structural queries.
+
 ## Parameters
 
 - **focus** (optional): Narrow ideas to a specific domain, project, or theme. Default: scan all domains.
@@ -22,6 +26,10 @@ If this fails, STOP and display the Obsidian CLI availability message (see /weav
 - **output** (optional): Save ideas as a note at this path.
 
 ## Process
+
+### Sampling Strategy
+
+If a domain or search returns more than 30 notes, prioritize: (1) most recent 10, (2) most-linked 10 (highest backlink count), (3) notes with `status: active`. Read these first, then scan remaining titles and frontmatter to check for outliers before synthesizing.
 
 ### Step 1: Map the Vault
 
@@ -70,6 +78,12 @@ Generate ideas across these categories:
 **Challenge ideas** — Question an assumption the vault takes for granted.
 > "Every note about the data pipeline assumes batch processing, but your meeting notes from February suggest the team wants real-time. Is batch still the right choice?"
 
+**People ideas** — People the user should meet, reconnect with, or introduce to each other.
+> "[[Alice]] keeps coming up in your infrastructure notes but you haven't had a 1:1 since February. Worth reconnecting."
+
+**Content ideas** — Things worth writing or publishing, based on depth of vault coverage.
+> "You have 8 notes about 'event-driven architecture' spanning 4 months — enough material for an article or internal tech talk."
+
 ### Step 5: Validate Each Idea
 
 For each idea, verify:
@@ -113,6 +127,14 @@ Generated from {N} notes across {M} domains.
 ## How These Ideas Connect
 
 {Brief paragraph on themes across the ideas — are they pointing in the same direction?}
+
+## Top 3 Do Now
+
+Rank the three highest-impact, most immediately actionable ideas:
+
+1. **{Idea title}** — {one-sentence reason this is high-priority}
+2. **{Idea title}** — {reason}
+3. **{Idea title}** — {reason}
 
 ## Suggested Follow-ups
 
