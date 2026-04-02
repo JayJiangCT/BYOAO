@@ -153,6 +153,12 @@ export const byoao_init_vault = tool({
       output += `\n\nOpen in Obsidian: "Open folder as vault" → select "${result.vaultPath}"`;
     }
 
+    if (result.initMode === "existing" || result.initMode === "obsidian-vault") {
+      output += `\n\n→ Next step: run /weave now — it will scan your existing notes, add frontmatter metadata (including dates), create wikilinks between related content, and build your Glossary from frequently mentioned concepts.`;
+    } else {
+      output += `\n\n→ Next step: add a few notes, then run /weave to connect them into a knowledge graph. See "Start Here" in the vault for details.`;
+    }
+
     return output;
   },
 });

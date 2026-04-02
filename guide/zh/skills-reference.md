@@ -4,7 +4,7 @@
 
 # 技能参考
 
-BYOAO 的 6 个 AI 技能。在 Obsidian 的 Agent Client 面板中运行。
+BYOAO 的 9 个 AI 技能。在 Obsidian 的 Agent Client 面板中运行。
 
 > **前提条件：** 所有技能都需要 Obsidian CLI 已启用。参见 [快速上手](getting-started.md#第三步在-obsidian-中打开)。
 
@@ -26,17 +26,48 @@ BYOAO 的 6 个 AI 技能。在 Obsidian 的 Agent Client 面板中运行。
 1. 读取 Glossary 加载已知实体
 2. 扫描文件（遵守排除规则）
 3. 识别实体：人物、项目、概念、工具
-4. 建议 frontmatter 添加（绝不覆盖已有字段）
+4. 建议 frontmatter 添加（绝不覆盖已有字段）— `date` 为必填，从内容或文件创建时间推断
 5. 建议 wikilinks（每个术语仅首次出现，不在代码块内）
 6. 修改前备份文件
-7. 扫描后：建议新 Glossary 术语（3+ 文件提及）和 hub notes
-8. 输出摘要：enriched 文件数、添加的 wikilinks、建议的术语
+7. 扫描后：建议新 Glossary 术语（5+ 次自动建议，3+ 次向用户确认）和 hub notes
+8. 建议运行 `/organize` 整理目录结构
+9. 输出摘要：enriched 文件数、添加的 wikilinks、建议的术语
 
 **关键行为：**
 - 幂等 — 运行两次不会重复链接
 - 保留已有 frontmatter — 只添加缺失字段，合并数组
 - 备份到 `.byoao/backups/<timestamp>/`
 - 跳过：`.obsidian/`、`.git/`、模板、AGENT.md、二进制文件
+
+---
+
+## /organize — 重新整理知识库目录
+
+**功能：** 分析已有的 frontmatter 元数据，提出合理的目录结构方案，然后使用 `obsidian move` 安全执行移动 — 自动更新所有反向链接。
+
+**运行方式：**
+
+```
+/organize                    # 分析整个知识库并提出移动建议
+/organize dry-run            # 只展示建议，不执行
+/organize scope=Projects/    # 只整理特定目录
+/organize aggressive         # 同时建议合并已有结构
+```
+
+**前提条件：** 先运行 `/weave` — `/organize` 需要 `type` frontmatter 来决定文件归属。
+
+**流程：**
+1. 通过 `obsidian list` 和 frontmatter 分析当前结构
+2. 根据 `type` 将文件映射到目标目录（daily → `Daily/`、meeting → `Meetings/`、reference → `Knowledge/` 等）
+3. 展示分组的前后对比摘要，等待你的批准
+4. 使用 `obsidian move` 执行移动（自动更新所有 wikilinks）
+5. 通过 `byoao_graph_health` 验证无断裂链接
+
+**关键行为：**
+- 保守策略 — 只建议明确有益的移动
+- 不打散完整的文件组（例如 sprint 目录中的关联文件保持在一起）
+- 所有移动必须经用户批准 — 不会自动执行
+- 使用 `obsidian move` 而非 `mv`，确保反向链接安全更新
 
 ---
 

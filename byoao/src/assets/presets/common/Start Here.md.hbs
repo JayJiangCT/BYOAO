@@ -7,33 +7,76 @@ tags: [onboarding]
 
 # Welcome to {{KB_NAME}}
 
-Your personal knowledge base. Write notes, import existing files,
-and let AI connect the dots.
+Your personal knowledge base. Curate what matters, and let AI
+connect the dots into a knowledge graph.
 
-## Get Started in 5 Minutes
+## Choose Your Path
 
-### 1. Import Your Existing Notes (optional)
+### Path A: My docs are in the cloud
 
-Already have files? Drop them into this vault folder, or use Obsidian
-Web Clipper to save web pages directly here.
+If your knowledge lives in Confluence, Google Docs, Notion, or other
+cloud services — you are the curator. BYOAO does not auto-import;
+you decide what belongs in your local knowledge base.
 
-### 2. Write Your First Daily Note
+**How to bring content in:**
 
-Press `Cmd+T` (Mac) or `Ctrl+T` (Windows) → choose "Daily Note".
-Write what's on your mind today. Don't worry about structure — just write.
+1. **Export as Markdown** — Confluence and Google Docs both support
+   exporting pages as `.md` files. Download the ones that matter
+   and drop them into this vault folder.
+2. **Obsidian Web Clipper** — Install the browser extension to save
+   any web page directly into your vault as a clean markdown note.
+3. **Write summaries** — You don't need full copies. Create a local
+   note that captures the key insights and link back to the source:
 
-### 3. Run /weave
+```yaml
+---
+title: "Migration Plan Q2"
+source: "https://confluence.example.com/pages/12345"
+---
+```
 
-Open your AI agent and type `/weave`. It will scan your notes, discover
-connections, and add frontmatter + wikilinks.
+> The `source` property keeps the connection between your local note
+> and the cloud original. Add it whenever a note originates from an
+> external document.
+
+**Once you have a few notes → run `/weave`** (see below).
+
+### Path B: I already have local notes
+
+If you have existing markdown files — whether organized or scattered:
+
+1. **Drop them in** — Copy or move your files into this vault folder.
+   (Or if you ran `byoao init --from`, they're already here.)
+2. **Don't worry about structure** — Your files don't need frontmatter,
+   wikilinks, or any particular organization yet.
+
+**Run `/weave` now** — it will scan your notes, add frontmatter
+metadata (including dates from file timestamps), discover connections,
+and build your [[Glossary]] from frequently mentioned concepts.
+
+### Path C: Starting fresh
+
+No existing notes? No problem.
+
+1. Press `Cmd+T` (Mac) or `Ctrl+T` (Windows) → choose "Daily Note".
+2. Write what's on your mind today. Don't worry about structure.
+3. After a few notes, run `/weave` to connect them.
+
+---
+
+## /weave — Where the Magic Happens
+
+Open your AI agent and type `/weave`. It will:
+
+- **Add frontmatter** — title, date, type, domain, tags
+- **Create wikilinks** — connect related notes automatically
+- **Build your Glossary** — extract key terms and concepts
+- **Suggest organization** — propose directory structure (with your approval)
 
 Watch: scattered files become a connected knowledge graph.
 
-### 4. Explore the Graph
-
-Press `Cmd+G` (Mac) or `Ctrl+G` (Windows) to see your knowledge
-visualized. Every node is a note, every line is a connection
-that /weave discovered.
+After weaving, press `Cmd+G` (Mac) or `Ctrl+G` (Windows) to see your
+knowledge visualized. Every node is a note, every line is a connection.
 
 ---
 
@@ -55,6 +98,7 @@ that /weave discovered.
 | Command | What it does |
 |---------|-------------|
 | `/weave` | Connect your notes into a knowledge graph |
+| `/organize` | Reorganize vault directories using enriched metadata |
 | `/trace` | Track how an idea evolved over time |
 | `/emerge` | Discover patterns you haven't noticed |
 | `/connect` | Bridge two seemingly unrelated topics |

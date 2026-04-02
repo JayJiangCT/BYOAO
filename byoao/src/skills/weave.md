@@ -1,6 +1,6 @@
 ---
 name: weave
-description: Scan vault notes, enrich with frontmatter + wikilinks, maintain the Glossary, create hub notes — building a connected knowledge graph. Use when the user says "connect my notes", "add links", "enrich", "organize my vault", "run weave", or after importing new files into the vault.
+description: Scan vault notes, enrich with frontmatter + wikilinks, maintain the Glossary, create hub notes — building a connected knowledge graph. Use when the user says "connect my notes", "add links", "enrich", "run weave", or after importing new files into the vault.
 ---
 
 # /weave — Connect Your Notes
@@ -109,15 +109,36 @@ If the file has no frontmatter, or has incomplete frontmatter, propose additions
 ---
 title: "<inferred from content or filename>"
 type: "<inferred: meeting, idea, reference, daily, project, person, etc>"
-date: <if identifiable from content>
+date: YYYY-MM-DD
 domain: "<knowledge area: analytics, infrastructure, design, etc>"
 references:
   - "[[Related Note]]"
   - "[[Glossary]]"
 tags: [<relevant tags>]
 status: <draft | active | completed | archived>
+source: "<URL if this note originates from a cloud document>"
 ---
 ```
+
+**Date resolution (mandatory — never leave empty):**
+
+1. Extract from content — explicit dates in the text, meeting dates, file name patterns (e.g. `2026-03-27-meeting.md`)
+2. If no date in content, get the file creation time:
+   ```bash
+   stat -f '%SB' -t '%Y-%m-%d' "<file path>"   # macOS
+   stat -c '%w' "<file path>"                    # Linux (birth time)
+   ```
+   If birth time is unavailable (`-` or empty), fall back to modification time:
+   ```bash
+   stat -f '%Sm' -t '%Y-%m-%d' "<file path>"    # macOS
+   stat -c '%y' "<file path>"                    # Linux
+   ```
+3. Never leave `date` empty in the proposed frontmatter.
+
+**Source field (optional):**
+
+- Add `source` only when the note clearly originates from a cloud document (e.g. contains Confluence export markers, Google Docs formatting, or a URL in the content pointing to the original).
+- If the file already has a `source` field, always preserve it.
 
 **Frontmatter preservation rules:**
 - **Never overwrite** existing fields
@@ -160,11 +181,21 @@ For each file with proposed changes:
 
 ### Step 6: Glossary Maintenance
 
-After scanning all files, analyze entity frequency:
+After scanning all files, analyze entity frequency and classify candidates:
 
-**New term suggestions:**
-- An entity appears in 3+ files but is not in the Glossary
-- Present each suggestion: "'Kafka' mentioned in 8 notes. Add to Glossary? (Y/n)"
+**High confidence (auto-suggest):** Entity appears in 5+ files AND has a clear,
+unambiguous definition (proper nouns, product names, acronyms, technical terms
+with standard meanings). Present as a batch for user review:
+- "'Kafka' mentioned in 8 notes — message streaming platform. Add to Glossary?"
+
+**Medium confidence (verify with user):** Entity appears in 3+ files but meaning
+is ambiguous or domain-specific. Ask the user to confirm the definition:
+- "'Migration' mentioned in 5 notes — what does this term mean in your context?"
+
+**Skip:** Common words, generic phrases, or terms that appear fewer than 3 times.
+Do not suggest these.
+
+- Always present Glossary additions as a batch for user review, not one-by-one
 - For confirmed terms, use `byoao_add_glossary_term` to add them
 
 **Auto-graduation suggestions:**
@@ -190,6 +221,7 @@ Identify entities that are frequently mentioned but have no corresponding note:
 ---
 title: "<Topic>"
 type: reference
+date: <today's date YYYY-MM-DD>
 domain: "<inferred domain>"
 references:
   - "[[note1]]"
@@ -208,7 +240,19 @@ status: active
 - [[note2]] — <brief context>
 ```
 
-### Step 8: Report
+### Step 8: Directory Organization (optional)
+
+If the vault has many files in flat or disorganized directories, suggest:
+
+"Your vault has files that could benefit from reorganization.
+Run `/organize` to see a proposed directory structure based on
+the frontmatter metadata we just added. It uses `obsidian move`
+to safely relocate files while automatically updating all links."
+
+Do NOT move files during /weave — directory reorganization is
+a separate step handled by `/organize`.
+
+### Step 9: Report
 
 After all changes are applied, provide a summary:
 

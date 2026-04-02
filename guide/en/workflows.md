@@ -20,19 +20,55 @@ Real scenarios showing how to use BYOAO day-to-day. Each workflow introduces the
 6. Press `Cmd+G` to see the graph
 
 **What to expect:**
-- Notes get frontmatter: `type`, `domain`, `tags`, `references`
+- Notes get frontmatter: `title`, `date`, `type`, `domain`, `tags`, `references`
+- `date` is always populated — inferred from content, or from file creation time as fallback
+- Notes from cloud sources get a `source` field linking back to the original
 - Plain text mentions of people/projects become `[[wikilinks]]`
-- Recurring concepts are suggested as Glossary terms
+- Recurring concepts are suggested as Glossary terms (5+ mentions auto-suggest, 3+ ask for confirmation)
 - A summary shows: "Enriched 23 files, added 87 wikilinks, 5 new Glossary terms"
+- If your directory structure looks messy, /weave suggests running `/organize`
 
 **Tips:**
 - Run /weave on a small batch first (use `folder=Daily/`) to see how it works
 - Check the backups at `.byoao/backups/` if you want to undo
 - Re-run /weave anytime — it's idempotent (won't duplicate existing links)
+- After /weave, consider running `/organize` to restructure directories based on enriched metadata
 
 ---
 
-## 2. Weekly Review — Keeping the Graph Fresh
+## 2. Organizing After Weave — Restructuring Your Vault
+
+**When:** You've run `/weave` and your notes now have frontmatter, but files are scattered across a messy directory structure (common when adopting an existing knowledge base).
+
+**Steps:**
+
+1. Make sure you've already run `/weave` (the agent needs `type` metadata to decide where files belong)
+2. Run `/organize` to see the proposed directory restructuring
+
+```
+/organize                    # Full vault analysis
+/organize dry-run            # Preview changes without executing
+/organize scope=Knowledge/   # Focus on a specific folder
+```
+
+3. Review the before/after summary — the agent groups moves by action (e.g. "Move 12 meeting notes to Meetings/")
+4. Approve or adjust — you can accept all, reject all, or cherry-pick moves
+5. The agent uses `obsidian move` for each file, which automatically updates all wikilinks
+
+**What to expect:**
+- Files reorganized by type: dailies → `Daily/`, meetings → `Meetings/`, references → `Knowledge/`
+- Coherent groups stay together (a sprint folder with related files won't be split up)
+- All wikilinks and backlinks update automatically — no broken references
+- A verification step confirms graph health after moves
+
+**Tips:**
+- Start with `dry-run` to see what would change before committing
+- Use `scope=` to reorganize one folder at a time for more control
+- The agent won't move files where the benefit is unclear — it's conservative by default
+
+---
+
+## 3. Weekly Review — Keeping the Graph Fresh
 
 **When:** You've been writing notes all week and want to integrate them into the graph.
 
@@ -59,7 +95,7 @@ Real scenarios showing how to use BYOAO day-to-day. Each workflow introduces the
 
 ---
 
-## 3. Tracing an Idea — How Did My Thinking Evolve?
+## 4. Tracing an Idea — How Did My Thinking Evolve?
 
 **When:** You want to understand how a concept developed across your notes over time.
 
@@ -84,7 +120,7 @@ Real scenarios showing how to use BYOAO day-to-day. Each workflow introduces the
 
 ---
 
-## 4. Discovering Hidden Patterns — What Am I Missing?
+## 5. Discovering Hidden Patterns — What Am I Missing?
 
 **When:** Your vault has 50+ notes and you want to see the big picture.
 
@@ -112,7 +148,7 @@ Real scenarios showing how to use BYOAO day-to-day. Each workflow introduces the
 
 ---
 
-## 5. Bridging Two Topics — Finding Hidden Connections
+## 6. Bridging Two Topics — Finding Hidden Connections
 
 **When:** You suspect two topics are related but can't articulate how.
 
@@ -140,7 +176,7 @@ Real scenarios showing how to use BYOAO day-to-day. Each workflow introduces the
 
 ---
 
-## 6. Generating Ideas — What Should I Work On Next?
+## 7. Generating Ideas — What Should I Work On Next?
 
 **When:** Your vault has substantial content and you want creative, actionable suggestions.
 
@@ -167,7 +203,7 @@ Every idea cites 2+ vault notes and includes a concrete next step.
 
 ---
 
-## 7. Challenging a Belief — Am I Right About This?
+## 8. Challenging a Belief — Am I Right About This?
 
 **When:** You're about to make a big decision and want to test it against your own history.
 
@@ -193,7 +229,7 @@ Every idea cites 2+ vault notes and includes a concrete next step.
 
 ---
 
-## 8. Detecting Drift — Am I Doing What I Said I Would?
+## 9. Detecting Drift — Am I Doing What I Said I Would?
 
 **When:** You want to compare your stated plans with what actually happened.
 
@@ -226,6 +262,7 @@ Here's a rhythm that works well:
 |-----------|--------|-------|
 | Daily | Write a daily note, capture meetings and ideas | — |
 | Weekly | Connect new notes, check health | `/weave` + `/diagnose` |
+| After weave | Restructure directories if needed | `/organize` |
 | When curious | Trace how a topic evolved | `/trace` |
 | Monthly | Look for patterns across the vault | `/emerge` |
 | Quarterly | Generate ideas, review drift | `/ideas` + `/drift` |

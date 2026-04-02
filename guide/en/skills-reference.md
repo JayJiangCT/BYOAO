@@ -2,7 +2,7 @@
 
 # Skills Reference
 
-All 6 AI skills available in BYOAO. Run these in the Agent Client panel inside Obsidian.
+All 9 AI skills available in BYOAO. Run these in the Agent Client panel inside Obsidian.
 
 > **Prerequisite:** All skills require the Obsidian CLI to be enabled. See [Getting Started](getting-started.md#step-3-open-in-obsidian).
 
@@ -24,17 +24,48 @@ All 6 AI skills available in BYOAO. Run these in the Agent Client panel inside O
 1. Reads Glossary to load known entities
 2. Scans files (respects exclusion rules)
 3. Identifies entities: people, projects, concepts, tools
-4. Proposes frontmatter additions (never overwrites existing fields)
+4. Proposes frontmatter additions (never overwrites existing fields) — `date` is mandatory, inferred from content or file creation time
 5. Proposes wikilinks (first occurrence only, not inside code blocks)
 6. Backs up files before modification
-7. After scan: suggests new Glossary terms (3+ file mentions) and hub notes
-8. Reports summary: files enriched, wikilinks added, terms suggested
+7. After scan: suggests new Glossary terms (5+ mentions auto-suggest, 3+ verify with user) and hub notes
+8. Suggests running `/organize` if directories need restructuring
+9. Reports summary: files enriched, wikilinks added, terms suggested
 
 **Key behaviors:**
 - Idempotent — running twice won't duplicate links
 - Preserves existing frontmatter — only adds missing fields, merges arrays
 - Backs up to `.byoao/backups/<timestamp>/`
 - Skips: `.obsidian/`, `.git/`, templates, AGENT.md, binary files
+
+---
+
+## /organize — Reorganize Vault Directories
+
+**What it does:** Analyzes enriched frontmatter metadata to propose a logical directory structure, then executes moves safely using `obsidian move` — which automatically updates all backlinks.
+
+**How to run:**
+
+```
+/organize                    # Analyze and propose moves for entire vault
+/organize dry-run            # Show proposed changes without executing
+/organize scope=Projects/    # Only reorganize a specific directory
+/organize aggressive         # Also suggest consolidating existing structures
+```
+
+**Prerequisites:** Run `/weave` first — `/organize` needs `type` frontmatter to decide where files belong.
+
+**Process:**
+1. Analyzes current structure via `obsidian list` and frontmatter
+2. Maps files to target directories based on `type` (daily → `Daily/`, meeting → `Meetings/`, reference → `Knowledge/`, etc.)
+3. Presents a grouped before/after summary for your approval
+4. Executes moves using `obsidian move` (auto-updates all wikilinks)
+5. Verifies no broken links remain via `byoao_graph_health`
+
+**Key behaviors:**
+- Conservative — only suggests moves where the benefit is clear
+- Never breaks coherent groups (e.g., sprint directories with related files stay together)
+- User must approve all moves — nothing happens automatically
+- Uses `obsidian move` instead of `mv` so all backlinks update safely
 
 ---
 
