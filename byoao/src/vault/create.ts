@@ -525,12 +525,15 @@ async function configureOpenCodeProject(
     const files = await fs.readdir(obsidianSkillsSrc);
     for (const file of files) {
       if (file.endsWith(".md")) {
+        const skillName = file.replace(/\.md$/, "");
+        const destDir = path.join(skillsDest, skillName);
+        await fs.ensureDir(destDir);
         await fs.copy(
           path.join(obsidianSkillsSrc, file),
-          path.join(skillsDest, file),
+          path.join(destDir, "SKILL.md"),
           { overwrite: true },
         );
-        installedFiles.skills.push(`.opencode/skills/${file}`);
+        installedFiles.skills.push(`.opencode/skills/${skillName}/SKILL.md`);
       }
     }
   }
