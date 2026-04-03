@@ -2,6 +2,16 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v1.1.0] - 2026-04-03
+
+### Fixed
+
+- **Global CLI install crash**: Published CLI builds could fail immediately on `byoao install` with `ReferenceError: __PKG_VERSION__ is not defined` because `dist/vault/manifest.js` and `dist/vault/self-update.js` still contained the raw version placeholder token. The build now replaces that token across all emitted runtime JavaScript files, not just the bundled plugin entry.
+
+### Changed
+
+- **Build verification**: Release builds now fail fast if any unresolved package-version placeholder remains anywhere in `dist/`, preventing broken npm tarballs from being published.
+
 ## [v1.0.8] - 2026-04-03
 
 ### Fixed
