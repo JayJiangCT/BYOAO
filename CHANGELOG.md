@@ -2,6 +2,23 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v1.0.0] - 2026-04-03
+
+First stable release. BYOAO is the OpenCode plugin and CLI that scaffolds Obsidian vaults, ships skills and tools, and injects vault context into the agent system prompt.
+
+### Fixed
+
+- **OpenCode plugin resolution**: `byoao install` now adds `@jayjiang/byoao` to `dependencies` in `~/.opencode/package.json` (global) or `<project>/.opencode/package.json` (project), matching how OpenCode runs `bun install` for npm plugins. Previously only the `plugin` array in `opencode.json` / `.opencode.json` was updated, so the package could fail to resolve. `byoao uninstall` removes the dependency from those manifests.
+
+### Changed
+
+- **System prompt (`experimental.chat.system.transform`)**: Vault navigation guidance now checks whether the Obsidian CLI is available (`obsidian --version`). When it is, the agent is instructed to prefer Obsidian CLI first and fall back to find/grep only after CLI search returns nothing. When it is not, the prompt directs use of find/grep/read and BYOAO tools (`byoao_search_vault`, `byoao_note_read`, `byoao_graph_health`).
+
+### Highlights from the 1.0 RC line
+
+- Onboarding overhaul, `/organize` skill, mandatory `date` frontmatter (see **v1.0.0-rc** below).
+- `byoao init --from`: adopting an existing folder skips the interactive knowledge-base name prompt when the name is inferred from the directory (see **v1.0.0-rc-2** below).
+
 ## [v1.0.0-rc-2] - 2026-04-02
 
 ### Fixed
