@@ -1,11 +1,9 @@
 import { execSync } from "node:child_process";
-import { createRequire } from "node:module";
-import semver from "semver";
+import { semver } from "../lib/cjs-modules.js";
 
-const require = createRequire(import.meta.url);
-const PKG_VERSION: string = (
-  require("../../package.json") as Record<string, unknown>
-).version as string;
+// Replaced at build time by esbuild (build.mjs define option)
+declare const __PKG_VERSION__: string;
+const PKG_VERSION: string = __PKG_VERSION__;
 
 // ── Constants ───────────────────────────────────────────────────
 

@@ -1,4 +1,4 @@
-import fs from "fs-extra";
+import { fs } from "../lib/cjs-modules.js";
 import path from "node:path";
 import { PresetConfigSchema, type PresetConfig } from "../plugin-config.js";
 

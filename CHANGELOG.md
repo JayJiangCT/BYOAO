@@ -2,6 +2,20 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v1.0.8] - 2026-04-03
+
+### Fixed
+
+- **Bun CJS/ESM interop (OpenCode plugin)**: The plugin failed to load in OpenCode 1.3.x (Bun 1.3.11) with a series of `Missing 'default' export` and `require() async module` errors caused by Bun's broken CJS interop for packages like `fs-extra`, `handlebars`, `gray-matter`, and `semver`. The fix uses two strategies:
+  - **`fs-extra` removed as a runtime dependency** — replaced with native `node:fs` / `node:fs/promises` implementations (`copy`, `ensureDir`, `pathExists`, `readJson`, `writeJson`, `remove`, etc.). This eliminates the root cause: Bun treats `fs-extra`'s `exports` field as ESM and cannot load it in any mode.
+  - **`handlebars`, `gray-matter`, `semver` bundled inline** — a new `build.mjs` esbuild step bundles `dist/index.js` (the OpenCode plugin entry) into a single self-contained ESM file. All CJS dependencies are inlined and do not require `createRequire` or external package resolution at load time.
+- **`package.json` version at runtime**: `manifest.ts` and `self-update.ts` previously used `createRequire` to read `../../package.json` at runtime. After bundling, the relative path resolves incorrectly in the OpenCode cache. The version is now injected at build time via esbuild's `define` option (`__PKG_VERSION__`), with a matching `define` in `vitest.config.ts` so tests continue to pass.
+
+### Changed
+
+- **Build pipeline**: `npm run build` now runs `node build.mjs` (tsc + esbuild bundle) instead of plain `tsc`. The CLI entry (`dist/cli/cli-program.js`) is left as-is; only the plugin entry (`dist/index.js`) is re-bundled.
+- **New `src/lib/cjs-modules.ts`**: Central shim that exports the native-fs `fs` object and re-exports `Handlebars`, `matter`, and `semver` with correct types. All source files that previously imported `fs-extra`, `gray-matter`, `handlebars`, or `semver` directly now import from this shim.
+
 ## [v1.0.0] - 2026-04-03
 
 First stable release. BYOAO is the OpenCode plugin and CLI that scaffolds Obsidian vaults, ships skills and tools, and injects vault context into the agent system prompt.

@@ -1,4 +1,4 @@
-import Handlebars from "handlebars";
+import { Handlebars } from "../lib/cjs-modules.js";
 
 const templateCache = new Map<string, HandlebarsTemplateDelegate>();
 

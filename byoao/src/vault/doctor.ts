@@ -1,6 +1,6 @@
-import fs from "fs-extra";
+import { fs } from "../lib/cjs-modules.js";
 import path from "node:path";
-import matter from "gray-matter";
+import { matter } from "../lib/cjs-modules.js";
 import { isObsidianCliAvailable, execObsidianCmd } from "./obsidian-cli.js";
 
 export interface DiagnosticIssue {

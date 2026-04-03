@@ -1,12 +1,9 @@
-import fs from "fs-extra";
+import { fs } from "../lib/cjs-modules.js";
 import path from "node:path";
 import { z } from "zod";
-import { createRequire } from "node:module";
 
-const require = createRequire(import.meta.url);
-const PKG_VERSION: string = (
-  require("../../package.json") as Record<string, unknown>
-).version as string;
+declare const __PKG_VERSION__: string;
+const PKG_VERSION: string = __PKG_VERSION__;
 
 // ── Schema ──────────────────────────────────────────────────────
 

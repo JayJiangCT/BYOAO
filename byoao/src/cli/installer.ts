@@ -1,4 +1,4 @@
-import fs from "fs-extra";
+import { fs } from "../lib/cjs-modules.js";
 import path from "node:path";
 import os from "node:os";
 import { execSync } from "node:child_process";
