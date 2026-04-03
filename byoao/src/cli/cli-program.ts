@@ -227,17 +227,21 @@ program
         ownerName = yourName.trim();
 
         // 2. Knowledge base name
-        const defaultKbName = vaultPath
-          ? path.basename(vaultPath)
-          : `${ownerName}'s KB`;
-        const { enteredKbName } = await inquirer.prompt([{
-          type: "input",
-          name: "enteredKbName",
-          message: "Knowledge base name:",
-          default: defaultKbName,
-          validate: (v: string) => v.trim() ? true : "Name is required",
-        }]);
-        kbName = enteredKbName.trim();
+        if (initMode === "existing" || initMode === "obsidian-vault") {
+          kbName = path.basename(vaultPath);
+        } else {
+          const defaultKbName = vaultPath
+            ? path.basename(vaultPath)
+            : `${ownerName}'s KB`;
+          const { enteredKbName } = await inquirer.prompt([{
+            type: "input",
+            name: "enteredKbName",
+            message: "Knowledge base name:",
+            default: defaultKbName,
+            validate: (v: string) => v.trim() ? true : "Name is required",
+          }]);
+          kbName = enteredKbName.trim();
+        }
 
         // 3. Vault path (skip if adopting existing folder)
         if (!vaultPath) {
