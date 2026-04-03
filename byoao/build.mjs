@@ -10,13 +10,73 @@
  */
 import { execSync } from "node:child_process";
 import { build } from "esbuild";
-import { readFileSync, writeFileSync, createReadStream } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
+import path from "node:path";
 
 const pkg = JSON.parse(readFileSync("package.json", "utf-8"));
+const PKG_VERSION_LITERAL = JSON.stringify(pkg.version);
+const VERSION_TOKEN = /\b__PKG_VERSION__\b/g;
+
+function walkJsFiles(dir) {
+  const entries = readdirSync(dir);
+  const files = [];
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry);
+    const stats = statSync(fullPath);
+
+    if (stats.isDirectory()) {
+      files.push(...walkJsFiles(fullPath));
+      continue;
+    }
+
+    if (stats.isFile() && fullPath.endsWith(".js")) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
+function inlinePackageVersion(distDir) {
+  for (const file of walkJsFiles(distDir)) {
+    const source = readFileSync(file, "utf-8");
+    VERSION_TOKEN.lastIndex = 0;
+    if (!VERSION_TOKEN.test(source)) continue;
+
+    VERSION_TOKEN.lastIndex = 0;
+    const next = source.replace(VERSION_TOKEN, PKG_VERSION_LITERAL);
+    writeFileSync(file, next);
+  }
+}
+
+function assertNoVersionPlaceholders(distDir) {
+  const unresolved = [];
+
+  for (const file of walkJsFiles(distDir)) {
+    const source = readFileSync(file, "utf-8");
+    VERSION_TOKEN.lastIndex = 0;
+    if (VERSION_TOKEN.test(source)) {
+      unresolved.push(file);
+    }
+  }
+
+  if (unresolved.length > 0) {
+    console.error("Unresolved __PKG_VERSION__ placeholders:");
+    for (const file of unresolved) {
+      console.error(`  - ${file}`);
+    }
+    process.exit(1);
+  }
+}
 
 // Step 1: TypeScript compilation
 console.log("tsc…");
 execSync("npx tsc", { stdio: "inherit" });
+
+// Step 1.5: Inline package version in all runtime JS files emitted by tsc
+console.log("inline package version…");
+inlinePackageVersion("dist");
 
 // Step 2: Bundle dist/index.js with esbuild
 console.log("esbuild bundle for OpenCode plugin entry…");
@@ -33,9 +93,10 @@ const result = await build({
     // Keep @opencode-ai/sdk external — it's provided by the host
     "@opencode-ai/sdk",
   ],
-  // Inline the package version so self-update.ts doesn't need require("package.json")
+  // Keep the bundle path aligned with the rest of dist/ so all entrypoints resolve
+  // the same package version string at runtime.
   define: {
-    __PKG_VERSION__: JSON.stringify(pkg.version),
+    __PKG_VERSION__: PKG_VERSION_LITERAL,
   },
   // Suppress the banner that esbuild adds (it can break ESM strict mode)
   banner: {},
@@ -59,5 +120,8 @@ if (!current.startsWith("// BYOAO")) {
     "// BYOAO — Build Your Own AI OS — plugin for OpenCode\n" + current,
   );
 }
+
+console.log("verify build output…");
+assertNoVersionPlaceholders("dist");
 
 console.log("Build complete.");
