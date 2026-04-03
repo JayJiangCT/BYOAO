@@ -2,6 +2,7 @@ import fs from "fs-extra";
 import path from "node:path";
 import { detectVaultContext } from "../vault/vault-detect.js";
 import { readOpencodeConfig } from "../vault/opencode-config.js";
+import { isObsidianCliAvailable } from "../vault/obsidian-cli.js";
 import { log } from "../lib/logger.js";
 
 /**
@@ -34,9 +35,14 @@ export function readAgentMdFromCwd(): string | null {
  * Lightweight navigation strategy injected into the system prompt.
  * CLI command reference is handled by obsidian-skills (kepano/obsidian-skills).
  * This hook only teaches the agent WHY and WHEN to use specific patterns.
+ *
+ * Adapts instructions based on whether the Obsidian CLI is actually available,
+ * so the agent is never told to use a tool that doesn't exist.
  */
 function buildNavigationStrategy(vaultPath: string): string {
-  return [
+  const cliAvailable = isObsidianCliAvailable();
+
+  const header = [
     "\n---",
     "## BYOAO Navigation Strategy",
     "",
@@ -44,18 +50,46 @@ function buildNavigationStrategy(vaultPath: string): string {
     "",
     `This session is connected to a BYOAO knowledge base at: \`${vaultPath}\``,
     "",
-    `- **Inside the vault** (\`${vaultPath}/\` and its subdirectories): always use Obsidian CLI (see /obsidian-cli skill) or BYOAO tools (\`byoao_search_vault\`, \`byoao_note_read\`, \`byoao_graph_health\`). Obsidian CLI is graph-aware and understands wikilinks, backlinks, and frontmatter — grep/cat/ls do not.`,
-    `- **Outside the vault** (code repositories, config files, system paths, etc.): use any appropriate tool (grep, cat, read, bash, etc.) freely.`,
-    "",
-    "### Navigation Pattern (Progressive Disclosure)",
-    "",
-    "1. Read [[Glossary]] first — the entity dictionary for this knowledge base.",
-    "   Every term is a key concept the user cares about.",
-    "2. Use `obsidian properties sort=count counts` to understand vault structure",
-    "3. Search by `domain` property or tags to find relevant notes",
-    "4. Read the `references` frontmatter of found notes for deeper context",
-    "5. Use `obsidian backlinks` to discover related notes the user didn't mention",
-    "6. Chain: Glossary → domain notes → references → backlinks → details",
+  ];
+
+  const scopeLines = cliAvailable
+    ? [
+        `- **Inside the vault** (\`${vaultPath}/\` and its subdirectories): **ALWAYS use Obsidian CLI first** (see /obsidian-cli skill) or BYOAO tools (\`byoao_search_vault\`, \`byoao_note_read\`, \`byoao_graph_health\`). Obsidian CLI is graph-aware and understands wikilinks, backlinks, and frontmatter — grep/cat/find do not. Only fall back to find/grep when Obsidian CLI returns no results for a given query.`,
+        `- **Outside the vault** (code repositories, config files, system paths, etc.): use any appropriate tool (grep, cat, read, bash, etc.) freely.`,
+      ]
+    : [
+        `- **Obsidian CLI is NOT available** (either not installed or Obsidian is not running). Use built-in tools (find, grep, read) to access vault notes at \`${vaultPath}/\`.`,
+        `- BYOAO tools (\`byoao_search_vault\`, \`byoao_note_read\`, \`byoao_graph_health\`) are still available and preferred over raw find/grep when possible.`,
+        `- **Outside the vault** (code repositories, config files, system paths, etc.): use any appropriate tool freely.`,
+      ];
+
+  const navigationSteps = cliAvailable
+    ? [
+        "### Navigation Pattern (Progressive Disclosure)",
+        "",
+        "1. Read [[Glossary]] first — the entity dictionary for this knowledge base.",
+        "   Every term is a key concept the user cares about.",
+        "2. Use `obsidian properties sort=count counts` to understand vault structure",
+        "3. Search by `domain` property or tags to find relevant notes",
+        "4. Read the `references` frontmatter of found notes for deeper context",
+        "5. Use `obsidian backlinks` to discover related notes the user didn't mention",
+        "6. Chain: Glossary → domain notes → references → backlinks → details",
+        "",
+        "If an Obsidian CLI search returns no results, retry with find/grep as a fallback.",
+      ]
+    : [
+        "### Navigation Pattern (Progressive Disclosure)",
+        "",
+        "1. Read [[Glossary]] first — the entity dictionary for this knowledge base.",
+        "   Every term is a key concept the user cares about.",
+        "2. Use `byoao_search_vault` or grep frontmatter fields to understand vault structure",
+        "3. Search by `domain` property or tags to find relevant notes",
+        "4. Read the `references` frontmatter of found notes for deeper context",
+        "5. Use grep for `[[note name]]` patterns to discover backlinks manually",
+        "6. Chain: Glossary → domain notes → references → backlinks → details",
+      ];
+
+  const footer = [
     "",
     "### Key Frontmatter Fields",
     "",
@@ -70,7 +104,9 @@ function buildNavigationStrategy(vaultPath: string): string {
     "",
     "If you notice broken wikilinks, orphan notes, or missing frontmatter while working,",
     "suggest that the user run `/diagnose` to get a full vault health report.",
-  ].join("\n");
+  ];
+
+  return [...header, ...scopeLines, "", ...navigationSteps, ...footer].join("\n");
 }
 
 /**

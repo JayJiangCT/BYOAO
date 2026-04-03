@@ -2,6 +2,7 @@ import fs from "fs-extra";
 import path from "node:path";
 import os from "node:os";
 import { execSync } from "node:child_process";
+import { createRequire } from "node:module";
 import { checkObsidian } from "../vault/obsidian-check.js";
 import { checkOpenCode } from "../vault/opencode-check.js";
 import { checkGcloud } from "../vault/toolbox.js";
@@ -15,6 +16,9 @@ import {
   printWarning,
   printInfo,
 } from "./ui.js";
+
+const require = createRequire(import.meta.url);
+const PKG_VERSION: string = (require("../../package.json") as Record<string, unknown>).version as string;
 
 const OPENCODE_CONFIG_PATHS = [
   // Global config
@@ -80,6 +84,53 @@ async function promptInstallDependency(
     console.log(`\nRunning: ${command}\n`);
     execSync(command, { stdio: "inherit", timeout: 120_000 });
     console.log("");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const BYOAO_PKG = "@jayjiang/byoao";
+
+/**
+ * Add @jayjiang/byoao to .opencode/package.json so OpenCode's bun install resolves it.
+ */
+async function ensurePluginDependency(opencodeDir: string): Promise<void> {
+  await fs.ensureDir(opencodeDir);
+  const pkgPath = path.join(opencodeDir, "package.json");
+
+  let pkg: Record<string, unknown> = {};
+  if (await fs.pathExists(pkgPath)) {
+    try {
+      pkg = await fs.readJson(pkgPath);
+    } catch {
+      // Invalid JSON — start fresh
+    }
+  }
+
+  const deps = (pkg.dependencies as Record<string, string> | undefined) || {};
+  if (deps[BYOAO_PKG] !== PKG_VERSION) {
+    deps[BYOAO_PKG] = PKG_VERSION;
+    pkg.dependencies = deps;
+    await fs.writeJson(pkgPath, pkg, { spaces: 2 });
+  }
+}
+
+/**
+ * Remove @jayjiang/byoao from .opencode/package.json.
+ */
+async function removePluginDependency(opencodeDir: string): Promise<boolean> {
+  const pkgPath = path.join(opencodeDir, "package.json");
+  if (!(await fs.pathExists(pkgPath))) return false;
+
+  try {
+    const pkg = await fs.readJson(pkgPath);
+    const deps = (pkg.dependencies as Record<string, string> | undefined) || {};
+    if (!(BYOAO_PKG in deps)) return false;
+
+    delete deps[BYOAO_PKG];
+    pkg.dependencies = deps;
+    await fs.writeJson(pkgPath, pkg, { spaces: 2 });
     return true;
   } catch {
     return false;
@@ -211,6 +262,12 @@ export async function install(
       config.plugin = plugins;
       await fs.writeJson(configPath, config, { spaces: 2 });
     }
+
+    // Ensure @jayjiang/byoao is in .opencode/package.json so bun install resolves it
+    const opencodeDir = options.global
+      ? path.join(os.homedir(), ".opencode")
+      : path.join(options.projectDir || process.cwd(), ".opencode");
+    await ensurePluginDependency(opencodeDir);
 
     completedSteps++;
     const pct = Math.round((completedSteps / totalSteps) * 100);
@@ -344,6 +401,17 @@ export async function uninstall(
       } catch {
         // Invalid JSON — skip
       }
+    }
+  }
+
+  // ── 1b. Remove plugin from .opencode/package.json ──────────
+  const opencodeDirs = [
+    path.join(os.homedir(), ".opencode"),
+    path.join(options.projectDir || process.cwd(), ".opencode"),
+  ];
+  for (const opencodeDir of opencodeDirs) {
+    if (await removePluginDependency(opencodeDir)) {
+      removedItems.push(`Plugin dependency removed from ${opencodeDir}/package.json`);
     }
   }
 
