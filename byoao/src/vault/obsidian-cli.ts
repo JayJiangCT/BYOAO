@@ -1,4 +1,5 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
+import { platform } from "node:os";
 
 export interface ObsidianCliResult {
   success: boolean;
@@ -6,16 +7,41 @@ export interface ObsidianCliResult {
   error?: string;
 }
 
+/** Cached result of CLI availability check. */
+let _cliAvailableCache: boolean | null = null;
+
 /**
- * Check if the `obsidian` CLI is available in PATH.
+ * Check if Obsidian is running (and thus its CLI is usable).
+ * Uses `pgrep` on macOS / Linux, which checks process existence
+ * without sending IPC to the app — avoids triggering window focus.
  */
 export function isObsidianCliAvailable(): boolean {
+  // Return cached result on subsequent calls
+  if (_cliAvailableCache !== null) return _cliAvailableCache;
+
+  const os = platform();
+
   try {
-    execFileSync("obsidian", ["--version"], { stdio: "pipe" });
-    return true;
+    if (os === "darwin") {
+      execSync("pgrep -x Obsidian", { stdio: "pipe", timeout: 3000 });
+      _cliAvailableCache = true;
+    } else if (os === "linux") {
+      execSync("pgrep -x obsidian", { stdio: "pipe", timeout: 3000 });
+      _cliAvailableCache = true;
+    } else if (os === "win32") {
+      const result = execSync(
+        'tasklist /FI "IMAGENAME eq Obsidian.exe" /NH',
+        { stdio: "pipe", timeout: 3000, encoding: "utf-8" }
+      );
+      _cliAvailableCache = result.includes("Obsidian.exe");
+    } else {
+      _cliAvailableCache = false;
+    }
   } catch {
-    return false;
+    _cliAvailableCache = false;
   }
+
+  return _cliAvailableCache;
 }
 
 /**
