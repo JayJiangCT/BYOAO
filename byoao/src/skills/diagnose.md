@@ -18,10 +18,13 @@ Ask the user for their vault path, or detect it from the current working directo
 Call `byoao_vault_doctor` with the vault path. This runs 5 checks:
 
 1. **Missing frontmatter** — notes without any YAML frontmatter
-2. **Missing type/tags** — notes with frontmatter but no `type` or `tags` field
-3. **AGENTS.md drift** — AGENTS.md references people or projects that don't have notes
+2. **Missing note_type** — notes without `note_type` field (not yet woven)
+3. **Missing type/tags** — notes with frontmatter but no `type` or `tags` field
 4. **Orphan notes** — notes with no incoming or outgoing wikilinks
 5. **Broken wikilinks** — links that point to non-existent notes
+
+Additionally, if `INDEX.base` exists:
+6. **INDEX.base accuracy** — verify note counts match actual vault state
 
 ### Step 3: Present Results
 
@@ -49,21 +52,17 @@ For each issue category, suggest a concrete next action:
 | Issue | Suggested Fix |
 |-------|--------------|
 | Missing frontmatter | "Run `/weave` on these files to add structure" |
+| Missing note_type | "Run `/weave` to classify and connect these notes" |
 | Missing type/tags | "Run `/weave` to fill in metadata" |
-| AGENTS.md drift | "Create the missing note? I can run `byoao_add_person` or `byoao_add_project`" |
 | Orphan notes | "Consider adding `[[wikilinks]]` to connect them, or archive if unused" |
 | Broken wikilinks | "Create the target note, or fix the link name" |
+| INDEX.base stale | "Run `/wiki` to regenerate the knowledge index" |
 
 **Always ask for user confirmation before making changes.** Do not auto-fix.
 
-### Step 5: Update AGENTS.md Timestamp
+### Step 5: Update INDEX.base Timestamp
 
-After fixes are applied, **ask the user** before updating AGENTS.md. If confirmed, append or update a `Last Scanned` line at the bottom of AGENTS.md:
-
-```markdown
----
-_Last scanned by /diagnose: 2026-03-27_
-```
+If `INDEX.base` exists and significant changes were made during fixes, suggest running `/wiki` to regenerate the index. If the user confirms, run `/wiki`.
 
 ## Key Principles
 

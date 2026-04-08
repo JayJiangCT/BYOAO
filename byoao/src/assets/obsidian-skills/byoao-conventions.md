@@ -1,6 +1,6 @@
 ---
 name: byoao-conventions
-description: Use when creating or modifying notes in a BYOAO-structured vault. Enforces frontmatter, directory placement, wikilinks, and naming conventions.
+description: Use when creating or modifying notes in a BYOAO-structured vault. Enforces frontmatter requirements, wikilinks, and naming conventions.
 ---
 
 # BYOAO Document Conventions
@@ -11,34 +11,19 @@ You MUST follow these conventions when creating or modifying any note in this va
 
 Before creating any note:
 
-1. Read `AGENTS.md` — check the Document Conventions section for vault-specific rules
-2. Check `Knowledge/Glossary.md` — know the domain terminology before writing
-3. Identify the correct template — match your note type to a template below
-4. Verify the target directory — place the file according to its `type`
+1. Read `AGENTS.md` — check the knowledge base structure and note types
+2. Identify the note type: `fleeting` (raw input), `literature` (processed reference), or `permanent` (atomic concept)
+3. Use `obsidian create` to create notes — never use file write tools directly
 
 ## Creating Notes
 
-You MUST use `obsidian create` to create notes in the vault — never use
-file write tools directly. Obsidian CLI ensures the file is tracked by
-Obsidian and templates are applied correctly.
-
-When a matching template exists:
+You MUST use `obsidian create` to create notes in the vault:
 
 ```
-obsidian create name="Feature Name" template="Feature Doc" path="Projects/"
-obsidian create name="Sprint N Handoff" template="Sprint Handoff" path="Sprints/"
-obsidian create name="Meeting Title" template="Meeting Notes"
-obsidian create name="Investigation Title" template="Investigation"
-obsidian create name="Decision Title" template="Decision Record"
-obsidian create name="YYYY-MM-DD" template="Daily Note" path="Daily/"
+obsidian create name="Note Title" content="<frontmatter + content>" silent
 ```
 
-If no template matches, construct frontmatter manually. `date` MUST be
-today's actual date — never a placeholder, never omitted:
-
-```
-obsidian create name="Note Title" content="---\ntitle: \"Note Title\"\ntype: reference\nstatus: draft\ndate: 2026-04-02\ntags: []\n---\n\n# Note Title\n" silent
-```
+For multiline content use `\n` for newline and `\t` for tab.
 
 ## Required Frontmatter
 
@@ -47,36 +32,19 @@ Every note MUST have these fields:
 | Field | Values |
 |-------|--------|
 | `title` | Descriptive title |
-| `type` | `feature`, `sprint-handoff`, `meeting`, `investigation`, `decision`, `daily`, `reference`, `person` |
-| `status` | `draft`, `active`, `completed`, `archived` |
-| `date` | YYYY-MM-DD |
+| `note_type` | `fleeting`, `literature`, or `permanent` |
+| `type` | `meeting`, `idea`, `reference`, `daily`, `project`, `person`, etc. |
+| `date` | YYYY-MM-DD — today's date or extracted from content |
 | `tags` | Array of relevant tags |
 
-Additional fields by type:
+Additional fields (optional):
 
-| type | Additional Fields |
-|------|-------------------|
-| `feature` | `project`, `jira`, `stakeholders`, `priority` |
-| `sprint-handoff` | `sprint`, `sprint-dates`, `jira-board` |
-| `meeting` | `participants`, `meeting-type` |
-| `investigation` | `jira`, `hypothesis` |
-| `decision` | `decision`, `decided-by` |
-| `person` | `team`, `role` |
-
-## Directory Placement
-
-ALWAYS place files in the directory matching their type. Refer to the Document Conventions section in `AGENTS.md` for the authoritative type-to-directory mapping for this vault.
-
-| type | Directory |
-|------|-----------|
-| `feature` | `Projects/` |
-| `sprint-handoff` | `Sprints/` |
-| `daily` | `Daily/` |
-| `reference` | `Knowledge/` |
-| `person` | `People/` |
-| `meeting` | Within relevant project or sprint folder |
-| `investigation` | Within relevant project folder |
-| `decision` | Within relevant project folder |
+| Field | Purpose |
+|-------|---------|
+| `domain` | Knowledge area (e.g. ai-agents, product-strategy) |
+| `references` | Related notes as wikilinks: `[[Note Name]]` |
+| `status` | `draft`, `active`, `completed`, `archived` |
+| `source` | URL to cloud origin (Confluence, Google Docs, etc.) |
 
 ## Wikilink Rules
 
@@ -84,20 +52,25 @@ ALWAYS use wikilinks for:
 
 - People → `[[Person Name]]`
 - Projects → `[[Project Name]]`
-- Domain terms → check `[[Glossary]]` first, link if present
-- Teams → link to the team index note in `People/`
+- Domain concepts → `[[Concept Name]]`
+- Related notes → `[[Note Name]]`
+
+Rules:
+- Use `[[wikilinks]]` for internal vault connections
+- Use `[text](url)` for external URLs only
+- Use `[[Note Name#Heading]]` for specific section links
+- Use `[[Note Name\|Display Text]]` for custom display text
 
 ## File Naming
 
 - Use Title Case or kebab-case for file names
-- JIRA tickets: use the project key prefix (e.g., `PROJ-1234-Description.md`)
 - No special characters, no leading/trailing spaces
+- Daily notes: `YYYY-MM-DD` format
 
 ## Post-Creation Verification
 
 After creating or modifying a note, verify:
 
 1. All required frontmatter fields are present and correct
-2. File is in the correct directory for its type
-3. People and project mentions use `[[wikilinks]]`
-4. Domain terms reference `[[Glossary]]`
+2. People and project mentions use `[[wikilinks]]`
+3. Domain concepts are linked consistently

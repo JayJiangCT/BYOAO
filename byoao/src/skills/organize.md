@@ -53,9 +53,8 @@ Never move or suggest moving:
 | Pattern | Reason |
 |---------|--------|
 | `AGENTS.md` | BYOAO-managed root file |
+| `INDEX.base` | Knowledge graph index — do not move |
 | `Start Here.md` | BYOAO onboarding file |
-| `Knowledge/Glossary.md` | BYOAO Glossary |
-| `Knowledge/templates/*` | Template files |
 | `.obsidian/`, `.git/`, `.byoao/` | System directories |
 | `.opencode/`, `.cursor/`, `.claude/` | Tool config directories |
 | `.env`, `credentials.*`, `*.key` | Sensitive files |
@@ -92,7 +91,7 @@ For each file with a `type` property, determine if it should move based on this 
 | `feature` | `Projects/<project>/` | Use `project` frontmatter field |
 | `project` | `Projects/` | Top-level project notes |
 | `sprint-handoff` | `Sprints/` | |
-| `reference` | `Knowledge/` | General reference material |
+| `reference` | `Knowledge/` or user's preferred reference location | General reference material |
 | `person` | `People/` | |
 | `investigation` | Project folder if `project` field exists, else `Knowledge/` | |
 | `idea` | `Knowledge/` | |

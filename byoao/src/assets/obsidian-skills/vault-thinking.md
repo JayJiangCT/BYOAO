@@ -11,7 +11,7 @@ This vault has BYOAO thinking commands available. Suggest them when they match t
 
 | Command | What it does | Suggest when |
 |---------|-------------|--------------|
-| `/weave` | Enrich notes with frontmatter, wikilinks, Glossary entries, hub notes | User imports new files, asks to organize, or vault has many unlinked notes |
+| `/weave` | Enrich notes with frontmatter, wikilinks, suggest permanent concept notes | User imports new files, asks to organize, or vault has many unlinked notes |
 | `/trace topic` | Chronological timeline of how an idea evolved | User asks how something developed, wants history, or says "when did I start..." |
 | `/emerge` | Surface hidden patterns, clusters, contradictions across the vault | User asks "what am I missing", wants a big-picture review, or seems stuck |
 | `/connect A B` | Bridge two topics via the vault's link graph | User wonders if two areas are related, or wants cross-domain insight |

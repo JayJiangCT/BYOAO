@@ -147,17 +147,23 @@ Based on the evidence gathered, rate the belief:
 
 ### Step 6: Save (Optional)
 
-If the user requested output, save with frontmatter:
+At the end of your challenge, ask:
+
+> "Would you like me to save this as a note?"
+
+If the user confirms, save with frontmatter:
 
 ```yaml
 ---
 title: "Challenge: {Belief}"
+note_type: literature
 type: analysis
 date: <today>
 tags: [challenge, critical-thinking]
-status: active
 ---
 ```
+
+Use `obsidian create` to save. Ask the user where they'd like it saved.
 
 ## Key Principles
 

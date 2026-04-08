@@ -141,16 +141,23 @@ Analyzed {N} notes across {M} domains.
 
 ### Step 7: Save (Optional)
 
-If the user requested output, save with frontmatter:
+At the end of your findings, ask:
+
+> "Would you like me to save this as a note?"
+
+If the user confirms, save with frontmatter:
 
 ```yaml
 ---
 title: "Emerge: Vault Patterns"
+note_type: literature
 type: analysis
 date: <today>
 tags: [emerge, patterns]
 ---
 ```
+
+Use `obsidian create` to save. Ask the user where they'd like it saved.
 
 ## Key Principles
 
