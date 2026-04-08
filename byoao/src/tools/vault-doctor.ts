@@ -3,7 +3,7 @@ import { getVaultDiagnosis } from "../vault/doctor.js";
 
 export const byoao_vault_doctor = tool({
   description:
-    "Scan an Obsidian vault and produce a diagnostic report. Checks: missing frontmatter, missing type/tags, AGENT.md drift, orphan notes, broken wikilinks.",
+    "Scan an Obsidian vault and produce a diagnostic report. Checks: missing frontmatter, missing type/tags, AGENTS.md drift, orphan notes, broken wikilinks.",
   args: {
     vaultPath: tool.schema.string().describe("Absolute path to the Obsidian vault"),
   },

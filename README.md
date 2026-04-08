@@ -22,7 +22,7 @@
 BYOAO is an [OpenCode](https://opencode.ai) plugin that turns [Obsidian](https://obsidian.md) into an AI-powered personal knowledge OS. Write notes freely, then let AI connect the dots — building a knowledge graph from your scattered files.
 
 - **Local-first** — your data stays on your machine
-- **AI-native** — `AGENT.md` lets AI agents navigate your knowledge graph without RAG
+- **AI-native** — `AGENTS.md` lets AI agents navigate your knowledge graph without RAG
 - **Start minimal** — 3 directories, structure emerges from your content via `/weave`
 
 ## Quick Start

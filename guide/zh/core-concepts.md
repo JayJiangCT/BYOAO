@@ -25,15 +25,15 @@ graph LR
 
 1. **你写笔记** — 日记、会议记录、想法，任何内容。没有规则，不要求固定格式。
 2. **`/weave` 连接它们** — 扫描笔记，添加 frontmatter 和 wikilinks，维护 Glossary。
-3. **`AGENT.md` 引导 AI** — 当你提问时，AI 读取 AGENT.md 来理解知识库结构，找到相关笔记。
+3. **`AGENTS.md` 引导 AI** — 当你提问时，AI 读取 AGENTS.md 来理解知识库结构，找到相关笔记。
 4. **思维工具提取洞察** — `/trace`、`/emerge`、`/connect` 分析图谱，发现你未注意到的模式。
 5. **图谱随时间变密** — 每次 /weave 运行发现更多连接。笔记越多 = 图谱越丰富 = AI 回答越智能。
 
 核心理念：**你不需要整理。你只管写。AI 来整理。**
 
-## AGENT.md — AI 导航索引
+## AGENTS.md — AI 导航索引
 
-`AGENT.md` 是 AI 代理的入口。当你在知识库中打开 AI 对话时，system-transform hook 自动将 AGENT.md 注入上下文，给 AI 一张知识地图。
+`AGENTS.md` 是 AI 代理的入口。当你在知识库中打开 AI 对话时，OpenCode 原生加载 AGENTS.md 作为 rules，给 AI 一张知识地图。
 
 它包含：
 - **你的名字和知识库描述**
@@ -41,7 +41,7 @@ graph LR
 - **Key Domains** 区域（由 /weave 自动更新）
 - **Conventions** — 笔记在此知识库中的组织方式
 
-AGENT.md 使用 section markers，让 /weave 可以更新自动生成的区域，而不触碰你的手动编辑：
+AGENTS.md 使用 section markers，让 /weave 可以更新自动生成的区域，而不触碰你的手动编辑：
 
 ```markdown
 <!-- byoao:domains:start -->
@@ -95,7 +95,7 @@ status: active
 | `status` | draft / active / completed / archived |
 | `source` | （可选）云端来源 URL — Confluence、Google Doc 等 |
 
-这些字段实现**渐进式信息发现**：AI 先读 AGENT.md，然后跟随 domain 和 references 找到精确相关的内容 — 无需盲目搜索。
+这些字段实现**渐进式信息发现**：AI 先读 AGENTS.md，然后跟随 domain 和 references 找到精确相关的内容 — 无需盲目搜索。
 
 ## 知识库结构
 
@@ -108,7 +108,7 @@ status: active
 ├── Knowledge/
 │   ├── templates/       # 笔记模板 (Cmd+T)
 │   └── Glossary.md      # 实体字典
-├── AGENT.md             # AI 导航索引
+├── AGENTS.md            # AI 导航索引
 └── Start Here.md        # 入门引导
 ```
 

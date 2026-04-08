@@ -167,9 +167,9 @@ export async function createMinimalCore(
 }
 
 /**
- * Generate AGENT.md from the common skeleton + preset section.
+ * Generate AGENTS.md from the common skeleton + preset section.
  */
-export async function createAgentMd(
+export async function createAgentsMd(
   ctx: CreateContext,
   ownerName: string,
   presetConfig: PresetConfig,
@@ -178,12 +178,11 @@ export async function createAgentMd(
   jiraHost: string,
   jiraProject: string,
 ): Promise<void> {
-  const agentSkeletonTemplate = await fs.readFile(
-    path.join(ctx.commonDir, "AGENT.md.hbs"),
+  const agentsTemplate = await fs.readFile(
+    path.join(ctx.commonDir, "AGENTS.md.hbs"),
     "utf-8",
   );
 
-  // Render preset agent-section
   let roleSection = "";
   const agentSectionPath = path.join(presetDir, "agent-section.hbs");
   if (await fs.pathExists(agentSectionPath)) {
@@ -206,22 +205,22 @@ export async function createAgentMd(
     });
   }
 
-  const agentContent = renderTemplate(agentSkeletonTemplate, {
+  const agentsContent = renderTemplate(agentsTemplate, {
     KB_NAME: ctx.kbName,
     OWNER_NAME: ownerName,
     ROLE_SECTION: roleSection,
   });
 
-  const agentMdPath = path.join(ctx.vaultPath, "AGENT.md");
-  if (!(await fs.pathExists(agentMdPath))) {
-    await fs.writeFile(agentMdPath, agentContent);
+  const agentsMdPath = path.join(ctx.vaultPath, "AGENTS.md");
+  if (!(await fs.pathExists(agentsMdPath))) {
+    await fs.writeFile(agentsMdPath, agentsContent);
     ctx.filesCreated++;
   }
 }
 
 /**
  * Apply preset overlay: create preset-specific directories and copy preset templates.
- * Returns the list of all template names (common + preset) for AGENT.md generation.
+ * Returns the list of all template names (common + preset).
  */
 export async function applyPresetOverlay(
   ctx: CreateContext,
@@ -424,8 +423,8 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
   // 2. Apply preset overlay (preset dirs + preset templates)
   const allTemplateNames = await applyPresetOverlay(ctx, presetConfig, presetDir);
 
-  // 3. Generate AGENT.md
-  await createAgentMd(ctx, config.ownerName, presetConfig, presetDir, projects, jiraHost, jiraProject);
+  // 3. Generate AGENTS.md
+  await createAgentsMd(ctx, config.ownerName, presetConfig, presetDir, projects, jiraHost, jiraProject);
 
   // 4. Create people notes (conditional)
   await createPeopleNotes(ctx, members);

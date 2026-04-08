@@ -6,7 +6,7 @@ import path from "node:path";
  * Returns the vault root path if detected, null otherwise.
  *
  * A directory is a BYOAO vault if:
- * - .obsidian/ exists AND AGENT.md exists, OR
+ * - .obsidian/ exists AND AGENTS.md (or AGENT.md fallback) exists, OR
  * - .obsidian/ exists AND Knowledge/Glossary.md exists
  *
  * Checks the given directory and its immediate parent.
@@ -20,12 +20,13 @@ export function detectVaultContext(dir: string): string | null {
     const hasObsidian = fs.existsSync(path.join(candidate, ".obsidian"));
     if (!hasObsidian) continue;
 
-    const hasAgentMd = fs.existsSync(path.join(candidate, "AGENT.md"));
+    const hasAgentsMd = fs.existsSync(path.join(candidate, "AGENTS.md"));
+    const hasAgentMdFallback = fs.existsSync(path.join(candidate, "AGENT.md"));
     const hasGlossary = fs.existsSync(
       path.join(candidate, "Knowledge", "Glossary.md")
     );
 
-    if (hasAgentMd || hasGlossary) {
+    if (hasAgentsMd || hasAgentMdFallback || hasGlossary) {
       return candidate;
     }
   }

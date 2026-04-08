@@ -7,7 +7,7 @@ import os from "node:os";
 
 export const byoao_init_vault = tool({
   description:
-    "Create a personal knowledge base in Obsidian. Creates directory structure, templates, glossary, agent routing file (AGENT.md), and optional people/project notes with wikilinks. Checks that Obsidian is installed first.",
+    "Create a personal knowledge base in Obsidian. Creates directory structure, templates, glossary, agent routing file (AGENTS.md), and optional people/project notes with wikilinks. Checks that Obsidian is installed first.",
   args: {
     kbName: tool.schema.string().describe("Knowledge base name (e.g. \"Jay's KB\")"),
     ownerName: tool.schema.string().optional().describe("Owner's name"),

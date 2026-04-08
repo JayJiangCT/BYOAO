@@ -3,7 +3,7 @@ import { addProject } from "../vault/project.js";
 
 export const byoao_add_project = tool({
   description:
-    "Add a new project note to an existing vault. Creates a project note in Projects/ and updates the team index and AGENT.md wikilinks.",
+    "Add a new project note to an existing vault. Creates a project note in Projects/ and updates the team index and AGENTS.md wikilinks.",
   args: {
     vaultPath: tool.schema.string().describe("Path to the Obsidian vault"),
     name: tool.schema.string().describe("Project name"),

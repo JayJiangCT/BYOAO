@@ -95,17 +95,25 @@ export async function getVaultDiagnosis(vaultPath: string): Promise<DiagnosticRe
     if (!hasIssue) healthyNotes++;
   }
 
-  // Check 3: AGENT.md drift
-  const agentPath = path.join(vaultPath, "AGENT.md");
-  if (await fs.pathExists(agentPath)) {
-    const agentContent = await fs.readFile(agentPath, "utf-8");
+  // Check 3: AGENTS.md drift (check AGENTS.md first, fallback to AGENT.md)
+  let agentContent: string | null = null;
+  let agentResolvedPath = path.join(vaultPath, "AGENTS.md");
+  if (await fs.pathExists(agentResolvedPath)) {
+    agentContent = await fs.readFile(agentResolvedPath, "utf-8");
+  } else {
+    agentResolvedPath = path.join(vaultPath, "AGENT.md");
+    if (await fs.pathExists(agentResolvedPath)) {
+      agentContent = await fs.readFile(agentResolvedPath, "utf-8");
+    }
+  }
+  if (agentContent !== null) {
     const agentLinks = extractWikilinks(agentContent);
     for (const linkTarget of agentLinks) {
       if (!noteNames.has(linkTarget)) {
         issues.push({
           severity: "warning",
           category: "agent-drift",
-          message: `AGENT.md links to [[${linkTarget}]] but no matching note found`,
+          message: `AGENTS.md links to [[${linkTarget}]] but no matching note found`,
         });
       }
     }
@@ -128,7 +136,7 @@ export async function getVaultDiagnosis(vaultPath: string): Promise<DiagnosticRe
   for (const filePath of allFiles) {
     const relativePath = path.relative(vaultPath, filePath);
     if (relativePath.startsWith("Knowledge/templates/")) continue;
-    if (relativePath === "AGENT.md") continue;
+    if (relativePath === "AGENT.md" || relativePath === "AGENTS.md") continue;
 
     const name = path.basename(filePath, ".md");
     const outgoing = allLinksMap.get(name) || new Set();

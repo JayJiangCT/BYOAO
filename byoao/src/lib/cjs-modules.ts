@@ -18,6 +18,9 @@ import * as nodeFs from "node:fs";
 import * as nodeFsPromises from "node:fs/promises";
 import nodePath from "node:path";
 
+async function rename(oldPath: string, newPath: string): Promise<void> {
+    await nodeFsPromises.rename(oldPath, newPath);
+}
 async function copy(src: string, dest: string): Promise<void> {
   await nodeFsPromises.cp(src, dest, { recursive: true });
 }
@@ -61,7 +64,7 @@ export const fs = {
   writeFile: nodeFsPromises.writeFile,
   readdir: nodeFsPromises.readdir,
   mkdir: nodeFsPromises.mkdir,
-  copy, ensureDir, pathExists, pathExistsSync,
+  copy, rename, ensureDir, pathExists, pathExistsSync,
   readJson, readJsonSync, writeJson, writeJsonSync,
   remove, removeSync,
 } as unknown as typeof FsExtra;

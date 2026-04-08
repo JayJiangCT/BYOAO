@@ -37,7 +37,7 @@ BYOAO 的 9 个 AI 技能。在 Obsidian 的 Agent Client 面板中运行。
 - 幂等 — 运行两次不会重复链接
 - 保留已有 frontmatter — 只添加缺失字段，合并数组
 - 备份到 `.byoao/backups/<timestamp>/`
-- 跳过：`.obsidian/`、`.git/`、模板、AGENT.md、二进制文件
+- 跳过：`.obsidian/`、`.git/`、模板、AGENTS.md、二进制文件
 
 ---
 
@@ -162,7 +162,7 @@ BYOAO 的 9 个 AI 技能。在 Obsidian 的 Agent Client 面板中运行。
 **检查项目：**
 1. 缺少 frontmatter — 没有 YAML 元数据的笔记
 2. 缺少 type/tags — frontmatter 不完整的笔记
-3. AGENT.md 漂移 — 引用了不存在的笔记
+3. AGENTS.md 漂移 — 引用了不存在的笔记
 4. 孤立笔记 — 没有入站或出站 wikilinks
 5. 断裂的 wikilinks — 链接到不存在的笔记
 

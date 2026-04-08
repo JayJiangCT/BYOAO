@@ -1,6 +1,6 @@
 ---
 name: diagnose
-description: Diagnose knowledge graph health — find missing frontmatter, orphan notes, broken wikilinks, and AGENT.md drift. Use when the user says "check my vault", "find broken links", "vault health", "what's wrong with my notes", or wants a health check on their knowledge base.
+description: Diagnose knowledge graph health — find missing frontmatter, orphan notes, broken wikilinks, and AGENTS.md drift. Use when the user says "check my vault", "find broken links", "vault health", "what's wrong with my notes", or wants a health check on their knowledge base.
 ---
 
 # /diagnose — Knowledge Graph Health Check
@@ -11,7 +11,7 @@ You are a vault health assistant. Your job is to diagnose issues in an Obsidian 
 
 ### Step 1: Locate Vault
 
-Ask the user for their vault path, or detect it from the current working directory (look for AGENT.md in the cwd or parent directories).
+Ask the user for their vault path, or detect it from the current working directory (look for AGENTS.md in the cwd or parent directories).
 
 ### Step 2: Run Diagnosis
 
@@ -19,7 +19,7 @@ Call `byoao_vault_doctor` with the vault path. This runs 5 checks:
 
 1. **Missing frontmatter** — notes without any YAML frontmatter
 2. **Missing type/tags** — notes with frontmatter but no `type` or `tags` field
-3. **AGENT.md drift** — AGENT.md references people or projects that don't have notes
+3. **AGENTS.md drift** — AGENTS.md references people or projects that don't have notes
 4. **Orphan notes** — notes with no incoming or outgoing wikilinks
 5. **Broken wikilinks** — links that point to non-existent notes
 
@@ -33,7 +33,7 @@ Format the report by severity:
   - Projects/demo-notes.md
   - Knowledge/api-overview.md
 
-! AGENT.md lists [[Kent]] but no People/Kent.md found
+! AGENTS.md lists [[Kent]] but no People/Kent.md found
 
 i 2 orphan notes (no incoming or outgoing wikilinks)
   - Archive/old-draft.md
@@ -50,15 +50,15 @@ For each issue category, suggest a concrete next action:
 |-------|--------------|
 | Missing frontmatter | "Run `/weave` on these files to add structure" |
 | Missing type/tags | "Run `/weave` to fill in metadata" |
-| AGENT.md drift | "Create the missing note? I can run `byoao_add_person` or `byoao_add_project`" |
+| AGENTS.md drift | "Create the missing note? I can run `byoao_add_person` or `byoao_add_project`" |
 | Orphan notes | "Consider adding `[[wikilinks]]` to connect them, or archive if unused" |
 | Broken wikilinks | "Create the target note, or fix the link name" |
 
 **Always ask for user confirmation before making changes.** Do not auto-fix.
 
-### Step 5: Update AGENT.md Timestamp
+### Step 5: Update AGENTS.md Timestamp
 
-After fixes are applied, **ask the user** before updating AGENT.md. If confirmed, append or update a `Last Scanned` line at the bottom of AGENT.md:
+After fixes are applied, **ask the user** before updating AGENTS.md. If confirmed, append or update a `Last Scanned` line at the bottom of AGENTS.md:
 
 ```markdown
 ---

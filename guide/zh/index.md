@@ -10,7 +10,7 @@
 
 ## 理解 BYOAO
 
-- **[核心概念](core-concepts.md)** — 工作原理、知识库结构、AGENT.md、Glossary、预设系统
+- **[核心概念](core-concepts.md)** — 工作原理、知识库结构、AGENTS.md、Glossary、预设系统
 - **[常见场景](workflows.md)** — 第一次 weave、每周回顾、追踪想法、发现模式、生成想法、质疑假设、检测漂移
 
 ## 参考

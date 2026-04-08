@@ -35,7 +35,7 @@ All 9 AI skills available in BYOAO. Run these in the Agent Client panel inside O
 - Idempotent — running twice won't duplicate links
 - Preserves existing frontmatter — only adds missing fields, merges arrays
 - Backs up to `.byoao/backups/<timestamp>/`
-- Skips: `.obsidian/`, `.git/`, templates, AGENT.md, binary files
+- Skips: `.obsidian/`, `.git/`, templates, AGENTS.md, binary files
 
 ---
 
@@ -160,7 +160,7 @@ All 9 AI skills available in BYOAO. Run these in the Agent Client panel inside O
 **Checks performed:**
 1. Missing frontmatter — notes without YAML metadata
 2. Missing type/tags — notes with incomplete frontmatter
-3. AGENT.md drift — references to notes that don't exist
+3. AGENTS.md drift — references to notes that don't exist
 4. Orphan notes — no incoming or outgoing wikilinks
 5. Broken wikilinks — links to non-existent notes
 
