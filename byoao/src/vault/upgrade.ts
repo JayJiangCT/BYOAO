@@ -306,7 +306,7 @@ export async function upgradeVault(
   if (!detectedPath) {
     throw new Error(
       `No BYOAO vault detected at "${vaultPath}". ` +
-      "Expected .obsidian/ and AGENT.md or Knowledge/Glossary.md."
+      "Expected .obsidian/ and AGENTS.md or Knowledge/Glossary.md."
     );
   }
 
@@ -330,6 +330,13 @@ export async function upgradeVault(
       errors: [],
       dryRun,
     };
+  }
+
+  // 3b. Migrate AGENT.md → AGENTS.md if legacy file exists
+  const legacyAgentMd = path.join(vaultPath, "AGENT.md");
+  const newAgentsMd = path.join(vaultPath, "AGENTS.md");
+  if (!dryRun && await fs.pathExists(legacyAgentMd) && !await fs.pathExists(newAgentsMd)) {
+    await fs.rename(legacyAgentMd, newAgentsMd);
   }
 
   // 4. Resolve package assets and build plan

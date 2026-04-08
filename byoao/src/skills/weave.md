@@ -44,7 +44,7 @@ When scanning files, skip:
 | `node_modules/` | Dependencies |
 | `.env`, `credentials.*`, `*.key` | Sensitive files |
 | Binary files (images, PDFs, etc.) | Cannot add frontmatter/wikilinks |
-| `AGENT.md` | BYOAO-managed file |
+| `AGENTS.md` | BYOAO-managed file |
 | `Knowledge/templates/` | Template files — not user content |
 
 Report skipped non-markdown files at the end: "Skipped N non-markdown files".

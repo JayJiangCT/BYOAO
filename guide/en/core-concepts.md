@@ -23,15 +23,15 @@ graph LR
 
 1. **You write notes** — daily notes, meeting notes, ideas, anything. No rules, no required format.
 2. **`/weave` connects them** — scans your notes, adds frontmatter and wikilinks, grows the Glossary.
-3. **`AGENT.md` routes AI** — when you ask a question, AI reads AGENT.md to understand your vault's structure and find relevant notes.
+3. **`AGENTS.md` routes AI** — when you ask a question, AI reads AGENTS.md to understand your vault's structure and find relevant notes.
 4. **Thinking tools extract insights** — `/trace`, `/emerge`, and `/connect` analyze the graph to surface patterns you haven't noticed.
 5. **The graph densifies over time** — each /weave run discovers more connections. More notes = richer graph = smarter AI responses.
 
 The key insight: **you don't organize. You write. The AI organizes.**
 
-## AGENT.md — The AI Navigation Index
+## AGENTS.md — The AI Navigation Index
 
-`AGENT.md` is the entry point for AI agents. When you open an AI conversation in your vault, the system-transform hook automatically injects AGENT.md into the context, giving the AI a map of your knowledge.
+`AGENTS.md` is the entry point for AI agents. When you open an AI conversation in your vault, OpenCode natively loads AGENTS.md as rules, giving the AI a map of your knowledge.
 
 It contains:
 - **Your name and KB description**
@@ -39,7 +39,7 @@ It contains:
 - **Key Domains** section (auto-updated by /weave)
 - **Conventions** — how notes are structured in this vault
 
-AGENT.md uses section markers so /weave can update auto-generated sections without touching your manual edits:
+AGENTS.md uses section markers so /weave can update auto-generated sections without touching your manual edits:
 
 ```markdown
 <!-- byoao:domains:start -->
@@ -93,7 +93,7 @@ status: active
 | `status` | draft / active / completed / archived |
 | `source` | (optional) URL to cloud origin — Confluence, Google Doc, etc. |
 
-These fields enable **progressive disclosure**: AI reads AGENT.md first, then follows domains and references to find exactly what's relevant — no need to search blindly.
+These fields enable **progressive disclosure**: AI reads AGENTS.md first, then follows domains and references to find exactly what's relevant — no need to search blindly.
 
 ## Vault Structure
 
@@ -106,7 +106,7 @@ These fields enable **progressive disclosure**: AI reads AGENT.md first, then fo
 ├── Knowledge/
 │   ├── templates/       # Note templates (Cmd+T)
 │   └── Glossary.md      # Entity dictionary
-├── AGENT.md             # AI navigation index
+├── AGENTS.md            # AI navigation index
 └── Start Here.md        # Onboarding guide
 ```
 

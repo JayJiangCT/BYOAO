@@ -9,7 +9,7 @@ import {
   createPeopleNotes,
   createProjectNotes,
   createTeamIndex,
-  createAgentMd,
+  createAgentsMd,
 } from "../create.js";
 import { detectInitMode } from "../vault-detect.js";
 import type { VaultConfig } from "../../plugin-config.js";
@@ -67,14 +67,14 @@ describe("createVault", () => {
     }
   });
 
-  it("generates AGENT.md (no CLAUDE.md)", async () => {
+  it("generates AGENTS.md (no CLAUDE.md)", async () => {
     const result = await createVault(makeConfig());
     const vp = result.vaultPath;
 
-    expect(await fs.pathExists(path.join(vp, "AGENT.md"))).toBe(true);
+    expect(await fs.pathExists(path.join(vp, "AGENTS.md"))).toBe(true);
     expect(await fs.pathExists(path.join(vp, "CLAUDE.md"))).toBe(false);
 
-    const agentContent = await fs.readFile(path.join(vp, "AGENT.md"), "utf-8");
+    const agentContent = await fs.readFile(path.join(vp, "AGENTS.md"), "utf-8");
     expect(agentContent).toContain("TestKB");
   });
 
@@ -144,7 +144,7 @@ describe("createVault", () => {
     });
     const result = await createVault(config);
 
-    // members wikilinks in AGENT.md + team index, projects in AGENT.md + team index
+    // members wikilinks in AGENTS.md + team index, projects in AGENTS.md + team index
     expect(result.wikilinksCreated).toBeGreaterThanOrEqual(4);
   });
 
@@ -249,7 +249,7 @@ describe("createVault", () => {
     expect(customTheme).toContain('"custom": true');
 
     // BYOAO files should still be created
-    expect(await fs.pathExists(path.join(vp, "AGENT.md"))).toBe(true);
+    expect(await fs.pathExists(path.join(vp, "AGENTS.md"))).toBe(true);
     expect(await fs.pathExists(path.join(vp, "Knowledge/Glossary.md"))).toBe(true);
 
     // Existing note should be untouched

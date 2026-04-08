@@ -152,7 +152,7 @@ program
   .command("init")
   .description(
     "Create a personal knowledge base — sets up folders, templates, " +
-    "glossary, and an AI routing index (AGENT.md). Works with empty " +
+    "glossary, and an AI routing index (AGENTS.md). Works with empty " +
     "directories or adopts existing folders."
   )
   .option("--kb <name>", "Knowledge base name (skips interactive prompt)")

@@ -57,8 +57,8 @@ tags: [person]
     await fs.writeFile(teamIndexPath, teamContent);
   }
 
-  // 3. Update AGENT.md wikilinks
-  for (const agentFile of ["AGENT.md"]) {
+  // 3. Update AGENTS.md wikilinks (check AGENTS.md first, fallback to AGENT.md)
+  for (const agentFile of ["AGENTS.md", "AGENT.md"]) {
     const agentPath = path.join(vaultPath, agentFile);
     if (await fs.pathExists(agentPath)) {
       let agentContent = await fs.readFile(agentPath, "utf-8");

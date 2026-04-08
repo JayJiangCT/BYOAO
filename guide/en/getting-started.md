@@ -48,7 +48,7 @@ byoao init
 
 The interactive setup asks:
 
-1. **Your name** — used in AGENT.md so AI knows whose knowledge base this is
+1. **Your name** — used in AGENTS.md so AI knows whose knowledge base this is
 2. **Knowledge base name** — defaults to "{Name}'s KB"
 3. **Vault location** — defaults to `~/Documents/{KB name}`
 4. **Work preset?** — choose "No" for a minimal personal KB, or "PM/TPM" if you need Projects/Sprints folders
@@ -76,7 +76,7 @@ For a minimal KB:
 ├── Knowledge/
 │   ├── templates/       # Note templates (Meeting, Daily, Decision)
 │   └── Glossary.md      # Entity dictionary (maintained by /weave)
-├── AGENT.md             # AI navigation index
+├── AGENTS.md            # AI navigation index
 └── Start Here.md        # Your onboarding guide
 ```
 

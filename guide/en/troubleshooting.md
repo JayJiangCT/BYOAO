@@ -56,7 +56,7 @@ Common issues and how to fix them.
 
 **Possible reasons:**
 
-- **Files are excluded:** /weave skips `.obsidian/`, `.git/`, `node_modules/`, templates, AGENT.md, and binary files
+- **Files are excluded:** /weave skips `.obsidian/`, `.git/`, `node_modules/`, templates, AGENTS.md, and binary files
 - **Custom exclusions:** Check if the file matches a built-in exclusion pattern (see /weave documentation)
 - **Wrong vault:** Make sure the correct vault is open in Obsidian
 - **Non-markdown files:** /weave only processes `.md` files. PDFs, images, and other files are skipped (count reported at the end)
@@ -73,10 +73,10 @@ Common issues and how to fix them.
 
 ---
 
-## AGENT.md looks wrong or has missing sections
+## AGENTS.md looks wrong or has missing sections
 
 **Fix:**
-- Run `byoao upgrade` to regenerate AGENT.md sections between markers
+- Run `byoao upgrade` to regenerate AGENTS.md sections between markers
 - Manual edits outside `<!-- byoao:...:start/end -->` markers are preserved
 - Content between markers is auto-generated — don't edit it manually
 

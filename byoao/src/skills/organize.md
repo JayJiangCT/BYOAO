@@ -52,7 +52,7 @@ Never move or suggest moving:
 
 | Pattern | Reason |
 |---------|--------|
-| `AGENT.md` | BYOAO-managed root file |
+| `AGENTS.md` | BYOAO-managed root file |
 | `Start Here.md` | BYOAO onboarding file |
 | `Knowledge/Glossary.md` | BYOAO Glossary |
 | `Knowledge/templates/*` | Template files |

@@ -86,7 +86,7 @@ Real scenarios showing how to use BYOAO day-to-day. Each workflow introduces the
 - Notes without frontmatter (new, unprocessed notes)
 - Orphan notes (not connected to anything)
 - Broken wikilinks (links to non-existent notes)
-- AGENT.md drift (references to notes that don't exist)
+- AGENTS.md drift (references to notes that don't exist)
 
 **Follow-up actions:**
 - For orphan notes: decide if they should be connected or archived

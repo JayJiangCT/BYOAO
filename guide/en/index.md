@@ -10,7 +10,7 @@
 
 ## Understanding BYOAO
 
-- **[Core Concepts](core-concepts.md)** — How it works, vault structure, AGENT.md, Glossary, presets
+- **[Core Concepts](core-concepts.md)** — How it works, vault structure, AGENTS.md, Glossary, presets
 - **[Workflows](workflows.md)** — Common scenarios: first weave, weekly review, tracing ideas, discovering patterns, generating ideas, challenging beliefs, detecting drift
 
 ## Reference

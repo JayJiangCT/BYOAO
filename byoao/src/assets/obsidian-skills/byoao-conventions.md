@@ -11,7 +11,7 @@ You MUST follow these conventions when creating or modifying any note in this va
 
 Before creating any note:
 
-1. Read `AGENT.md` — check the Document Conventions section for vault-specific rules
+1. Read `AGENTS.md` — check the Document Conventions section for vault-specific rules
 2. Check `Knowledge/Glossary.md` — know the domain terminology before writing
 3. Identify the correct template — match your note type to a template below
 4. Verify the target directory — place the file according to its `type`
@@ -65,7 +65,7 @@ Additional fields by type:
 
 ## Directory Placement
 
-ALWAYS place files in the directory matching their type. Refer to the Document Conventions section in `AGENT.md` for the authoritative type-to-directory mapping for this vault.
+ALWAYS place files in the directory matching their type. Refer to the Document Conventions section in `AGENTS.md` for the authoritative type-to-directory mapping for this vault.
 
 | type | Directory |
 |------|-----------|

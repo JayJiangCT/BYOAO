@@ -58,7 +58,7 @@
 
 **可能原因：**
 
-- **文件被排除：** /weave 跳过 `.obsidian/`、`.git/`、`node_modules/`、模板、AGENT.md 和二进制文件
+- **文件被排除：** /weave 跳过 `.obsidian/`、`.git/`、`node_modules/`、模板、AGENTS.md 和二进制文件
 - **自定义排除：** 检查文件是否匹配了内置排除规则（参见 /weave 文档）
 - **错误的知识库：** 确保在 Obsidian 中打开了正确的知识库
 - **非 Markdown 文件：** /weave 只处理 `.md` 文件。PDF、图片等文件会被跳过（结束时报告数量）
@@ -75,10 +75,10 @@
 
 ---
 
-## AGENT.md 看起来不对或缺少部分
+## AGENTS.md 看起来不对或缺少部分
 
 **解决：**
-- 运行 `byoao upgrade` 重新生成标记之间的 AGENT.md 区域
+- 运行 `byoao upgrade` 重新生成标记之间的 AGENTS.md 区域
 - `<!-- byoao:...:start/end -->` 标记之外的手动编辑会被保留
 - 标记之间的内容是自动生成的 — 不要手动编辑
 
