@@ -17,12 +17,9 @@ function countWikilinks(content: string): number {
   return matches ? matches.length : 0;
 }
 
-// Minimal directories: the core of every knowledge base
-const MINIMAL_DIRECTORIES = [
-  "Daily",
-  "Knowledge",
-  "Knowledge/templates",
-];
+// No default directories — the vault starts empty.
+// Users keep their own organization habits.
+const MINIMAL_DIRECTORIES: string[] = [];
 
 export interface CreateVaultResult {
   vaultPath: string;
@@ -84,14 +81,15 @@ const MCP_DISPLAY_NAMES: Record<string, { name: string; description: string }> =
 // ---------------------------------------------------------------------------
 
 /**
- * Create the minimal core: directories, .obsidian/ config, common templates,
- * Glossary.md, Start Here.md.
+ * Create the minimal core: .obsidian/ config and AGENTS.md.
+ * No default directories or Glossary — the vault starts empty.
  */
 export async function createMinimalCore(
   ctx: CreateContext,
-  glossaryEntries: GlossaryEntry[] = [],
+  _glossaryEntries: GlossaryEntry[] = [],
 ): Promise<void> {
-  // 1. Create minimal directories
+  // 1. No default directories — vault starts empty
+  // (MINIMAL_DIRECTORIES is empty)
   for (const dir of MINIMAL_DIRECTORIES) {
     await fs.ensureDir(path.join(ctx.vaultPath, dir));
   }
@@ -111,45 +109,7 @@ export async function createMinimalCore(
     }
   }
 
-  // 3. Copy common templates
-  const templateDest = path.join(ctx.vaultPath, "Knowledge/templates");
-  const commonTemplatesDir = path.join(ctx.commonDir, "templates");
-  if (await fs.pathExists(commonTemplatesDir)) {
-    const files = await fs.readdir(commonTemplatesDir);
-    for (const file of files) {
-      await fs.copy(
-        path.join(commonTemplatesDir, file),
-        path.join(templateDest, file),
-        { overwrite: false },
-      );
-      ctx.filesCreated++;
-      ctx.installedFiles.templates.push(`Knowledge/templates/${file}`);
-    }
-  }
-
-  // 4. Generate Glossary.md
-  const glossaryTemplate = await fs.readFile(
-    path.join(ctx.commonDir, "Glossary.md.hbs"),
-    "utf-8",
-  );
-  let glossaryRows = "";
-  if (glossaryEntries.length > 0) {
-    glossaryRows = glossaryEntries
-      .map((e) => `| **${e.term}** | ${e.definition} | ${e.domain} |`)
-      .join("\n");
-  }
-  const glossaryContent = renderTemplate(glossaryTemplate, {
-    KB_NAME: ctx.kbName,
-    date: today(),
-    GLOSSARY_ENTRIES: glossaryRows,
-  });
-  const glossaryPath = path.join(ctx.vaultPath, "Knowledge/Glossary.md");
-  if (!(await fs.pathExists(glossaryPath))) {
-    await fs.writeFile(glossaryPath, glossaryContent);
-    ctx.filesCreated++;
-  }
-
-  // 5. Generate Start Here.md
+  // 3. Generate Start Here.md
   const startHereTemplate = await fs.readFile(
     path.join(ctx.commonDir, "Start Here.md.hbs"),
     "utf-8",
@@ -219,8 +179,8 @@ export async function createAgentsMd(
 }
 
 /**
- * Apply preset overlay: create preset-specific directories and copy preset templates.
- * Returns the list of all template names (common + preset).
+ * Apply preset overlay: create preset-specific directories.
+ * Returns the list of all template names.
  */
 export async function applyPresetOverlay(
   ctx: CreateContext,
@@ -233,23 +193,13 @@ export async function applyPresetOverlay(
   }
   ctx.directories.push(...presetConfig.directories);
 
-  // Collect common template names already installed
-  const templateDest = path.join(ctx.vaultPath, "Knowledge/templates");
   const allTemplateNames: string[] = [];
 
-  // Read existing common templates (already copied by createMinimalCore)
-  if (await fs.pathExists(templateDest)) {
-    const existing = await fs.readdir(templateDest);
-    for (const file of existing) {
-      if (file.endsWith(".md")) {
-        allTemplateNames.push(file.replace(/\.md$/, ""));
-      }
-    }
-  }
-
-  // Copy preset templates
+  // Copy preset templates to Knowledge/templates if the directory exists
+  const templateDest = path.join(ctx.vaultPath, "Knowledge/templates");
   const presetTemplatesDir = path.join(presetDir, "templates");
   if (await fs.pathExists(presetTemplatesDir)) {
+    await fs.ensureDir(templateDest);
     const files = await fs.readdir(presetTemplatesDir);
     for (const file of files) {
       await fs.copy(

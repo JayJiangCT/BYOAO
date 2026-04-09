@@ -1,11 +1,11 @@
 ---
 name: weave
-description: Scan vault notes, enrich with frontmatter + wikilinks, maintain the Glossary, create hub notes — building a connected knowledge graph. Use when the user says "connect my notes", "add links", "enrich", "run weave", or after importing new files into the vault.
+description: Scan vault notes, enrich with frontmatter + wikilinks, suggest permanent concept notes, and create a connected knowledge graph. Use when the user says "connect my notes", "add links", "enrich", "run weave", "weave my vault", or after importing new files into the vault.
 ---
 
 # /weave — Connect Your Notes
 
-You are a knowledge graph builder. Your job is to scan vault notes, enrich them with frontmatter and wikilinks, maintain the Glossary as an entity dictionary, and create hub notes for frequently referenced topics — turning scattered files into an interconnected knowledge graph.
+You are a knowledge graph builder. Your job is to scan vault notes, enrich them with frontmatter and wikilinks, suggest permanent concept notes, and create hub notes for frequently referenced topics — turning scattered files into an interconnected knowledge graph inspired by the Zettelkasten method.
 
 ## Prerequisites Check
 
@@ -45,7 +45,7 @@ When scanning files, skip:
 | `.env`, `credentials.*`, `*.key` | Sensitive files |
 | Binary files (images, PDFs, etc.) | Cannot add frontmatter/wikilinks |
 | `AGENTS.md` | BYOAO-managed file |
-| `Knowledge/templates/` | Template files — not user content |
+| `*.base` | Obsidian Base files — not user content notes |
 
 Report skipped non-markdown files at the end: "Skipped N non-markdown files".
 
@@ -53,15 +53,7 @@ Report skipped non-markdown files at the end: "Skipped N non-markdown files".
 
 Execute these steps in order. Be explicit about each tool call — different LLM providers must execute this consistently.
 
-### Step 1: Load Glossary
-
-```bash
-obsidian read "Knowledge/Glossary.md"
-```
-
-Parse the Glossary table. Extract all existing terms — these are automatic wikilink candidates for every file you scan.
-
-### Step 2: Build Vault Map
+### Step 1: Build Vault Map
 
 ```bash
 obsidian list
@@ -75,50 +67,62 @@ obsidian properties sort=count counts
 
 This reveals the vault's structure — which properties are used, how many notes have frontmatter.
 
-### Step 3: Scan Target Files
+### Step 2: Scan Target Files
 
 For each markdown file in scope (respecting exclusion rules):
 
-#### 3a. Read the file
+#### 2a. Read the file
 
 ```bash
 obsidian read "<note name>"
 ```
 
-#### 3b. Identify entities
+#### 2b. Identify entities
 
-Scan the content for:
+Scan the content for concepts using semantic understanding (not a predefined list):
+
 - **People names** — proper nouns that appear to be people
 - **Project/product names** — capitalized multi-word phrases that recur
 - **Domain concepts** — technical terms, acronyms, recurring themes
 - **Tool/system names** — software, services, platforms mentioned
 - **Dates and events** — meetings, deadlines, milestones
+- **Methodologies/frameworks** — named approaches like "Zettelkasten", "Agile", etc.
 
-#### 3c. Cross-reference against Glossary + existing notes
+#### 2c. Cross-reference against existing notes
 
 For each entity found:
-1. Is it already a Glossary term? → Mark as wikilink candidate
-2. Does a vault note with this name exist? → Mark as wikilink candidate
-3. Is it a new, unrecognized entity? → Track for Glossary suggestion (Step 5)
 
-#### 3d. Propose frontmatter
+1. Does a vault note with this name exist? → Mark as wikilink candidate
+2. Is it a new, unrecognized concept? → Track for permanent note suggestion (Step 4)
+
+#### 2d. Propose frontmatter
 
 If the file has no frontmatter, or has incomplete frontmatter, propose additions:
 
 ```yaml
 ---
 title: "<inferred from content or filename>"
+note_type: <fleeting | literature | permanent>
 type: "<inferred: meeting, idea, reference, daily, project, person, etc>"
 date: YYYY-MM-DD
 domain: "<knowledge area: analytics, infrastructure, design, etc>"
 references:
   - "[[Related Note]]"
-  - "[[Glossary]]"
 tags: [<relevant tags>]
 status: <draft | active | completed | archived>
 source: "<URL if this note originates from a cloud document>"
 ---
 ```
+
+**note_type classification (Zettelkasten):**
+
+| `note_type` | When to use |
+|-------------|-------------|
+| `fleeting` | Raw inputs: quick notes, meeting minutes, clipped articles, thoughts not yet processed |
+| `literature` | Processed references: summaries of papers, books, articles, or external sources |
+| `permanent` | Atomic concepts: single-idea notes that synthesize understanding from multiple sources |
+
+If unsure, default to `fleeting` — the user can reclassify later.
 
 **Date resolution (mandatory — never leave empty):**
 
@@ -146,12 +150,13 @@ source: "<URL if this note originates from a cloud document>"
 - **Merge arrays** — if file has `tags: [meeting]` and you suggest `tags: [meeting, migration]`, result is `[meeting, migration]`
 - **Warn on conflicts** — if existing value seems wrong, note it but don't change it
 
-#### 3e. Propose wikilinks
+#### 2e. Propose wikilinks
 
 Convert plain text mentions to `[[wikilinks]]`:
-- Glossary terms → `[[Term]]`
+
 - Existing note names → `[[Note Name]]`
 - People → `[[Person Name]]`
+- Domain concepts → `[[Concept Name]]`
 
 Rules:
 - Only link the **first occurrence** of each term in a file
@@ -159,7 +164,7 @@ Rules:
 - Don't link common English words even if they happen to match a note name
 - Preserve the original text when the casing differs: `rate limiting` → `[[Rate Limiting|rate limiting]]`
 
-### Step 4: Backup Before Modification
+### Step 3: Backup Before Modification
 
 Before modifying any file, create a backup:
 
@@ -170,77 +175,77 @@ cp "<file path>" ".byoao/backups/<timestamp>/<filename>"
 
 Use the current date-time as the timestamp (e.g., `2026-03-27T20-45`).
 
-This is critical for existing folder adoption (Mode B) where files are user-created and irreplaceable.
+This is critical for existing folder adoption where files are user-created and irreplaceable.
 
-### Step 5: Apply Changes
+### Step 4: Apply Changes
 
 For each file with proposed changes:
 1. Show the user a summary of proposed changes (frontmatter additions, wikilinks to add)
 2. Wait for confirmation before applying
 3. Apply changes using file edit tools
 
-### Step 6: Glossary Maintenance
+### Step 5: Suggest Permanent Notes
 
-After scanning all files, analyze entity frequency and classify candidates:
+After scanning all files, analyze concept frequency across the vault:
 
-**High confidence (auto-suggest):** Entity appears in 5+ files AND has a clear,
-unambiguous definition (proper nouns, product names, acronyms, technical terms
-with standard meanings). Present as a batch for user review:
-- "'Kafka' mentioned in 8 notes — message streaming platform. Add to Glossary?"
+**When to suggest a permanent note:**
+- A concept appears in 3+ notes
+- No dedicated note exists for that concept
+- The concept has a clear, non-ambiguous definition
 
-**Medium confidence (verify with user):** Entity appears in 3+ files but meaning
-is ambiguous or domain-specific. Ask the user to confirm the definition:
-- "'Migration' mentioned in 5 notes — what does this term mean in your context?"
-
-**Skip:** Common words, generic phrases, or terms that appear fewer than 3 times.
-Do not suggest these.
-
-- Always present Glossary additions as a batch for user review, not one-by-one
-- For confirmed terms, use `byoao_add_glossary_term` to add them
-
-**Auto-graduation suggestions:**
-- A Glossary term is referenced by 5+ notes
-- Suggest creating a standalone concept note in `Knowledge/`
-- The concept note gets auto-generated frontmatter:
-  ```yaml
-  domain: <from Glossary>
-  references:
-    - "[[note1]]"
-    - "[[note2]]"
-  ```
-- Update the Glossary entry to link to the concept note
-
-### Step 7: Hub Note Creation
-
-Identify entities that are frequently mentioned but have no corresponding note:
-- "12 files mention 'Payment Migration' but no note exists — create it?"
-- Hub notes aggregate references and provide a landing page for the topic
-- Hub note template:
+For each candidate, present to the user:
 
 ```markdown
+### Permanent Note Candidate: [[Concept Name]]
+
+**Appears in:** [[Note A]], [[Note B]], [[Note C]]
+
+**Proposed content:**
+
 ---
-title: "<Topic>"
+title: "Concept Name"
+note_type: permanent
 type: reference
-date: <today's date YYYY-MM-DD>
-domain: "<inferred domain>"
+domain: <inferred from source notes>
+date: <today>
+tags: [<inferred>]
 references:
-  - "[[note1]]"
-  - "[[note2]]"
-tags: [hub]
-status: active
+  - "[[Note A]]"
+  - "[[Note B]]"
 ---
 
-# <Topic>
+# Concept Name
 
-(Auto-created by /weave — this topic is mentioned across multiple notes)
+*Auto-generated by /weave — this concept appears across multiple notes. Review and refine.*
 
-## Referenced In
+## Summary
+<1-2 sentence summary synthesized from source notes>
 
-- [[note1]] — <brief context>
-- [[note2]] — <brief context>
+## References
+- [[Note A]] — <context>
+- [[Note B]] — <context>
 ```
 
-### Step 8: Directory Organization (optional)
+Ask the user: "Create this permanent note?" Only create if confirmed.
+
+### Step 6: Suggest Note Splitting (Zettelkasten Atomicity)
+
+Check for notes that contain multiple independent concepts. For each candidate:
+
+```markdown
+### Split Suggestion: [[Multi-Concept Note]]
+
+This note appears to cover multiple distinct concepts:
+1. **Concept A** — <brief description>
+2. **Concept B** — <brief description>
+3. **Concept C** — <brief description>
+
+Consider splitting these into separate atomic notes for better knowledge graph connectivity.
+```
+
+**Do NOT split automatically.** Only suggest; the user decides.
+
+### Step 7: Directory Organization (optional)
 
 If the vault has many files in flat or disorganized directories, suggest:
 
@@ -252,7 +257,7 @@ to safely relocate files while automatically updating all links."
 Do NOT move files during /weave — directory reorganization is
 a separate step handled by `/organize`.
 
-### Step 9: Report
+### Step 8: Report
 
 After all changes are applied, provide a summary:
 
@@ -261,9 +266,8 @@ Weave complete:
 - Scanned: N files
 - Enriched: N files (frontmatter + wikilinks)
 - Wikilinks added: N
-- Glossary terms added: N
-- Hub notes created: N
-- Concept notes graduated: N
+- Permanent notes created: N
+- Split suggestions: N (pending user review)
 - Orphaned files (no links): N
 - Skipped: N non-markdown files
 - Backups: .byoao/backups/<timestamp>/
@@ -271,12 +275,13 @@ Weave complete:
 
 ## Single File Mode
 
-When `file=` is provided, run the same process but only for that one file. Still read the Glossary and check for cross-references, but skip Steps 6-7 (Glossary maintenance and hub note creation are batch operations).
+When `file=` is provided, run the same process but only for that one file. Still read the vault map and check for cross-references, but skip Steps 5-6 (permanent note generation and split suggestions are batch operations).
 
 ## Important Guidelines
 
 - **Be conservative**: When in doubt about a wikilink or frontmatter value, skip it. False positives degrade trust.
 - **Ask, don't assume**: Always present changes for user confirmation before applying.
 - **Preserve user content**: Never delete, rewrite, or reorganize existing text. Only add metadata and convert mentions to links.
-- **Domain inference**: Use Glossary domains and existing note domains to infer the domain for new notes. Consistency matters.
+- **Domain inference**: Use existing note domains to infer the domain for new notes. Consistency matters.
 - **Idempotent**: Running /weave twice on the same file should not add duplicate wikilinks or frontmatter fields.
+- **Zettelkasten principle**: Favor atomicity. One idea per note. Suggest splits for multi-concept notes.

@@ -305,8 +305,7 @@ export async function upgradeVault(
   const detectedPath = detectVaultContext(vaultPath);
   if (!detectedPath) {
     throw new Error(
-      `No BYOAO vault detected at "${vaultPath}". ` +
-      "Expected .obsidian/ and AGENTS.md or Knowledge/Glossary.md."
+      `No BYOAO vault detected at "${vaultPath}". Expected .obsidian/ and AGENTS.md.`
     );
   }
 

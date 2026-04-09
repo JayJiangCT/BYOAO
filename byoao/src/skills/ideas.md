@@ -47,7 +47,7 @@ Read notes across domains, prioritizing:
 - Recent notes (last 30 days) — what the user is actively thinking about
 - Highly connected notes (many backlinks) — central concepts
 - Notes with `status: active` — current work
-- Glossary — the user's core vocabulary
+- `INDEX.base` if it exists — for knowledge structure overview
 
 For each domain, read 5-10 representative notes to understand the landscape.
 
@@ -145,17 +145,23 @@ Rank the three highest-impact, most immediately actionable ideas:
 
 ### Step 7: Save (Optional)
 
-If the user requested output, save with frontmatter:
+At the end of your ideas, ask:
+
+> "Would you like me to save this as a note?"
+
+If the user confirms, save with frontmatter:
 
 ```yaml
 ---
 title: "Ideas: {focus}"
+note_type: literature
 type: analysis
 date: <today>
 tags: [ideas, proactive]
-status: active
 ---
 ```
+
+Use `obsidian create` to save. Ask the user where they'd like it saved.
 
 ## Key Principles
 

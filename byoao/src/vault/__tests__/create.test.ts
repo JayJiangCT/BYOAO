@@ -56,15 +56,13 @@ function makeConfig(overrides: Partial<VaultConfig> = {}): VaultConfig {
 }
 
 describe("createVault", () => {
-  it("creates expected directory structure", async () => {
+  it("creates no default directories (vault starts empty)", async () => {
     const result = await createVault(makeConfig());
 
-    expect(result.directories).toContain("Knowledge");
-    expect(result.directories).toContain("Daily");
-
-    for (const dir of result.directories) {
-      expect(await fs.pathExists(path.join(result.vaultPath, dir))).toBe(true);
-    }
+    // No default directories — vault starts empty
+    expect(result.directories).not.toContain("Knowledge");
+    expect(result.directories).not.toContain("Daily");
+    expect(result.directories).not.toContain("Knowledge/templates");
   });
 
   it("generates AGENTS.md (no CLAUDE.md)", async () => {
@@ -75,17 +73,19 @@ describe("createVault", () => {
     expect(await fs.pathExists(path.join(vp, "CLAUDE.md"))).toBe(false);
 
     const agentContent = await fs.readFile(path.join(vp, "AGENTS.md"), "utf-8");
-    expect(agentContent).toContain("TestKB");
+    // New AGENTS.md is minimal — check for Zettelkasten reference
+    expect(agentContent).toContain("Zettelkasten");
   });
 
-  it("generates Start Here.md and Glossary.md", async () => {
+  it("generates Start Here.md (no Glossary)", async () => {
     const result = await createVault(makeConfig());
     const vp = result.vaultPath;
 
     expect(await fs.pathExists(path.join(vp, "Start Here.md"))).toBe(true);
+    // No Glossary.md created
     expect(
       await fs.pathExists(path.join(vp, "Knowledge/Glossary.md"))
-    ).toBe(true);
+    ).toBe(false);
 
     const startHere = await fs.readFile(
       path.join(vp, "Start Here.md"),
@@ -164,17 +164,15 @@ describe("createVault", () => {
     expect(teamIndex).toContain("[[Bob]]");
   });
 
-  it("includes glossary entries when provided", async () => {
+  it("glossary entries are ignored (feature removed)", async () => {
     const config = makeConfig({
       glossaryEntries: [{ term: "API", definition: "Application interface", domain: "engineering" }],
     });
     const result = await createVault(config);
-    const glossary = await fs.readFile(
-      path.join(result.vaultPath, "Knowledge/Glossary.md"),
-      "utf-8"
-    );
-    expect(glossary).toContain("**API**");
-    expect(glossary).toContain("Application interface");
+    // Glossary is no longer created — entries are safely ignored
+    expect(
+      await fs.pathExists(path.join(result.vaultPath, "Knowledge/Glossary.md"))
+    ).toBe(false);
   });
 
   it("writes .byoao/manifest.json after vault creation", async () => {
@@ -192,13 +190,12 @@ describe("createVault", () => {
     expect(manifest.infrastructure.templates.length).toBeGreaterThan(0);
   });
 
-  it("minimal preset creates only minimal directories", async () => {
+  it("minimal preset creates no default directories", async () => {
     const config = makeConfig({ preset: "minimal" });
     const result = await createVault(config);
 
-    expect(result.directories).toContain("Daily");
-    expect(result.directories).toContain("Knowledge");
-    expect(result.directories).toContain("Knowledge/templates");
+    // No default directories — vault starts empty
+    expect(result.directories).toHaveLength(0);
     // Minimal preset should NOT create these
     expect(result.directories).not.toContain("Inbox");
     expect(result.directories).not.toContain("Systems");
@@ -250,7 +247,8 @@ describe("createVault", () => {
 
     // BYOAO files should still be created
     expect(await fs.pathExists(path.join(vp, "AGENTS.md"))).toBe(true);
-    expect(await fs.pathExists(path.join(vp, "Knowledge/Glossary.md"))).toBe(true);
+    // No Glossary in new design
+    expect(await fs.pathExists(path.join(vp, "Start Here.md"))).toBe(true);
 
     // Existing note should be untouched
     const existingNote = await fs.readFile(path.join(vp, "existing-note.md"), "utf-8");

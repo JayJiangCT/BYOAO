@@ -196,17 +196,23 @@ These questions are for your consideration — not judgments:
 
 ### Step 6: Save (Optional)
 
-If the user requested output, save with frontmatter:
+At the end of your analysis, ask:
+
+> "Would you like me to save this as a note?"
+
+If the user confirms, save with frontmatter:
 
 ```yaml
 ---
 title: "Drift Analysis: {period}"
+note_type: literature
 type: analysis
 date: <today>
 tags: [drift, reflection]
-status: active
 ---
 ```
+
+Use `obsidian create` to save. Ask the user where they'd like it saved.
 
 ## Key Principles
 

@@ -10,7 +10,7 @@
  */
 import { execSync } from "node:child_process";
 import { build } from "esbuild";
-import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, statSync, cpSync } from "node:fs";
 import path from "node:path";
 
 const pkg = JSON.parse(readFileSync("package.json", "utf-8"));
@@ -77,6 +77,14 @@ execSync("npx tsc", { stdio: "inherit" });
 // Step 1.5: Inline package version in all runtime JS files emitted by tsc
 console.log("inline package version…");
 inlinePackageVersion("dist");
+
+// Step 1.6: Copy BYOAO skills to dist/assets/skills/
+console.log("copy BYOAO skills…");
+const skillsSrc = "src/skills";
+const skillsDst = "dist/assets/skills";
+if (readdirSync("src/skills").some((f) => f.endsWith(".md"))) {
+  cpSync(skillsSrc, skillsDst, { recursive: true, force: true });
+}
 
 // Step 2: Bundle dist/index.js with esbuild
 console.log("esbuild bundle for OpenCode plugin entry…");

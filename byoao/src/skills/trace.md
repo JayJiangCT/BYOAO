@@ -40,7 +40,7 @@ obsidian search "<topic>"
 ```
 
 Also check:
-- Glossary entry for the topic
+- `INDEX.base` if it exists, for domain and note_type classification
 - Backlinks to `[[<topic>]]` if a note exists for it
 - Tag variations: `#<topic>`, `#<topic-kebab-case>`
 
@@ -125,12 +125,17 @@ Consider tracing these connected topics:
 
 ### Step 6: Save (Optional)
 
-If the user requested output, save the trace as a note with frontmatter:
+At the end of your trace, ask:
+
+> "Would you like me to save this as a note?"
+
+If the user confirms, save the trace with frontmatter:
 
 ```yaml
 ---
 title: "Trace: {Topic}"
-type: trace
+note_type: literature
+type: reference
 domain: <inferred from topic>
 date: <today>
 references:
@@ -139,6 +144,8 @@ references:
 tags: [trace, <topic-tag>]
 ---
 ```
+
+Use `obsidian create` to save. Ask the user where they'd like it saved.
 
 ## Key Principles
 

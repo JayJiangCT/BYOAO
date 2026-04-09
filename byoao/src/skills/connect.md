@@ -183,11 +183,16 @@ If you believe these topics are related, consider:
 
 ### Step 7: Save (Optional)
 
-If the user requested output, save with frontmatter:
+At the end of your analysis, ask:
+
+> "Would you like me to save this as a note?"
+
+If the user confirms, save with frontmatter:
 
 ```yaml
 ---
 title: "Connect: {From} ↔ {To}"
+note_type: literature
 type: analysis
 date: <today>
 references:
@@ -196,6 +201,8 @@ references:
 tags: [connect, bridge]
 ---
 ```
+
+Use `obsidian create` to save. Ask the user where they'd like it saved.
 
 ## Key Principles
 

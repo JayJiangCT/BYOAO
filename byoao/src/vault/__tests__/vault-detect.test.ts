@@ -23,23 +23,7 @@ describe("detectVaultContext", () => {
     expect(result).toBe(tmpDir);
   });
 
-  it("returns vault path when .obsidian/ and Knowledge/Glossary.md exist", async () => {
-    await fs.ensureDir(path.join(tmpDir, ".obsidian"));
-    await fs.ensureDir(path.join(tmpDir, "Knowledge"));
-    await fs.writeFile(path.join(tmpDir, "Knowledge/Glossary.md"), "# Glossary");
-
-    const result = detectVaultContext(tmpDir);
-    expect(result).toBe(tmpDir);
-  });
-
-  it("returns null when .obsidian/ is missing", async () => {
-    await fs.writeFile(path.join(tmpDir, "AGENT.md"), "# Agent");
-
-    const result = detectVaultContext(tmpDir);
-    expect(result).toBeNull();
-  });
-
-  it("returns null when .obsidian/ exists but no AGENT.md or Glossary", async () => {
+  it("returns null when .obsidian/ exists but no AGENTS.md or AGENT.md", async () => {
     await fs.ensureDir(path.join(tmpDir, ".obsidian"));
 
     const result = detectVaultContext(tmpDir);
