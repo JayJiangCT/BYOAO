@@ -115,8 +115,8 @@ BYOAO 需要两组 skills：**Obsidian skills**（用于与 vault 交互）和 *
 将 BYOAO 专有的 skills（`/cook`、`/health`、`/prep`、`/trace` 等）复制到 `.claude/skills/`：
 
 ```bash
-for f in .opencode/commands/*.md; do
-  name=$(basename "$f" .md)
+for f in .opencode/skills/*/SKILL.md; do
+  name=$(basename "$(dirname "$f")")
   mkdir -p ".claude/skills/$name"
   cp "$f" ".claude/skills/$name/SKILL.md"
 done
@@ -125,10 +125,10 @@ done
 或使用符号链接：
 
 ```bash
-for f in .opencode/commands/*.md; do
-  name=$(basename "$f" .md)
+for f in .opencode/skills/*/SKILL.md; do
+  name=$(basename "$(dirname "$f")")
   mkdir -p ".claude/skills/$name"
-  ln -s "../../../$f" ".claude/skills/$name/SKILL.md"
+  ln -s "../../../.opencode/skills/$name/SKILL.md" ".claude/skills/$name/SKILL.md"
 done
 ```
 
@@ -186,7 +186,7 @@ your-vault/
 │       ├── health/SKILL.md         # 健康检查
 │       └── .../SKILL.md            # 其他 BYOAO skills
 ├── .opencode/                      # OpenCode 配置（现有）
-│   └── commands/
+│   └── skills/
 └── .opencode.json
 ```
 
@@ -208,7 +208,7 @@ Claude Code 的自动记忆功能开箱即用。笔记存储在 `~/.claude/proje
 |------|----------|-------------|
 | Agent 指南 | `AGENTS.md`（通过 hook 注入） | `.claude/CLAUDE.md`（导入 `@../AGENTS.md`） |
 | 规则 | 动态（基于 hook） | 静态（`.claude/rules/*.md` 支持路径限定） |
-| Skills | `.opencode/commands/` | `.claude/skills/<name>/SKILL.md` |
+| Skills | `.opencode/skills/<name>/SKILL.md` | `.claude/skills/<name>/SKILL.md` |
 | MCP 配置 | 插件自动处理 | `.claude/settings.json` |
 | 认证恢复 | `byoao_mcp_auth` 工具 | 原生支持（不需要） |
 

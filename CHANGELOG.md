@@ -2,6 +2,24 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.1] — 2026-04-09
+
+### Skills Restructure
+- **Skills directory layout**: Migrated from flat `.opencode/commands/<name>.md` to Agent Skills standard `.opencode/skills/<name>/SKILL.md`
+- **Description optimization**: All 12 skill descriptions rewritten per skill-creator guidelines — front-loaded purpose, explicit trigger phrases and activation contexts
+- **Automatic migration**: `byoao upgrade` migrates old `commands/` layout to `skills/` automatically; cleans up empty `commands/` directory
+
+### Documentation
+- **Obsidian Web Clipper**: Added setup guide and workflow for [Web Clipper](https://obsidian.md/clipper) — clip articles, research, and references directly into the vault as `/cook` raw material
+- **Claude Code setup**: Updated skill copy commands and directory structure to reflect new `skills/<name>/SKILL.md` layout
+- **README**: Added `/ask` skill to the skills table; added Web Clipper recommendation
+
+### Bug Fixes
+- Fixed `byoao install` writing BYOAO skills to deprecated `commands/` path instead of `skills/<name>/SKILL.md`
+- Fixed `byoao init` vault creation installing BYOAO skills to `commands/` instead of `skills/`
+
+---
+
 ## [v2.0.0] — 2026-04-09
 
 ### Breaking Changes

@@ -1,10 +1,11 @@
 ---
 name: wiki
 description: >
-  Generate and maintain INDEX.base — the dynamic knowledge map for v2 agent pages (`type`:
-  entity | concept | comparison | query). Uses Obsidian Base queries to list agent-maintained
-  pages; SCHEMA.md defines tag taxonomy. Use when the user runs /wiki or wants to see the current
-  state of the knowledge base.
+  Generate and maintain INDEX.base — the dynamic knowledge map for v2 agent pages (type:
+  entity, concept, comparison, query). Uses Obsidian Base queries to list agent-maintained
+  pages; SCHEMA.md defines tag taxonomy. Use when the user says "update the index",
+  "refresh the knowledge map", "show me the wiki", "what's in the knowledge base",
+  "rebuild INDEX.base", or wants to see the current state of compiled knowledge.
 ---
 
 # /wiki — Knowledge Map

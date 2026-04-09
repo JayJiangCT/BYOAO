@@ -1,8 +1,10 @@
 ---
 name: prep
 description: >
-  Shared prerequisites check — verifies Obsidian CLI is available and displays a correct
-  error message with installation guidance. Referenced by all skills via "(see /prep)".
+  Shared prerequisites check and graph enrichment. Verifies Obsidian CLI is available and
+  scans frontmatter for cross-reference suggestions. Referenced by all skills via "(see /prep)".
+  Use when the user says "check prerequisites", "prep my vault", "enrich the graph", or
+  before running other skills that depend on Obsidian CLI.
 ---
 
 # /prep — Prerequisites Check

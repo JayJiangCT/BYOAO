@@ -693,7 +693,7 @@ program
 
 function getCategoryLabel(filePath: string): string {
   if (filePath.startsWith(".opencode/skills/")) return "skills";
-  if (filePath.startsWith(".opencode/commands/")) return "commands";
+  if (filePath.startsWith(".opencode/commands/")) return "skills (legacy)";
   if (filePath.startsWith(".obsidian/")) return "obsidian config";
   if (filePath.startsWith("Knowledge/templates/")) return "templates";
   return "other";

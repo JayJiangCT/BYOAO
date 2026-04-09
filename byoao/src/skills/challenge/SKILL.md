@@ -3,7 +3,9 @@ name: challenge
 description: >
   Pressure-tests beliefs against vault evidence. Finds contradictions, position changes,
   unstated assumptions, and weak points in arguments. Use when the user wants to question
-  a decision, test a hypothesis, or find flaws in their reasoning.
+  a decision, test a hypothesis, find flaws in reasoning, play devil's advocate, or says
+  anything like "challenge this", "what's wrong with my thinking", "poke holes in this",
+  "are there contradictions", or "stress test this idea".
 ---
 
 # /challenge — Pressure Test

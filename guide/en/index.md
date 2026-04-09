@@ -11,7 +11,7 @@
 ## Understanding BYOAO
 
 - **[Core Concepts](core-concepts.md)** — How it works, vault structure, AGENTS.md, SCHEMA.md, presets
-- **[Workflows](workflows.md)** — Common scenarios: first cook, weekly review, tracing ideas, generating ideas, challenging beliefs, detecting drift
+- **[Workflows](workflows.md)** — Common scenarios: first cook, weekly review, tracing ideas, generating ideas, challenging beliefs, detecting drift, capturing web content
 
 ## Platform Setup
 

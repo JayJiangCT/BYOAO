@@ -183,6 +183,60 @@ Properties view 在侧边栏显示 frontmatter 元数据，方便你查看和编
 
 运行后，按 `Cmd+G` 打开图谱视图，看看你的笔记如何与 agent 编译的知识页面连接。
 
+## 推荐：Obsidian Web Clipper
+
+安装 **[Obsidian Web Clipper](https://obsidian.md/clipper)** 将浏览器变成知识采集工具。Web Clipper 可以将文章、研究论文、参考资料等网页内容直接保存到你的知识库中，转换为干净的 Markdown 文件。
+
+**对 BYOAO 的意义：** 剪藏的页面会成为 `/cook` 的原始素材。AI 在编译时会同时读取你的笔记和网页剪藏，从中提取实体、概念和关联关系。
+
+### 安装
+
+为你的浏览器安装扩展：[Chrome](https://obsidian.md/clipper) | [Safari](https://obsidian.md/clipper) | [Firefox](https://obsidian.md/clipper) | [Edge](https://obsidian.md/clipper) | [Arc](https://obsidian.md/clipper) | [Brave](https://obsidian.md/clipper)
+
+### 配置 BYOAO 剪藏模板
+
+Web Clipper 支持自定义模板，可以自动填充 frontmatter。为你的 BYOAO 知识库创建一个：
+
+1. 打开 Web Clipper 设置（点击扩展图标 → 齿轮图标）
+2. 创建新模板，使用以下设置：
+
+| 设置项 | 值 |
+|--------|-----|
+| **Template name** | BYOAO Article |
+| **Note name** | `{{title}}` |
+| **Note location** | `Clippings`（或你喜欢的任何文件夹） |
+| **Vault** | 你的 BYOAO 知识库 |
+
+3. 在模板正文中使用：
+
+```markdown
+---
+title: "{{title}}"
+date: {{date}}
+type: reference
+tags:
+  - clippings
+  - {{#if author}}{{author}}{{/if}}
+sources:
+  - "{{url}}"
+author: "{{author}}"
+---
+
+{{content}}
+```
+
+现在当你剪藏网页时，它会带着正确的 frontmatter 保存到知识库中 — 等待 `/cook` 处理。
+
+### 工作流程：剪藏 → Cook → 知识
+
+1. 正常浏览网页。发现值得保存的内容时，点击 Web Clipper 图标
+2. 可以先高亮关键段落再剪藏（高亮内容会被保留）
+3. 网页以 Markdown 文件保存到知识库的 `Clippings/` 文件夹
+4. 下次运行 `/cook` 时，AI 会读取你的剪藏并提取实体、概念和关联到知识库
+5. 原始剪藏作为来源引用保留 — agent 页面会链接回它
+
+> **小贴士：** 在 Web Clipper 中设置[自动匹配规则](https://obsidian.md/clipper)，为不同网站自动使用不同模板（如文章模板、论文模板、食谱模板等）。
+
 ## 接下来
 
 - **[核心概念](core-concepts.md)** — 了解 BYOAO 的工作原理

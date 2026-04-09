@@ -9,7 +9,7 @@ const PKG_VERSION: string = __PKG_VERSION__;
 
 const InfrastructureSchema = z.object({
   skills: z.array(z.string()).default([]),
-  commands: z.array(z.string()).default([]),
+  commands: z.array(z.string()).default([]),   // deprecated — kept for backward compat parsing
   obsidianConfig: z.array(z.string()).default([]),
   templates: z.array(z.string()).default([]),
 });

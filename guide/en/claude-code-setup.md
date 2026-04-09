@@ -115,8 +115,8 @@ This gives Claude access to Obsidian CLI, Markdown, Bases, JSON Canvas, and Defu
 Copy BYOAO-specific skills (`/cook`, `/health`, `/prep`, `/trace`, etc.) to `.claude/skills/`:
 
 ```bash
-for f in .opencode/commands/*.md; do
-  name=$(basename "$f" .md)
+for f in .opencode/skills/*/SKILL.md; do
+  name=$(basename "$(dirname "$f")")
   mkdir -p ".claude/skills/$name"
   cp "$f" ".claude/skills/$name/SKILL.md"
 done
@@ -125,10 +125,10 @@ done
 Or use symlinks:
 
 ```bash
-for f in .opencode/commands/*.md; do
-  name=$(basename "$f" .md)
+for f in .opencode/skills/*/SKILL.md; do
+  name=$(basename "$(dirname "$f")")
   mkdir -p ".claude/skills/$name"
-  ln -s "../../../$f" ".claude/skills/$name/SKILL.md"
+  ln -s "../../../.opencode/skills/$name/SKILL.md" ".claude/skills/$name/SKILL.md"
 done
 ```
 
@@ -186,7 +186,7 @@ your-vault/
 │       ├── health/SKILL.md         # Health check
 │       └── .../SKILL.md            # Other BYOAO skills
 ├── .opencode/                      # OpenCode config (existing)
-│   └── commands/
+│   └── skills/
 └── .opencode.json
 ```
 
@@ -208,7 +208,7 @@ Claude Code's auto memory works automatically. Notes are stored at `~/.claude/pr
 |--------|----------|-------------|
 | Agent guide | `AGENTS.md` (injected by hook) | `.claude/CLAUDE.md` (imports `@../AGENTS.md`) |
 | Rules | Dynamic (hook-based) | Static (`.claude/rules/*.md` with path scoping) |
-| Skills | `.opencode/commands/` | `.claude/skills/<name>/SKILL.md` |
+| Skills | `.opencode/skills/<name>/SKILL.md` | `.claude/skills/<name>/SKILL.md` |
 | MCP config | Plugin handles it | `.claude/settings.json` |
 | Auth recovery | `byoao_mcp_auth` tool | Native (not needed) |
 

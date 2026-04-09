@@ -181,6 +181,60 @@ This is where the magic happens. /cook reads your notes and compiles structured 
 
 After it runs, press `Cmd+G` to open Graph View and see your notes connected to agent-compiled knowledge pages.
 
+## Recommended: Obsidian Web Clipper
+
+Install **[Obsidian Web Clipper](https://obsidian.md/clipper)** to turn your browser into a knowledge capture tool. Web Clipper saves articles, research papers, recipes, references — anything on the web — directly into your vault as clean Markdown.
+
+**Why it matters for BYOAO:** Clipped pages become raw material for `/cook`. The AI reads them alongside your own notes and compiles structured knowledge — entities, concepts, and connections — from everything you've captured.
+
+### Install
+
+Add the extension for your browser: [Chrome](https://obsidian.md/clipper) | [Safari](https://obsidian.md/clipper) | [Firefox](https://obsidian.md/clipper) | [Edge](https://obsidian.md/clipper) | [Arc](https://obsidian.md/clipper) | [Brave](https://obsidian.md/clipper)
+
+### Set Up a BYOAO Clipping Template
+
+Web Clipper supports custom templates that auto-apply frontmatter. Create one for your BYOAO vault:
+
+1. Open Web Clipper settings (click the extension icon → gear icon)
+2. Create a new template with these settings:
+
+| Setting | Value |
+|---------|-------|
+| **Template name** | BYOAO Article |
+| **Note name** | `{{title}}` |
+| **Note location** | `Clippings` (or any folder you prefer) |
+| **Vault** | Your BYOAO vault |
+
+3. In the template body, use:
+
+```markdown
+---
+title: "{{title}}"
+date: {{date}}
+type: reference
+tags:
+  - clippings
+  - {{#if author}}{{author}}{{/if}}
+sources:
+  - "{{url}}"
+author: "{{author}}"
+---
+
+{{content}}
+```
+
+Now when you clip a page, it lands in your vault with proper frontmatter — ready for `/cook` to process.
+
+### Workflow: Clip → Cook → Knowledge
+
+1. Browse the web normally. When you find something worth keeping, click the Web Clipper icon
+2. Optionally highlight key passages before clipping (highlights are preserved)
+3. The page saves to your vault as a Markdown file in `Clippings/`
+4. On your next `/cook` cycle, the AI reads your clippings and extracts entities, concepts, and connections into the knowledge base
+5. The original clipping stays as a source reference — agent pages link back to it
+
+> **Tip:** Set up [auto-apply rules](https://obsidian.md/clipper) in Web Clipper to automatically use different templates for different sites (e.g., one for articles, one for research papers, one for recipes).
+
 ## What's Next?
 
 - **[Core Concepts](core-concepts.md)** — understand how BYOAO works under the hood

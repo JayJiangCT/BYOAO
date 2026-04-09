@@ -1,10 +1,13 @@
 ---
 name: cook
 description: >
-  The core knowledge compilation skill. Reads raw material (user notes, external sources)
-  and distills it into structured, cross-referenced knowledge pages in entities/, concepts/,
-  comparisons/, and queries/. Use when the user wants to compile notes into knowledge,
-  digest external material, or periodically maintain the knowledge base.
+  The core knowledge compilation skill. Reads raw notes and external sources, then
+  distills them into structured, cross-referenced knowledge pages in entities/, concepts/,
+  comparisons/, and queries/. Use this skill whenever the user mentions compiling notes,
+  digesting material, updating the knowledge base, running a cook cycle, or says anything
+  like "process my notes", "compile this", "add this to the wiki", "what's new in my notes",
+  or "update knowledge pages". Also activate when the user pastes external content and wants
+  it integrated into the knowledge base.
 ---
 
 # /cook — Knowledge Compilation
