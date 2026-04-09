@@ -95,9 +95,24 @@ These are compiled knowledge pages. You can create and update them.
 - Use Obsidian CLI for all operations
 ```
 
-### 3. Copy Skills
+### 3. Install Skills
 
-BYOAO skills work with Claude Code. Copy them to `.claude/skills/` (each skill gets its own directory with a `SKILL.md` file):
+BYOAO needs two sets of skills: **Obsidian skills** (for interacting with the vault) and **BYOAO skills** (for knowledge compilation).
+
+#### Obsidian Skills
+
+Install [kepano/obsidian-skills](https://github.com/kepano/obsidian-skills) as a Claude Code plugin. In your Claude Code session, run:
+
+```
+/plugin marketplace add kepano/obsidian-skills
+/plugin install obsidian@obsidian-skills
+```
+
+This gives Claude access to Obsidian CLI, Markdown, Bases, JSON Canvas, and Defuddle skills.
+
+#### BYOAO Skills
+
+Copy BYOAO-specific skills (`/cook`, `/health`, `/prep`, `/trace`, etc.) to `.claude/skills/`:
 
 ```bash
 for f in .opencode/commands/*.md; do
@@ -117,7 +132,7 @@ for f in .opencode/commands/*.md; do
 done
 ```
 
-Skills are invoked the same way: `/cook`, `/health`, `/trace`, etc.
+All skills are invoked the same way: `/cook`, `/health`, `/trace`, etc.
 
 ### 4. Configure MCP Servers (Optional)
 

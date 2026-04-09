@@ -95,9 +95,24 @@ These are compiled knowledge pages. You can create and update them.
 - Use Obsidian CLI for all operations
 ```
 
-### 3. 复制 Skills
+### 3. 安装 Skills
 
-BYOAO 的 skills 与 Claude Code 兼容。复制到 `.claude/skills/`（每个 skill 需要独立的目录和 `SKILL.md` 文件）：
+BYOAO 需要两组 skills：**Obsidian skills**（用于与 vault 交互）和 **BYOAO skills**（用于知识编译）。
+
+#### Obsidian Skills
+
+安装 [kepano/obsidian-skills](https://github.com/kepano/obsidian-skills) 作为 Claude Code 插件。在 Claude Code 会话中运行：
+
+```
+/plugin marketplace add kepano/obsidian-skills
+/plugin install obsidian@obsidian-skills
+```
+
+这会让 Claude 获得 Obsidian CLI、Markdown、Bases、JSON Canvas 和 Defuddle skills。
+
+#### BYOAO Skills
+
+将 BYOAO 专有的 skills（`/cook`、`/health`、`/prep`、`/trace` 等）复制到 `.claude/skills/`：
 
 ```bash
 for f in .opencode/commands/*.md; do
@@ -117,7 +132,7 @@ for f in .opencode/commands/*.md; do
 done
 ```
 
-Skills 的调用方式相同：`/cook`、`/health`、`/trace` 等。
+所有 skills 的调用方式相同：`/cook`、`/health`、`/trace` 等。
 
 ### 4. 配置 MCP 服务器（可选）
 
