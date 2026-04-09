@@ -38,6 +38,9 @@ jobs:
         working-directory: docs-site
         run: node scripts/sync-content.mjs
 
+      - name: Allow globby to discover content
+        run: sed -i '/^docs-site\/content\/$/d' .gitignore
+
       - name: Build Quartz
         working-directory: docs-site
         run: npx quartz build
