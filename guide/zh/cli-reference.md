@@ -78,7 +78,7 @@ byoao init --kb "My KB" --name "Jay" --preset pm-tpm
 
 ## byoao status
 
-检查知识库健康：笔记数量、目录、wikilinks、断裂链接。
+检查知识库健康：agent 页面按类型计数、断裂链接、INDEX.base 完整性。
 
 ```bash
 byoao status              # 检查当前目录
@@ -93,7 +93,7 @@ byoao status ~/my-kb      # 检查指定路径
 
 ## byoao upgrade
 
-升级 BYOAO CLI 和知识库基础设施（skills、commands、模板、Obsidian 配置）到最新版本。
+升级 BYOAO CLI 和知识库基础设施（skills、commands、SCHEMA.md、Obsidian 配置）到最新版本。
 
 命令分两阶段执行：先检查 npm 上是否有更新的 CLI 版本并提示更新，然后升级知识库内容。如果 CLI 更新成功，进程会退出，再次运行 `byoao upgrade` 即可完成知识库升级。
 

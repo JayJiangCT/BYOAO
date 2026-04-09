@@ -6,7 +6,7 @@ import { configureMcp, type ConfigureMcpResult, type ConfigureMcpOptions } from 
 import { configureObsidianPlugins, type ConfigurePluginsResult } from "./obsidian-plugins.js";
 import { configureProvider, type ConfigureProviderResult } from "./provider.js";
 import { writeManifest, type InstalledFiles } from "./manifest.js";
-import type { VaultConfig, PresetConfig, Member, Project, GlossaryEntry } from "../plugin-config.js";
+import type { VaultConfig, PresetConfig } from "../plugin-config.js";
 import { detectInitMode } from "./vault-detect.js";
 
 function countWikilinks(content: string): number {
@@ -16,10 +16,6 @@ function countWikilinks(content: string): number {
   const matches = stripped.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g);
   return matches ? matches.length : 0;
 }
-
-// No default directories — the vault starts empty.
-// Users keep their own organization habits.
-const MINIMAL_DIRECTORIES: string[] = [];
 
 export interface CreateVaultResult {
   vaultPath: string;
@@ -32,9 +28,6 @@ export interface CreateVaultResult {
   providerResult: ConfigureProviderResult | null;
 }
 
-/**
- * Mutable context passed through composable creation functions.
- */
 interface McpServiceInfo {
   name: string;
   description: string;
@@ -44,12 +37,10 @@ interface CreateContext {
   vaultPath: string;
   kbName: string;
   commonDir: string;
-  /** When true, .obsidian/ already exists — skip overwriting it */
   preserveObsidian: boolean;
   filesCreated: number;
   directories: string[];
   installedFiles: InstalledFiles;
-  /** MCP services to display in Start Here.md */
   mcpServices: McpServiceInfo[];
 }
 
@@ -80,22 +71,8 @@ const MCP_DISPLAY_NAMES: Record<string, { name: string; description: string }> =
 // Composable creation functions
 // ---------------------------------------------------------------------------
 
-/**
- * Create the minimal core: .obsidian/ config and AGENTS.md.
- * No default directories or Glossary — the vault starts empty.
- */
-export async function createMinimalCore(
-  ctx: CreateContext,
-  _glossaryEntries: GlossaryEntry[] = [],
-): Promise<void> {
-  // 1. No default directories — vault starts empty
-  // (MINIMAL_DIRECTORIES is empty)
-  for (const dir of MINIMAL_DIRECTORIES) {
-    await fs.ensureDir(path.join(ctx.vaultPath, dir));
-  }
-  ctx.directories.push(...MINIMAL_DIRECTORIES);
-
-  // 2. Copy .obsidian config from common (skip if preserving existing vault config)
+export async function createMinimalCore(ctx: CreateContext): Promise<void> {
+  // Copy .obsidian config from common (skip if preserving existing vault config)
   if (!ctx.preserveObsidian) {
     await fs.ensureDir(path.join(ctx.vaultPath, ".obsidian"));
     const obsidianSrc = path.join(ctx.commonDir, "obsidian");
@@ -109,7 +86,7 @@ export async function createMinimalCore(
     }
   }
 
-  // 3. Generate Start Here.md
+  // Generate Start Here.md
   const startHereTemplate = await fs.readFile(
     path.join(ctx.commonDir, "Start Here.md.hbs"),
     "utf-8",
@@ -127,16 +104,53 @@ export async function createMinimalCore(
 }
 
 /**
- * Generate AGENTS.md from the common skeleton + preset section.
+ * Create LLM Wiki core: 4 agent directories, SCHEMA.md, log.md.
+ * Always runs regardless of preset — this is built-in BYOAO capability.
  */
+export async function createLlmWikiCore(ctx: CreateContext, wikiDomain: string = ""): Promise<void> {
+  const agentDirs = ["entities", "concepts", "comparisons", "queries"];
+  for (const dir of agentDirs) {
+    const dirPath = path.join(ctx.vaultPath, dir);
+    if (!(await fs.pathExists(dirPath))) {
+      await fs.ensureDir(dirPath);
+      ctx.filesCreated++;
+      ctx.directories.push(dir);
+    }
+  }
+
+  // Create SCHEMA.md from template
+  const schemaTemplatePath = path.join(ctx.commonDir, "SCHEMA.md.hbs");
+  if (await fs.pathExists(schemaTemplatePath)) {
+    const schemaTemplate = await fs.readFile(schemaTemplatePath, "utf-8");
+    const schemaContent = renderTemplate(schemaTemplate, {
+      KB_NAME: ctx.kbName,
+      WIKI_DOMAIN: wikiDomain || "",
+    });
+    const schemaPath = path.join(ctx.vaultPath, "SCHEMA.md");
+    if (!(await fs.pathExists(schemaPath))) {
+      await fs.writeFile(schemaPath, schemaContent);
+      ctx.filesCreated++;
+    }
+  }
+
+  // Create log.md
+  const logContent = `# Agent Activity Log
+
+Entries are appended here during /cook operations.
+
+`;
+  const logPath = path.join(ctx.vaultPath, "log.md");
+  if (!(await fs.pathExists(logPath))) {
+    await fs.writeFile(logPath, logContent);
+    ctx.filesCreated++;
+  }
+}
+
 export async function createAgentsMd(
   ctx: CreateContext,
   ownerName: string,
   presetConfig: PresetConfig,
   presetDir: string,
-  projects: Project[],
-  jiraHost: string,
-  jiraProject: string,
 ): Promise<void> {
   const agentsTemplate = await fs.readFile(
     path.join(ctx.commonDir, "AGENTS.md.hbs"),
@@ -147,21 +161,11 @@ export async function createAgentsMd(
   const agentSectionPath = path.join(presetDir, "agent-section.hbs");
   if (await fs.pathExists(agentSectionPath)) {
     const agentSectionTemplate = await fs.readFile(agentSectionPath, "utf-8");
-
-    let projectsList: string;
-    if (projects.length > 0) {
-      projectsList = projects
-        .map((p) => `- [[${p.name}]] — ${p.description}`)
-        .join("\n");
-    } else {
-      projectsList = "(No projects added yet — create notes in Projects/)";
-    }
-
     roleSection = renderTemplate(agentSectionTemplate, {
-      PROJECTS: projectsList,
-      JIRA_HOST: jiraHost,
-      JIRA_PROJECT: jiraProject,
-      HAS_JIRA: !!(jiraHost && jiraProject),
+      PROJECTS: "(Use /cook to discover projects from your notes)",
+      JIRA_HOST: "",
+      JIRA_PROJECT: "",
+      HAS_JIRA: false,
     });
   }
 
@@ -178,16 +182,11 @@ export async function createAgentsMd(
   }
 }
 
-/**
- * Apply preset overlay: create preset-specific directories.
- * Returns the list of all template names.
- */
 export async function applyPresetOverlay(
   ctx: CreateContext,
   presetConfig: PresetConfig,
   presetDir: string,
 ): Promise<string[]> {
-  // Create preset-specific directories
   for (const dir of presetConfig.directories) {
     await fs.ensureDir(path.join(ctx.vaultPath, dir));
   }
@@ -195,10 +194,9 @@ export async function applyPresetOverlay(
 
   const allTemplateNames: string[] = [];
 
-  // Copy preset templates to Knowledge/templates if the directory exists
-  const templateDest = path.join(ctx.vaultPath, "Knowledge/templates");
   const presetTemplatesDir = path.join(presetDir, "templates");
   if (await fs.pathExists(presetTemplatesDir)) {
+    const templateDest = path.join(ctx.vaultPath, "templates");
     await fs.ensureDir(templateDest);
     const files = await fs.readdir(presetTemplatesDir);
     for (const file of files) {
@@ -209,139 +207,11 @@ export async function applyPresetOverlay(
       );
       allTemplateNames.push(file.replace(/\.md$/, ""));
       ctx.filesCreated++;
-      ctx.installedFiles.templates.push(`Knowledge/templates/${file}`);
+      ctx.installedFiles.templates.push(`templates/${file}`);
     }
   }
 
   return allTemplateNames;
-}
-
-/**
- * Create people notes from members config.
- * Ensures People/ directory exists.
- */
-export async function createPeopleNotes(
-  ctx: CreateContext,
-  members: Member[],
-): Promise<void> {
-  if (members.length === 0) return;
-
-  await fs.ensureDir(path.join(ctx.vaultPath, "People"));
-  if (!ctx.directories.includes("People")) {
-    ctx.directories.push("People");
-  }
-
-  for (const member of members) {
-    const content = `---
-title: "${member.name}"
-type: person
-team: "${ctx.kbName}"
-role: "${member.role}"
-status: active
-tags: [person]
----
-
-# ${member.name}
-
-**Role**: ${member.role}
-**Team**: ${ctx.kbName}
-`;
-    const memberPath = path.join(ctx.vaultPath, `People/${member.name}.md`);
-    if (!(await fs.pathExists(memberPath))) {
-      await fs.writeFile(memberPath, content);
-      ctx.filesCreated++;
-    }
-  }
-}
-
-/**
- * Create project notes from projects config.
- * Ensures Projects/ directory exists.
- */
-export async function createProjectNotes(
-  ctx: CreateContext,
-  projects: Project[],
-): Promise<void> {
-  if (projects.length === 0) return;
-
-  await fs.ensureDir(path.join(ctx.vaultPath, "Projects"));
-  if (!ctx.directories.includes("Projects")) {
-    ctx.directories.push("Projects");
-  }
-
-  for (const project of projects) {
-    const content = `---
-title: "${project.name}"
-type: feature
-status: active
-date: ${today()}
-team: "${ctx.kbName}"
-jira: ""
-stakeholders: []
-priority: ""
-tags: [project]
----
-
-# ${project.name}
-
-${project.description}
-`;
-    const projectPath = path.join(ctx.vaultPath, `Projects/${project.name}.md`);
-    if (!(await fs.pathExists(projectPath))) {
-      await fs.writeFile(projectPath, content);
-      ctx.filesCreated++;
-    }
-  }
-}
-
-/**
- * Create team index note in People/.
- * Only call when the vault has a People/ directory (preset includes it or members exist).
- */
-export async function createTeamIndex(
-  ctx: CreateContext,
-  members: Member[],
-  projects: Project[],
-): Promise<void> {
-  await fs.ensureDir(path.join(ctx.vaultPath, "People"));
-  if (!ctx.directories.includes("People")) {
-    ctx.directories.push("People");
-  }
-
-  let teamIndexContent = `---
-title: "${ctx.kbName} Team"
-type: reference
-team: "${ctx.kbName}"
-tags: [team]
----
-
-# ${ctx.kbName} Team
-
-## Members
-
-`;
-  if (members.length > 0) {
-    teamIndexContent += "| Name | Role |\n|------|------|\n";
-    teamIndexContent += members.map((m) => `| [[${m.name}]] | ${m.role} |`).join("\n");
-  } else {
-    teamIndexContent += "(No members added yet)";
-  }
-
-  teamIndexContent += "\n\n## Active Projects\n\n";
-  if (projects.length > 0) {
-    teamIndexContent += projects
-      .map((p) => `- [[${p.name}]] — ${p.description}`)
-      .join("\n");
-  } else {
-    teamIndexContent += "(No projects added yet)";
-  }
-  teamIndexContent += "\n";
-
-  const teamIndexPath = path.join(ctx.vaultPath, `People/${ctx.kbName} Team.md`);
-  if (!(await fs.pathExists(teamIndexPath))) {
-    await fs.writeFile(teamIndexPath, teamIndexContent);
-    ctx.filesCreated++;
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -349,8 +219,8 @@ tags: [team]
 // ---------------------------------------------------------------------------
 
 export async function createVault(config: VaultConfig): Promise<CreateVaultResult> {
-  const { kbName, vaultPath, members, projects, glossaryEntries, jiraHost, jiraProject, preset } = config;
-  const presetName = preset ?? "pm-tpm"; // Fallback if config wasn't parsed through Zod
+  const { kbName, vaultPath, preset } = config;
+  const presetName = preset ?? "minimal";
   const { config: presetConfig, presetsDir } = loadPreset(presetName);
   const presetDir = path.join(presetsDir, presetName);
 
@@ -367,31 +237,22 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
     }
   }
 
-  // 1. Create minimal core (dirs, .obsidian, common templates, Glossary, Start Here)
-  await createMinimalCore(ctx, glossaryEntries);
+  // 1. Create minimal core (.obsidian, Start Here)
+  await createMinimalCore(ctx);
 
-  // 2. Apply preset overlay (preset dirs + preset templates)
-  const allTemplateNames = await applyPresetOverlay(ctx, presetConfig, presetDir);
+  // 2. Create LLM Wiki core (agent dirs, SCHEMA.md, log.md) — always, regardless of preset
+  await createLlmWikiCore(ctx, config.wikiDomain);
 
-  // 3. Generate AGENTS.md
-  await createAgentsMd(ctx, config.ownerName, presetConfig, presetDir, projects, jiraHost, jiraProject);
+  // 3. Apply preset overlay (role-specific dirs + templates)
+  await applyPresetOverlay(ctx, presetConfig, presetDir);
 
-  // 4. Create people notes (conditional)
-  await createPeopleNotes(ctx, members);
+  // 4. Generate AGENTS.md
+  await createAgentsMd(ctx, config.ownerName, presetConfig, presetDir);
 
-  // 5. Create project notes (conditional)
-  await createProjectNotes(ctx, projects);
-
-  // 6. Create team index (only when preset declares People/ or members exist)
-  const hasPeopleDir = presetConfig.directories.includes("People") || members.length > 0;
-  if (hasPeopleDir) {
-    await createTeamIndex(ctx, members, projects);
-  }
-
-  // 7. Configure vault as OpenCode project (plugin + skills + commands)
+  // 5. Configure vault as OpenCode project (plugin + skills + commands)
   await configureOpenCodeProject(ctx.vaultPath, ctx.installedFiles);
 
-  // 8. Configure MCP servers in global OpenCode config
+  // 6. Configure MCP servers in global OpenCode config
   const mcpOptions: ConfigureMcpOptions = {};
   if (config.mcpSkip && config.mcpSkip.length > 0) {
     mcpOptions.skip = config.mcpSkip;
@@ -401,10 +262,10 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
   }
   const mcpResult = await configureMcp(presetConfig, mcpOptions);
 
-  // 9. Install Obsidian community plugins from preset
+  // 7. Install Obsidian community plugins from preset
   const pluginsResult = await configureObsidianPlugins(ctx.vaultPath, presetConfig);
 
-  // 10. Configure AI provider in global OpenCode config
+  // 8. Configure AI provider in global OpenCode config
   let providerResult: ConfigureProviderResult | null = null;
   if (config.provider && config.provider !== "skip") {
     providerResult = await configureProvider(
@@ -413,10 +274,10 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
     );
   }
 
-  // 11. Write BYOAO manifest
+  // 9. Write BYOAO manifest
   await writeManifest(ctx.vaultPath, presetName, ctx.installedFiles);
 
-  // 12. Count wikilinks from all generated markdown files
+  // 10. Count wikilinks from all generated markdown files
   let wikilinksCreated = 0;
   const entries = await fs.readdir(ctx.vaultPath, { recursive: true });
   for (const entry of entries) {
@@ -439,17 +300,10 @@ export async function createVault(config: VaultConfig): Promise<CreateVaultResul
   };
 }
 
-/**
- * Configure the vault directory as an OpenCode project.
- * Creates .opencode.json with BYOAO plugin registered,
- * and copies skills + commands so BYOAO tools work when
- * OpenCode is launched from the vault (including via Agent Client).
- */
 async function configureOpenCodeProject(
   vaultPath: string,
   installedFiles: InstalledFiles,
 ): Promise<void> {
-  // 1. Write .opencode.json with BYOAO plugin
   const configPath = path.join(vaultPath, ".opencode.json");
   let config: Record<string, unknown> = {};
   if (await fs.pathExists(configPath)) {
@@ -466,7 +320,6 @@ async function configureOpenCodeProject(
   }
   await fs.writeJson(configPath, config, { spaces: 2 });
 
-  // 2. Copy Obsidian Skills
   const assetsDir = resolveAssetsDir();
   const obsidianSkillsSrc = path.join(assetsDir, "obsidian-skills");
   const skillsDest = path.join(vaultPath, ".opencode", "skills");
@@ -489,7 +342,6 @@ async function configureOpenCodeProject(
     }
   }
 
-  // 3. Copy BYOAO commands
   const byoaoSkillsSrc = path.join(assetsDir, "..", "skills");
   const commandsDest = path.join(vaultPath, ".opencode", "commands");
 
@@ -510,11 +362,15 @@ async function configureOpenCodeProject(
 }
 
 function resolveAssetsDir(): string {
+  // When running from dist/ (bundled): dist/assets
+  const distAssets = path.resolve(import.meta.dirname, "assets");
+  // When running from dist/ via tsc only: ../assets
   const srcAssets = path.resolve(import.meta.dirname, "..", "assets");
-  const distAssets = path.resolve(
-    import.meta.dirname, "..", "..", "src", "assets",
-  );
-  if (fs.existsSync(srcAssets)) return srcAssets;
+  // When running from src/ via tsx: ../../src/assets
+  const devAssets = path.resolve(import.meta.dirname, "..", "..", "src", "assets");
+
   if (fs.existsSync(distAssets)) return distAssets;
-  return srcAssets;
+  if (fs.existsSync(srcAssets)) return srcAssets;
+  if (fs.existsSync(devAssets)) return devAssets;
+  return distAssets;
 }

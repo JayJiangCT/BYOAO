@@ -4,12 +4,9 @@
 
 import type { Plugin } from "@opencode-ai/plugin";
 import { byoao_init_vault } from "./tools/init-vault.js";
-import { byoao_add_person } from "./tools/add-person.js";
-import { byoao_add_project } from "./tools/add-project.js";
 import { byoao_vault_status } from "./tools/vault-status.js";
 import { byoao_vault_doctor } from "./tools/vault-doctor.js";
 import { byoao_switch_provider } from "./tools/switch-provider.js";
-import { byoao_graph_health } from "./tools/graph-health.js";
 import { byoao_vault_upgrade } from "./tools/vault-upgrade.js";
 import { byoao_mcp_auth } from "./tools/mcp-auth.js";
 import { systemTransformHook } from "./hooks/system-transform.js";
@@ -21,12 +18,9 @@ const BYOAOPlugin: Plugin = async (ctx) => {
 
   const tools: Record<string, any> = {
     byoao_init_vault,
-    byoao_add_person,
-    byoao_add_project,
     byoao_vault_status,
     byoao_vault_doctor,
     byoao_switch_provider,
-    byoao_graph_health,
     byoao_vault_upgrade,
     byoao_mcp_auth,
   };

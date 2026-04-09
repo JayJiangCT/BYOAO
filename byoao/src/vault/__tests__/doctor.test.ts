@@ -30,6 +30,24 @@ function noteWithFrontmatter(fields: Record<string, unknown>, body = "") {
 
 describe("getVaultDiagnosis", () => {
   it("reports zero issues for a clean vault", async () => {
+    await fs.ensureDir(path.join(tmpDir, "entities"));
+    await fs.ensureDir(path.join(tmpDir, "concepts"));
+    await fs.ensureDir(path.join(tmpDir, "comparisons"));
+    await fs.ensureDir(path.join(tmpDir, "queries"));
+    await writeNote(
+      "SCHEMA.md",
+      noteWithFrontmatter(
+        { type: "reference", tags: ["wiki"] },
+        "# Schema\n\nSee [[note]]\n"
+      )
+    );
+    await writeNote(
+      "log.md",
+      noteWithFrontmatter(
+        { type: "reference", tags: ["wiki"] },
+        "# Log\n\nSee [[note]]\n"
+      )
+    );
     await writeNote(
       "note.md",
       noteWithFrontmatter(
@@ -47,8 +65,8 @@ describe("getVaultDiagnosis", () => {
 
     const report = await getVaultDiagnosis(tmpDir);
     expect(report.issues).toHaveLength(0);
-    expect(report.summary.totalNotes).toBe(2);
-    expect(report.summary.healthyNotes).toBe(2);
+    expect(report.summary.totalNotes).toBe(4);
+    expect(report.summary.healthyNotes).toBe(4);
   });
 
   it("reports missing frontmatter", async () => {
@@ -118,6 +136,18 @@ describe("getVaultDiagnosis", () => {
   });
 
   it("reports AGENT.md drift", async () => {
+    await fs.ensureDir(path.join(tmpDir, "entities"));
+    await fs.ensureDir(path.join(tmpDir, "concepts"));
+    await fs.ensureDir(path.join(tmpDir, "comparisons"));
+    await fs.ensureDir(path.join(tmpDir, "queries"));
+    await writeNote(
+      "SCHEMA.md",
+      noteWithFrontmatter({ type: "reference", tags: ["wiki"] }, "[[Alice]]")
+    );
+    await writeNote(
+      "log.md",
+      noteWithFrontmatter({ type: "reference", tags: ["wiki"] }, "[[Alice]]")
+    );
     await writeNote("AGENT.md", "Team: [[Alice]] and [[Bob]]");
     await fs.ensureDir(path.join(tmpDir, "People"));
     await writeNote(

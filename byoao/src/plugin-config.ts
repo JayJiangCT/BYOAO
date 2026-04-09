@@ -1,63 +1,30 @@
 import { z } from "zod";
 
-export const MemberSchema = z.object({
-  name: z.string(),
-  role: z.string().default(""),
-});
-
-export const ProjectSchema = z.object({
-  name: z.string(),
-  description: z.string().default(""),
-});
-
-export const GlossaryEntrySchema = z.object({
+export const TaxonomyEntrySchema = z.object({
   term: z.string(),
   definition: z.string(),
   domain: z.string().default(""),
+  tags: z.array(z.string()).default([]),
 });
 
 export const VaultConfigSchema = z.object({
   kbName: z.string().min(1),
   ownerName: z.string().default(""),
   vaultPath: z.string(),
-  members: z.array(MemberSchema).default([]),
-  projects: z.array(ProjectSchema).default([]),
-  glossaryEntries: z.array(GlossaryEntrySchema).default([]),
-  jiraHost: z.string().default(""),
-  jiraProject: z.string().default(""),
   preset: z.string().default("minimal"),
   provider: z.enum(["copilot", "gemini", "skip"]).default("skip"),
   /** GCP Project ID — used for BigQuery MCP env and Gemini provider config */
   gcpProjectId: z.string().default(""),
   /** MCP server names to skip (user deselected in init flow) */
   mcpSkip: z.array(z.string()).default([]),
+  /** What domain this knowledge base covers (used in SCHEMA.md generation) */
+  wikiDomain: z.string().default(""),
+  /** Agent autonomy level: auto = agent applies changes, review = agent reports first */
+  compilationMode: z.enum(["auto", "review"]).default("review"),
 });
 
-export type Member = z.infer<typeof MemberSchema>;
-export type Project = z.infer<typeof ProjectSchema>;
-export type GlossaryEntry = z.infer<typeof GlossaryEntrySchema>;
+export type TaxonomyEntry = z.infer<typeof TaxonomyEntrySchema>;
 export type VaultConfig = z.infer<typeof VaultConfigSchema>;
-
-export const AddMemberSchema = z.object({
-  vaultPath: z.string(),
-  name: z.string(),
-  role: z.string().default(""),
-  team: z.string().default(""),
-});
-
-export const AddProjectSchema = z.object({
-  vaultPath: z.string(),
-  name: z.string(),
-  description: z.string().default(""),
-  team: z.string().default(""),
-});
-
-export const AddGlossaryTermSchema = z.object({
-  vaultPath: z.string(),
-  term: z.string(),
-  definition: z.string(),
-  domain: z.string().default(""),
-});
 
 export const VaultStatusSchema = z.object({
   vaultPath: z.string(),
@@ -104,7 +71,3 @@ export const VaultDoctorSchema = z.object({
 });
 
 export type VaultDoctorInput = z.infer<typeof VaultDoctorSchema>;
-
-export type AddMemberInput = z.infer<typeof AddMemberSchema>;
-export type AddProjectInput = z.infer<typeof AddProjectSchema>;
-export type AddGlossaryTermInput = z.infer<typeof AddGlossaryTermSchema>;

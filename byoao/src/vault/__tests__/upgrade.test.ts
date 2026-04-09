@@ -25,14 +25,14 @@ describe("scanInstalledAssets", () => {
     await fs.ensureDir(path.join(tmpDir, ".obsidian"));
     await fs.writeFile(path.join(tmpDir, ".obsidian", "core-plugins.json"), "[]");
     await fs.ensureDir(path.join(tmpDir, "Knowledge", "templates"));
-    await fs.writeFile(path.join(tmpDir, "Knowledge", "templates", "Daily Note.md"), "# DN");
+    await fs.writeFile(path.join(tmpDir, "Knowledge", "templates", "Example.md"), "# Ex");
 
     const result = await scanInstalledAssets(tmpDir);
 
     expect(result.skills).toContain(".opencode/skills/test/SKILL.md");
     expect(result.commands).toContain(".opencode/commands/cmd.md");
     expect(result.obsidianConfig).toContain(".obsidian/core-plugins.json");
-    expect(result.templates).toContain("Knowledge/templates/Daily Note.md");
+    expect(result.templates).toContain("Knowledge/templates/Example.md");
   });
 
   it("returns empty arrays when no infrastructure exists", async () => {
@@ -62,7 +62,7 @@ describe("bootstrapManifest", () => {
     const manifest = await readManifest(tmpDir);
     expect(manifest).not.toBeNull();
     expect(manifest!.version).toBe("0.0.0");
-    expect(manifest!.preset).toBe("pm-tpm");
+    expect(manifest!.preset).toBe("minimal");
     expect(manifest!.infrastructure.skills).toContain(".opencode/skills/s/SKILL.md");
   });
 

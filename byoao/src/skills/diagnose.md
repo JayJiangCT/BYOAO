@@ -1,72 +1,131 @@
 ---
 name: diagnose
-description: Diagnose knowledge graph health — find missing frontmatter, orphan notes, broken wikilinks, and AGENTS.md drift. Use when the user says "check my vault", "find broken links", "vault health", "what's wrong with my notes", or wants a health check on their knowledge base.
+description: >
+  Vault health check at the structural level. Checks frontmatter coverage, orphan notes,
+  broken links, AGENTS.md and SCHEMA.md drift, v2 agent directories, and overall vault configuration.
+  Broader than /health which focuses on agent pages — /diagnose checks the entire vault including user notes.
 ---
 
-# /diagnose — Knowledge Graph Health Check
+# /diagnose — Vault Diagnosis
 
-You are a vault health assistant. Your job is to diagnose issues in an Obsidian knowledge base and help the user fix them.
+You are a vault doctor. Your job is to check the overall health of the vault — structure, frontmatter coverage, configuration, and consistency across both user notes and agent pages.
 
-## Execution Flow
+## Prerequisites Check
 
-### Step 1: Locate Vault
-
-Ask the user for their vault path, or detect it from the current working directory (look for AGENTS.md in the cwd or parent directories).
-
-### Step 2: Run Diagnosis
-
-Call `byoao_vault_doctor` with the vault path. This runs 5 checks:
-
-1. **Missing frontmatter** — notes without any YAML frontmatter
-2. **Missing note_type** — notes without `note_type` field (not yet woven)
-3. **Missing type/tags** — notes with frontmatter but no `type` or `tags` field
-4. **Orphan notes** — notes with no incoming or outgoing wikilinks
-5. **Broken wikilinks** — links that point to non-existent notes
-
-Additionally, if `INDEX.base` exists:
-6. **INDEX.base accuracy** — verify note counts match actual vault state
-
-### Step 3: Present Results
-
-Format the report by severity:
-
-```
-! 3 notes without frontmatter
-  - Inbox/quick-thought.md
-  - Projects/demo-notes.md
-  - Knowledge/api-overview.md
-
-! AGENTS.md lists [[Kent]] but no People/Kent.md found
-
-i 2 orphan notes (no incoming or outgoing wikilinks)
-  - Archive/old-draft.md
-  - Inbox/random.md
-
-ok 0 broken wikilinks
+```bash
+obsidian --version
 ```
 
-### Step 4: Suggest Fixes
+If this fails, STOP and display the Obsidian CLI availability message (see /prep).
 
-For each issue category, suggest a concrete next action:
+## Parameters
 
-| Issue | Suggested Fix |
-|-------|--------------|
-| Missing frontmatter | "Run `/weave` on these files to add structure" |
-| Missing note_type | "Run `/weave` to classify and connect these notes" |
-| Missing type/tags | "Run `/weave` to fill in metadata" |
-| Orphan notes | "Consider adding `[[wikilinks]]` to connect them, or archive if unused" |
-| Broken wikilinks | "Create the target note, or fix the link name" |
-| INDEX.base stale | "Run `/wiki` to regenerate the knowledge index" |
+- **focus** (optional): Specific area to check — `frontmatter`, `links`, `structure`, `config`, or `all`. Default: `all`.
 
-**Always ask for user confirmation before making changes.** Do not auto-fix.
+## Process
 
-### Step 5: Update INDEX.base Timestamp
+### Step 1: Frontmatter Coverage
 
-If `INDEX.base` exists and significant changes were made during fixes, suggest running `/wiki` to regenerate the index. If the user confirms, run `/wiki`.
+```bash
+obsidian properties sort=count counts
+```
+
+Report:
+- Total notes with frontmatter vs. without
+- Most common missing fields
+- Notes with invalid frontmatter (bad dates, unknown types, etc.)
+- Tag usage: how many unique tags, how many notes per tag
+
+### Step 2: Broken Wikilinks
+
+Scan for wikilinks that point to non-existent files:
+
+```bash
+obsidian search "\[\[.*\]\]"
+```
+
+For each wikilink found, check if the target file exists. Report broken links with:
+- Source file where the broken link appears
+- Target link that doesn't resolve
+- Suggested fix (create the missing file or remove the link)
+
+### Step 3: Orphan Detection
+
+Find notes with no inbound wikilinks:
+
+```bash
+obsidian backlinks "note-name"
+```
+
+For both user notes and agent pages, identify orphans. Note that newly created notes are expected to be orphans temporarily.
+
+### Step 4: AGENTS.md, SCHEMA.md, and v2 layout
+
+Check if `AGENTS.md` accurately reflects the current vault state:
+- Does it reference directories that no longer exist?
+- Does it miss directories that were added?
+- Are the skill references still valid?
+- Is the navigation advice still accurate?
+
+Check `SCHEMA.md`:
+- Tag taxonomy and domain sections match how tags are actually used
+- Agent directory table matches `entities/`, `concepts/`, `comparisons/`, `queries/`
+- Frontmatter expectations align with v2 `type: entity | concept | comparison | query`
+
+Verify the v2 agent directories exist and are usable: `entities/`, `concepts/`, `comparisons/`, `queries/` (note if any are missing or empty when the vault should have compiled knowledge).
+
+### Step 5: Configuration Check
+
+Verify vault configuration:
+- `.obsidian/` directory exists and is valid
+- `.opencode/` directory has current skill definitions
+- `SCHEMA.md` exists and has a defined tag taxonomy
+- `log.md` exists and has recent entries
+- `INDEX.base` exists for compiled knowledge discovery
+
+### Step 6: Present Diagnosis
+
+```markdown
+# Vault Diagnosis
+
+Scanned {N} notes, {M} agent pages, {K} user notes.
+
+---
+
+## Frontmatter Coverage
+- Notes with frontmatter: X/Y (Z%)
+- Most common missing: {list fields}
+- Unique tags: {N} (top 5: {list})
+
+## Broken Wikilinks
+- {N} broken links found:
+  - [[target]] in [[source]] → file not found
+
+## Orphan Notes
+- {N} notes with no inbound links:
+  - [[note-name]] — consider linking from [[suggested-source]]
+
+## AGENTS.md / SCHEMA.md / layout
+- AGENTS.md: {Up to date / Needs update} — {details if outdated}
+- SCHEMA.md: {Up to date / Needs update / Missing} — {taxonomy vs usage}
+- Agent dirs (`entities/`, `concepts/`, `comparisons/`, `queries/`): {OK / Missing / Issues}
+
+## Configuration
+- .obsidian/: {OK / Missing / Issues}
+- .opencode/: {OK / Missing / Issues}
+- log.md: {OK / Missing / {N} entries, last: {date}}
+- INDEX.base: {OK / Missing / Needs update}
+
+## Overall Health
+**Score**: {Good / Fair / Needs attention}
+
+{2-3 sentence summary of the vault's overall health and the top 2-3 issues to address}
+```
 
 ## Key Principles
 
-- **Diagnose + suggest, never auto-fix**
-- **Group by severity** — warnings first, info second
-- **Actionable suggestions** — tell the user exactly what to do
-- **Respect user agency** — always ask before modifying files
+- **Comprehensive but prioritized.** Check everything, but surface the most important issues first.
+- **Actionable findings.** Every issue should come with a suggested fix.
+- **Non-destructive by default.** Report issues, don't fix them automatically.
+- **Whole vault, not just agent pages.** Unlike /health which focuses on agent-maintained directories, /diagnose checks the entire vault.
+- **Obsidian is first workbench.** All note operations go through Obsidian CLI.

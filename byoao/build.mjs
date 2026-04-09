@@ -78,7 +78,13 @@ execSync("npx tsc", { stdio: "inherit" });
 console.log("inline package version…");
 inlinePackageVersion("dist");
 
-// Step 1.6: Copy BYOAO skills to dist/assets/skills/
+// Step 1.6: Copy runtime assets to dist/assets/
+console.log("copy runtime assets…");
+const assetsSrc = "src/assets";
+const assetsDst = "dist/assets";
+cpSync(assetsSrc, assetsDst, { recursive: true, force: true });
+
+// Step 1.7: Copy BYOAO skills to dist/assets/skills/ (overlay on top of assets copy)
 console.log("copy BYOAO skills…");
 const skillsSrc = "src/skills";
 const skillsDst = "dist/assets/skills";

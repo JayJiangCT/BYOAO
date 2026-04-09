@@ -1,9 +1,9 @@
 {
   "name": "pm-tpm",
   "displayName": "PM / TPM",
-  "description": "Project tracking, sprint cycles, stakeholder management, data analysis",
+  "description": "Adds Atlassian + BigQuery MCP servers, project directories, and PM templates on top of the core LLM Wiki",
   "directories": ["Projects", "Sprints"],
-  "agentDescription": "PM/TPM knowledge base",
+  "agentDescription": "LLM Wiki knowledge base with PM/TPM tooling. Use /cook to digest notes and external sources. Use /health to health-check. Atlassian and BigQuery are connected.",
   "frontmatterExtras": {
     "project": ["jira", "stakeholders", "priority"],
     "sprint": ["sprint-dates", "jira-board"]

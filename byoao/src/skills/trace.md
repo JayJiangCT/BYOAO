@@ -1,11 +1,14 @@
 ---
 name: trace
-description: Track how an idea, concept, or topic evolved across the vault over time. Builds a chronological timeline from scattered mentions. Use when the user asks "how did X evolve", "what's the history of", "when did we start thinking about", "trace this idea", or wants to understand the arc of a concept.
+description: >
+  Chronological timeline of an idea across notes. Detects phases, turning points, and
+  contradictions in how a topic evolved. Use when the user asks "how did X evolve",
+  "trace the history of Y", "timeline of Z", or wants to understand how an idea changed over time.
 ---
 
-# /trace — Track Idea Evolution
+# /trace — Chronological Timeline
 
-You are a knowledge archaeologist. Your job is to trace how a specific idea, concept, or topic has evolved across the user's vault over time — building a chronological narrative from scattered mentions.
+You are a historical detective. Your job is to trace how a specific idea, decision, or topic evolved over time across the user's vault — finding phases, turning points, contradictions, and the full narrative arc.
 
 ## Prerequisites Check
 
@@ -13,144 +16,126 @@ You are a knowledge archaeologist. Your job is to trace how a specific idea, con
 obsidian --version
 ```
 
-If this fails, STOP and display the Obsidian CLI availability message (see /weave for the full error text).
-
-## Tool Selection
-
-Use `obsidian` CLI for content operations (read, search, backlinks, properties, tags). Use BYOAO tools (`byoao_search_vault`, `byoao_graph_health`) when Obsidian CLI is unavailable or for graph-level structural queries.
+If this fails, STOP and display the Obsidian CLI availability message (see /prep).
 
 ## Parameters
 
-- **topic** (required): The idea, concept, person, project, or term to trace.
-- **since** (optional): Start date for the trace (e.g. "2025-01-01"). Default: trace all history.
-- **output** (optional): If set, save the trace as a new note at this path.
+- **topic** (required): The idea, decision, or concept to trace.
+- **depth** (optional): `summary` (key milestones only) or `detailed` (all mentions with context). Default: `summary`.
 
 ## Process
 
-### Sampling Strategy
+### Step 1: Locate All Mentions
 
-If a search returns more than 30 notes, prioritize: (1) most recent 10, (2) most-linked 10 (highest backlink count), (3) notes with `status: active`. Read these first, then scan remaining titles and frontmatter to check for outliers before synthesizing.
-
-### Step 1: Find All Mentions
-
-Search for the topic across the vault using multiple strategies:
+Search for the topic across all notes:
 
 ```bash
 obsidian search "<topic>"
+obsidian tags "<topic>"
 ```
 
-Also check:
-- `INDEX.base` if it exists, for domain and note_type classification
-- Backlinks to `[[<topic>]]` if a note exists for it
-- Tag variations: `#<topic>`, `#<topic-kebab-case>`
+Also search agent-maintained pages under `entities/`, `concepts/`, `comparisons/`, and `queries/`:
 
 ```bash
-obsidian backlinks "<topic>"
+obsidian read file="entities/<topic>.md"
+obsidian read file="concepts/<topic>.md"
+obsidian read file="comparisons/<topic>.md"
+obsidian read file="queries/<topic>.md"
 ```
+
+Read `INDEX.base` to check if there's already a compiled page for this topic.
 
 ### Step 2: Build Timeline
 
 For each note that mentions the topic:
 
-1. **Read the note** to understand the context of the mention
-2. **Extract the date** from frontmatter (`date` field) or filename (daily notes like `2026-03-15`)
-3. **Summarize** what the note says about the topic in 1-2 sentences
-4. **Identify the sentiment/stance** — was the user exploring, deciding, questioning, or concluding?
+1. Read the full content using `obsidian read`
+2. Extract the date (from frontmatter or filename for daily notes)
+3. Identify what the note says about the topic:
+   - **New idea proposed** — first mention of the concept
+   - **Decision made** — commitment to a specific approach
+   - **Change/evolution** — modification of previous understanding
+   - **Contradiction** — statement that conflicts with an earlier note
+   - **Confirmation** — validation of a previous position
+   - **Abandoned** — idea dropped or superseded
 
-Sort all mentions chronologically.
+### Step 3: Detect Phases
 
-### Step 3: Identify Phases
+Group the timeline into phases:
 
-Look for natural phases in how the topic evolved:
+- **Inception** — topic first appears, initial framing
+- **Exploration** — multiple approaches considered, debate
+- **Decision** — specific approach chosen
+- **Implementation** — execution details, adjustments
+- **Resolution** — outcome, lessons learned (or abandonment)
 
-- **Discovery** — first mentions, exploratory, lots of questions
-- **Investigation** — deeper dives, multiple notes, gathering evidence
-- **Decision** — a conclusion was reached, direction was set
-- **Implementation** — action taken, results documented
-- **Reflection** — looking back, lessons learned, re-evaluation
+A topic may skip phases, cycle back, or have multiple parallel tracks.
 
-Not every topic will have all phases. Some may cycle through phases multiple times.
+### Step 4: Identify Turning Points
 
-### Step 4: Detect Turning Points
+Highlight moments where the trajectory changed:
 
-Flag moments where the user's understanding or stance shifted:
+- "We switched from X to Y" — explicit change
+- Data or evidence that contradicted previous assumptions
+- New stakeholder or constraint that shifted direction
+- External event (tech release, policy change) that affected the topic
 
-- Contradictions: "In March you wrote X, but by June you concluded Y"
-- New information: "After reading [[Source]], your approach changed"
-- Decisions: "The meeting on 2026-04-10 resolved the debate"
-- Abandoned threads: "You explored X but never followed up after May"
+### Step 5: Find Contradictions
 
-### Step 5: Present the Trace
+Compare statements across time:
 
-Format the output as a structured timeline:
+- "In Note A (March 1): we decided X"
+- "In Note B (April 15): actually Y is better because..."
+- Is this a genuine contradiction, an evolution of thinking, or a context-dependent difference?
+
+Flag genuine contradictions. Note the dates, sources, and nature of the conflict.
+
+### Step 6: Present Timeline
 
 ```markdown
-# Trace: {Topic}
+# Timeline: {topic}
 
-Traced across {N} notes, spanning {date range}.
+Traced across {N} notes spanning {start date} to {end date}.
 
-## Timeline
-
-### Phase 1: Discovery ({date range})
-
-- **{date}** — [[Note Name]]: {1-2 sentence summary}
-  > "{key quote from the note}"
-- **{date}** — [[Note Name]]: {summary}
-
-### Phase 2: Investigation ({date range})
-
-- **{date}** — [[Note Name]]: {summary}
-
-### Turning Point: {description}
-
-- **{date}** — [[Note Name]]: {what changed and why}
-
-### Phase 3: Decision ({date range})
-
-- **{date}** — [[Note Name]]: {summary}
-
-## Insights
-
-- **Evolution**: {how the idea changed from start to now}
-- **Key influences**: {notes/people/events that shaped the direction}
-- **Open threads**: {aspects mentioned but never resolved}
-- **Current state**: {where the topic stands now}
-
-## Related Traces
-
-Consider tracing these connected topics:
-- [[Related Topic 1]] — mentioned in {N} of the same notes
-- [[Related Topic 2]] — appears to be a dependency
-```
-
-### Step 6: Save (Optional)
-
-At the end of your trace, ask:
-
-> "Would you like me to save this as a note?"
-
-If the user confirms, save the trace with frontmatter:
-
-```yaml
 ---
-title: "Trace: {Topic}"
-note_type: literature
-type: reference
-domain: <inferred from topic>
-date: <today>
-references:
-  - "[[note1]]"
-  - "[[note2]]"
-tags: [trace, <topic-tag>]
----
-```
 
-Use `obsidian create` to save. Ask the user where they'd like it saved.
+## Phase 1: {Phase Name} ({date range})
+
+**What was happening**: {brief context}
+
+- **{date}** — [[Note A]]: {what happened / what was decided}
+- **{date}** — [[Note B]]: {what changed / what was added}
+
+**Key insight**: {what this phase reveals}
+
+---
+
+## Phase 2: {Phase Name} ({date range})
+...
+
+---
+
+## Turning Points
+
+1. **{date}**: {what changed and why it mattered} — [[source note]]
+
+## Contradictions Found
+
+- ⚠ [[Note A]] says X, but [[Note B]] says Y — {resolution if known}
+
+## Current State
+
+{Where things stand now — the most recent position on this topic}
+
+## Unanswered Questions
+
+{What the vault doesn't tell us about this topic's evolution}
+```
 
 ## Key Principles
 
-- **Chronological accuracy**: Always verify dates. Don't guess — if a note has no date, say "undated."
-- **Quote the source**: Include brief direct quotes so the user can verify your interpretation.
-- **Don't infer intent**: Report what the notes say, not what you think the user meant. Flag contradictions but don't resolve them.
-- **Respect scope**: Only trace what's in the vault. Don't fill gaps with general knowledge.
-- **Highlight gaps**: If there's a 3-month silence on a topic, note it. Gaps are informative.
+- **Chronology is authority.** The timeline must follow actual note dates, not inferred order.
+- **Evidence-based.** Every claim in the timeline must cite a specific note.
+- **Show the messiness.** Ideas rarely evolve linearly. Show the false starts, reversals, and parallel tracks.
+- **Flag contradictions.** Don't resolve them — present both sides and let the user decide.
+- **Obsidian is first workbench.** All note operations go through Obsidian CLI.

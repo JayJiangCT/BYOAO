@@ -1,11 +1,14 @@
 ---
 name: connect
-description: Bridge two seemingly unrelated topics or domains using the vault's link graph. Discovers hidden paths and shared contexts. Use when the user asks "how are X and Y related", "is there a connection between", "bridge these topics", or wants to find overlap between two areas of their knowledge.
+description: >
+  Bridges two topics using the link graph, shared people, tags, domains, and conceptual
+  overlap. Use when the user asks "what's the relationship between X and Y", "connect A to B",
+  or wants to understand how two topics relate.
 ---
 
-# /connect — Bridge Two Domains
+# /connect — Bridge Two Topics
 
-You are a knowledge connector. Your job is to find the hidden relationship between two topics the user thinks are unrelated — using their own vault's link graph, shared references, and overlapping contexts to build a bridge.
+You are a connector. Your job is to find and explain the relationship between two topics using the vault's knowledge graph — shared entities, overlapping concepts, common sources, and structural connections.
 
 ## Prerequisites Check
 
@@ -13,201 +16,110 @@ You are a knowledge connector. Your job is to find the hidden relationship betwe
 obsidian --version
 ```
 
-If this fails, STOP and display the Obsidian CLI availability message (see /weave for the full error text).
-
-## Tool Selection
-
-Use `obsidian` CLI for content operations (read, search, backlinks, properties, tags). Use BYOAO tools (`byoao_search_vault`, `byoao_graph_health`) when Obsidian CLI is unavailable or for graph-level structural queries.
+If this fails, STOP and display the Obsidian CLI availability message (see /prep).
 
 ## Parameters
 
-- **from** (required): The first topic, concept, domain, or note.
-- **to** (required): The second topic, concept, domain, or note.
-- **output** (optional): If set, save the connection map as a note at this path.
+- **from** (required): First topic or page name.
+- **to** (required): Second topic or page name.
+- **depth** (optional): `direct` (only direct connections) or `expanded` (include indirect paths via intermediate pages). Default: `expanded`.
 
 ## Process
 
-### Step 1: Map Both Endpoints
-
-For each of the two topics (`from` and `to`):
-
-1. **Find the anchor note** — does a vault note exist for this topic?
+### Step 1: Locate Both Topics
 
 ```bash
-obsidian search "<topic>"
+obsidian search "<from>"
+obsidian search "<to>"
 ```
 
-2. **Gather the neighborhood** — all notes that mention or link to this topic:
+If `INDEX.base` exists, read it to spot compiled pages for either topic.
+
+Read any existing agent pages in `entities/`, `concepts/`, `comparisons/`, and `queries/`:
 
 ```bash
-obsidian backlinks "<topic>"
+obsidian read file="entities/<from>.md"  # if exists
+obsidian read file="concepts/<from>.md"  # if exists
+obsidian read file="comparisons/<from>.md"  # if exists
+obsidian read file="queries/<from>.md"  # if exists
+obsidian read file="entities/<to>.md"    # if exists
+obsidian read file="concepts/<to>.md"    # if exists
+obsidian read file="comparisons/<to>.md"  # if exists
+obsidian read file="queries/<to>.md"    # if exists
 ```
 
-3. **Extract properties** — what domains, tags, and references are associated?
+### Step 2: Map Each Topic's Connections
+
+For each topic:
 
 ```bash
-obsidian read "<topic note>"
+obsidian backlinks "<from>"
+obsidian backlinks "<to>"
 ```
 
-Build a set for each endpoint: `{notes, tags, domains, people, concepts}`.
+Read the pages that link to each topic. Build a connection map:
+- Direct wikilinks (both topics link to the same page, or the same page links to both)
+- Shared tags (use `SCHEMA.md` for taxonomy context when classifying)
+- Shared domain
+- Shared source notes (both topics were extracted from the same user note)
+- Shared people/entities mentioned in both topics' pages
 
-### Step 2: Find Intersection
+### Step 3: Find Direct Connections
 
-Compare the two neighborhoods to find overlap:
+Check if there's already a direct relationship:
+- Does the `from` page wikilink to `to` (or vice versa)?
+- Is there a `comparisons/` page that covers both?
+- Do they share a `sources` entry in frontmatter?
 
-**Shared notes**: Notes that mention both topics.
-> "[[Meeting 2026-03-15]] discusses both 'rate limiting' and 'user onboarding'."
+### Step 4: Find Indirect Paths (Expanded Mode)
 
-**Shared people**: People connected to both topics.
-> "[[Alice]] appears in notes about both domains."
+If no direct connection exists, search for intermediate pages:
 
-**Shared tags**: Tags that appear in both neighborhoods.
-> "Both clusters use #scalability."
+1. Find all pages that link to `from`
+2. For each of those, check if they link to `to`
+3. If yes: `from` → `intermediate` → `to` is a connection path
+4. Report the shortest path(s) and explain the relationship
 
-**Shared domains**: Notes from both topics that share a `domain` field value.
+Also check:
+- Shared tag clusters (both topics use tags that co-occur frequently)
+- Shared domain context (both are about the same domain but different aspects)
+- Temporal overlap (both topics emerged around the same time)
 
-**Shared references**: Notes in one neighborhood that reference notes in the other.
-
-### Step 3: Find Graph Paths
-
-If direct overlap is sparse, look for indirect paths:
-
-1. For each note in the `from` neighborhood, check its outgoing links
-2. Do any of those linked notes appear in the `to` neighborhood?
-3. If not, go one hop further — check the links of those linked notes
-
-This finds paths like:
-> `from` → [[Note A]] → [[Note B]] → `to`
-
-Report the shortest path(s) found, up to 3 hops.
-
-### Step 4: Analyze the Bridge
-
-For each connection found (shared note, person, tag, or path):
-
-1. **Read the bridging notes** to understand the context
-2. **Explain why the connection matters** — what does the bridge reveal?
-3. **Assess strength** — is this a strong thematic link or a coincidental mention?
-
-Classify connections:
-- **Strong**: Shared context, both topics discussed substantively in the same note
-- **Moderate**: Shared person/tag, indirect but meaningful relationship
-- **Weak**: Coincidental co-occurrence, shared only through generic tags
-
-### Step 5: Synthesize
-
-Build a narrative that explains how the two topics connect:
+### Step 5: Present the Connection
 
 ```markdown
-# Connect: {From} ↔ {To}
+# Connection: [[{from}]] ↔ [[{to}]]
 
-## The Bridge
+## Direct Relationship
+{Yes/No} — {explain the direct connection if it exists}
 
-{1-2 paragraph narrative explaining the connection in plain language}
+## Connection Paths
+{If indirect paths exist, show them:}
 
-## Connection Map
+1. [[{from}]] → [[{intermediate}]] → [[{to}]]
+   - Path explanation: {how they connect through this intermediate}
 
-### Direct Links ({N} found)
+## Shared Context
+- **Shared tags**: {tag1}, {tag2}
+- **Shared domain**: {domain}
+- **Shared sources**: [[source-note-1]], [[source-note-2]]
+- **Shared entities**: [[entity-1]], [[entity-2]]
 
-- **[[Shared Note]]** — {how it connects both topics}
-  > "{quote showing from-topic}" ... "{quote showing to-topic}"
+## Relationship Type
+{Classify the relationship:}
+- **Dependency**: {from} depends on {to} (or vice versa)
+- **Sibling**: Both are aspects of a larger concept
+- **Contrast**: They represent opposing approaches
+- **Evolution**: {to} evolved from {from} over time
+- **Parallel**: Independent topics that happen to share context
 
-### Through People
-
-- **[[Person]]** — involved in both {from} and {to}
-  - {from} context: {brief description}
-  - {to} context: {brief description}
-
-### Through Concepts
-
-- **[[Concept]]** — shared foundation
-  - Links to {from} via: [[note1]], [[note2]]
-  - Links to {to} via: [[note3]], [[note4]]
-
-### Graph Path
-
+## Why This Connection Matters
+{2-3 sentences on what this relationship reveals and why it's worth knowing}
 ```
-[[from-note]] → [[intermediate]] → [[to-note]]
-```
-
-{Explain what this path reveals}
-
-## Strength Assessment
-
-- **Overall**: {Strong / Moderate / Weak}
-- **Evidence**: {N} shared notes, {N} shared people, {N} graph paths
-- **Confidence**: {High — solid thematic overlap / Medium — circumstantial / Low — tenuous}
-
-## Potential Insights
-
-1. {What the user might learn from this connection}
-2. {How this could inform decisions in either domain}
-3. {A question this connection raises}
-
-## Suggested Actions
-
-- Link [[Note A]] to [[Note B]] — they discuss the same problem from different angles
-- Add "{from}" as a reference in [[relevant to-note]]
-- Consider creating a hub note for the bridging concept
-```
-
-### Step 6: Handle No Connection
-
-If no meaningful connection is found after searching:
-
-```markdown
-# Connect: {From} ↔ {To}
-
-No meaningful connection found in this vault.
-
-## What I Checked
-
-- Searched {N} notes in the {from} neighborhood
-- Searched {N} notes in the {to} neighborhood
-- Checked up to 3-hop graph paths
-- Compared tags, domains, people, and references
-
-## Possible Reasons
-
-- These topics genuinely haven't intersected in your notes yet
-- The connection might exist in knowledge you haven't written down
-- Try narrowing the topics or running /emerge to find broader patterns
-
-## Want to Create a Connection?
-
-If you believe these topics are related, consider:
-1. Writing a note that explicitly bridges them
-2. Adding shared tags or domain fields
-3. Running /weave after writing the bridge note
-```
-
-### Step 7: Save (Optional)
-
-At the end of your analysis, ask:
-
-> "Would you like me to save this as a note?"
-
-If the user confirms, save with frontmatter:
-
-```yaml
----
-title: "Connect: {From} ↔ {To}"
-note_type: literature
-type: analysis
-date: <today>
-references:
-  - "[[from-anchor]]"
-  - "[[to-anchor]]"
-tags: [connect, bridge]
----
-```
-
-Use `obsidian create` to save. Ask the user where they'd like it saved.
 
 ## Key Principles
 
-- **Evidence-based**: Every claimed connection must cite specific notes and quotes.
-- **Honest about weakness**: If the connection is tenuous, say so. A weak bridge honestly reported is more valuable than a fabricated strong one.
-- **User's vault only**: Don't bridge topics using your general knowledge. The connection must exist in the vault's own link graph and content.
-- **Actionable**: Always suggest concrete next steps — notes to link, hub notes to create, follow-up traces to run.
-- **Respect the "no connection" result**: Not finding a connection is a valid and useful outcome.
+- **Graph over guesswork.** Base connections on actual wikilinks, shared tags, and shared sources — not inferred relationships.
+- **Multiple paths.** There may be several ways two topics connect — show the most meaningful ones, not just the shortest.
+- **Explain, don't just list.** The value is in the *explanation* of why the connection matters, not just the path itself.
+- **Obsidian is first workbench.** All note operations go through Obsidian CLI.

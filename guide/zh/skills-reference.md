@@ -4,40 +4,81 @@
 
 # 技能参考
 
-BYOAO 的 9 个 AI 技能。在 Obsidian 的 Agent Client 面板中运行。
+BYOAO 的所有 AI 技能。在 Obsidian 的 Agent Client 面板中运行。
 
 > **前提条件：** 所有技能都需要 Obsidian CLI 已启用。参见 [快速上手](getting-started.md#第三步在-obsidian-中打开)。
 
 ---
 
-## /weave — 将笔记编织成知识图谱
+## /cook — 将笔记编译为知识
 
-**功能：** 扫描知识库笔记，添加 frontmatter + wikilinks，维护 Glossary，创建 hub notes。
+**功能：** 读取你的笔记和外部来源，提炼为 `entities/`、`concepts/`、`comparisons/` 和 `queries/` 中的结构化知识页面。
 
 **运行方式：**
 
 ```
-/weave                    # 扫描整个知识库
-/weave folder=Daily/      # 扫描特定文件夹
-/weave file=my-note.md    # 处理单个文件
+/cook                     # 增量 — 上次 cook 以来新增/修改的笔记
+/cook --all               # 全量 — 重新读取知识库中所有笔记
+/cook "Feature A"         # 定向 — 匹配关键词的笔记
+/cook path/to/note.md     # 定向 — 特定笔记
 ```
 
 **流程：**
-1. 读取 Glossary 加载已知实体
-2. 扫描文件（遵守排除规则）
-3. 识别实体：人物、项目、概念、工具
-4. 建议 frontmatter 添加（绝不覆盖已有字段）— `date` 为必填，从内容或文件创建时间推断
-5. 建议 wikilinks（每个术语仅首次出现，不在代码块内）
-6. 修改前备份文件
-7. 扫描后：建议新 Glossary 术语（5+ 次自动建议，3+ 次向用户确认）和 hub notes
-8. 建议运行 `/organize` 整理目录结构
-9. 输出摘要：enriched 文件数、添加的 wikilinks、建议的术语
+1. 读取目标笔记（默认增量模式）
+2. 识别实体（具名事物）和概念（抽象想法）
+3. 与已有 agent 页面匹配
+4. 创建新页面或更新已有页面
+5. 检查来源之间的矛盾
+6. 更新 INDEX.base 和 log.md
+7. 以自然语言报告变更摘要
 
 **关键行为：**
-- 幂等 — 运行两次不会重复链接
-- 保留已有 frontmatter — 只添加缺失字段，合并数组
-- 备份到 `.byoao/backups/<timestamp>/`
-- 跳过：`.obsidian/`、`.git/`、模板、AGENTS.md、二进制文件
+- 绝不修改用户笔记 — 只在 agent 目录中创建/更新页面
+- 检测矛盾并标记等待审查
+- 以自然语言报告："更新了 2 个已有页面，创建了 1 个新概念页面"
+- 遵循 SCHEMA.md 中的页面阈值
+
+---
+
+## /health — 审计知识库质量
+
+**功能：** 扫描 agent 维护的目录，检查结构性问题并按严重程度分组报告。
+
+**运行方式：**
+
+```
+/health
+```
+
+**检查项目：**
+1. 孤立页面 — 没有入站 wikilinks
+2. 断裂的 wikilinks — 链接到不存在的目标
+3. 陈旧内容 — `updated` 日期落后最新来源超过 90 天
+4. Frontmatter 违规 — 缺失必填字段
+5. 标签分类漂移 — 使用了 SCHEMA.md 中未定义的标签
+6. 超大页面 — 建议拆分的候选（超过 200 行）
+
+**修复建议：** 每个问题附带具体操作（运行 /cook、修复链接、拆分页面）。修改前始终征求确认。
+
+---
+
+## /prep — 丰富 Frontmatter 和交叉引用
+
+**功能：** 扫描所有用户笔记，丰富 frontmatter，建议 wikilinks 和交叉引用。同时作为 Obsidian CLI 可用性的前提检查。
+
+**运行方式：**
+
+```
+/prep                     # 扫描整个知识库
+/prep folder=Daily/       # 扫描特定文件夹
+```
+
+**流程：**
+1. 验证 Obsidian CLI 可用
+2. 扫描用户笔记中缺失的 frontmatter
+3. 建议 frontmatter 添加（title、date、type、tags）
+4. 建议到已有 agent 页面的 wikilinks
+5. 报告丰富摘要
 
 ---
 
@@ -54,14 +95,14 @@ BYOAO 的 9 个 AI 技能。在 Obsidian 的 Agent Client 面板中运行。
 /organize aggressive         # 同时建议合并已有结构
 ```
 
-**前提条件：** 先运行 `/weave` — `/organize` 需要 `type` frontmatter 来决定文件归属。
+**前提条件：** 先运行 `/prep` — `/organize` 需要 `type` frontmatter 来决定文件归属。
 
 **流程：**
 1. 通过 `obsidian list` 和 frontmatter 分析当前结构
-2. 根据 `type` 将文件映射到目标目录（daily → `Daily/`、meeting → `Meetings/`、reference → `Knowledge/` 等）
+2. 根据 `type` 将文件映射到目标目录
 3. 展示分组的前后对比摘要，等待你的批准
 4. 使用 `obsidian move` 执行移动（自动更新所有 wikilinks）
-5. 通过 `byoao_graph_health` 验证无断裂链接
+5. 验证无断裂链接
 
 **关键行为：**
 - 保守策略 — 只建议明确有益的移动
@@ -96,33 +137,6 @@ BYOAO 的 9 个 AI 技能。在 Obsidian 的 Agent Client 面板中运行。
 
 ---
 
-## /emerge — 发现隐藏模式
-
-**功能：** 分析知识库，找到没有任何单条笔记明确表述的模式、矛盾和洞察。
-
-**运行方式：**
-
-```
-/emerge                        # 快速扫描整个知识库
-/emerge scope=Projects/        # 聚焦特定文件夹
-/emerge depth=deep             # 读取每条笔记（更全面但更慢）
-```
-
-**参数：**
-- `scope`（可选）— 限定为文件夹、领域或标签
-- `depth`（可选）— "quick"（默认）或 "deep"
-- `output`（可选）— 将发现保存为笔记
-
-**检测的模式：**
-- 反复出现的未回答问题
-- 隐含决策（方向改变但无决策记录）
-- 汇聚的线索（不同思路趋向同一结论）
-- 被遗忘的线索（沉寂的主题）
-- 知识盲区（被引用但从未深入探索的主题）
-- 笔记之间的矛盾
-
----
-
 ## /connect — 桥接两个领域
 
 **功能：** 通过知识库的链接图谱，发现两个主题之间的隐藏关系。
@@ -149,7 +163,7 @@ BYOAO 的 9 个 AI 技能。在 Obsidian 的 Agent Client 面板中运行。
 
 ---
 
-## /diagnose — 检查知识图谱健康
+## /diagnose — 检查知识库健康
 
 **功能：** 对知识库运行 5 项诊断检查并建议修复。
 
@@ -166,7 +180,7 @@ BYOAO 的 9 个 AI 技能。在 Obsidian 的 Agent Client 面板中运行。
 4. 孤立笔记 — 没有入站或出站 wikilinks
 5. 断裂的 wikilinks — 链接到不存在的笔记
 
-**修复建议：** 每个问题附带具体操作（运行 /weave、创建笔记、修复链接）。修改前始终征求确认。
+**修复建议：** 每个问题附带具体操作（运行 /cook、创建笔记、修复链接）。修改前始终征求确认。
 
 ---
 

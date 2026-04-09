@@ -2,6 +2,41 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.0] — 2026-04-09
+
+### Breaking Changes
+- **LLM Wiki architecture**: Replaced Zettelkasten model with LLM-compiled knowledge base — built into BYOAO core
+- **Removed `/weave`**: Replaced by `/cook` (knowledge compilation) and `/prep` (graph enrichment)
+- **Removed `/emerge`**: Pattern discovery merged into `/cook` (contradiction detection) and `/health` (orphan/drift analysis)
+- **Removed `byoao_add_person`, `byoao_add_project`, `byoao_graph_health` tools**: Replaced by `/cook` and `/health` skills
+- **Removed common templates**: Human-authored note templates no longer shipped in `common/`
+- **Removed `Glossary.md`**: Replaced by `SCHEMA.md` tag taxonomy
+- **Removed `Members` and `Projects` from config**: Now handled as user notes that `/cook` digests
+- **Removed dead modules**: `note-read.ts`, `search-vault.ts`, `retrieval-types.ts` (replaced by Obsidian CLI)
+- **Default preset changed**: `pm-tpm` → `minimal`
+
+### New Features
+- **LLM Wiki as built-in core**: Every vault gets agent directories, `SCHEMA.md`, `log.md` — regardless of preset
+- **`/cook`**: Core knowledge compilation skill — reads raw notes, creates/updates entity and concept pages
+- **`/health`**: Knowledge page health check — orphans, broken links, stale content, contradictions
+- **`/prep`**: Prerequisites check + graph enrichment (frontmatter scanning, cross-reference suggestions)
+- **Four agent directories**: `entities/`, `concepts/`, `comparisons/`, `queries/`
+- **`SCHEMA.md`**: Tag taxonomy and domain conventions at vault root
+- **`log.md`**: Agent activity log for `/cook` operations
+- **`wikiDomain`**: Optional vault config field for domain-specific knowledge compilation
+- **`compilationMode`**: Agent autonomy level (`auto` vs `review`)
+- **v1→v2 upgrade path**: `byoao upgrade` migrates v1 vaults (creates agent dirs, SCHEMA.md, deprecates v1 files)
+
+### Improvements
+- **Presets are now role overlays**: `minimal` (core only) and `pm-tpm` (Atlassian + BigQuery) layer on top of built-in LLM Wiki
+- **CLI init flow**: Updated prompts — "Choose your work profile:", optional wikiDomain input
+- **vault-doctor**: Now checks agent directory structure, SCHEMA.md, log.md, contradiction frontmatter
+- **vault-status**: Reports agent page counts per directory, v2 marker presence
+- **System transform hook**: Injects AGENTS.md + SCHEMA.md + MCP auth guidance
+- **Idle suggestions**: Updated to v2 skills (/cook, /health, /prep)
+- **All retained skills**: Updated vocabulary (entities/concepts/comparisons/queries, SCHEMA.md, INDEX.base)
+- **Documentation**: All guides (EN + ZH) rewritten for v2 architecture
+
 ## [v1.1.0] - 2026-04-03
 
 ### Fixed

@@ -6,7 +6,7 @@ Real scenarios showing how to use BYOAO day-to-day. Each workflow introduces the
 
 ---
 
-## 1. First Weave — Connecting Your Notes
+## 1. First Cook — Compiling Your Notes
 
 **When:** You've just created your KB and have some notes (imported or freshly written).
 
@@ -14,41 +14,38 @@ Real scenarios showing how to use BYOAO day-to-day. Each workflow introduces the
 
 1. Make sure your vault is open in Obsidian with CLI enabled
 2. Open the Agent Client panel
-3. Run `/weave`
-4. Review the proposed changes — frontmatter additions, wikilinks, Glossary terms
-5. Confirm to apply
+3. Run `/prep` to enrich frontmatter across your notes
+4. Run `/cook` to compile knowledge from your notes
+5. Review the summary of changes
 6. Press `Cmd+G` to see the graph
 
 **What to expect:**
-- Notes get frontmatter: `title`, `date`, `type`, `domain`, `tags`, `references`
-- `date` is always populated — inferred from content, or from file creation time as fallback
-- Notes from cloud sources get a `source` field linking back to the original
-- Plain text mentions of people/projects become `[[wikilinks]]`
-- Recurring concepts are suggested as Glossary terms (5+ mentions auto-suggest, 3+ ask for confirmation)
-- A summary shows: "Enriched 23 files, added 87 wikilinks, 5 new Glossary terms"
-- If your directory structure looks messy, /weave suggests running `/organize`
+- Entity pages created for people, projects, and products mentioned across notes
+- Concept pages for methods, rules, and decisions
+- Contradictions detected and flagged for review
+- INDEX.base and log.md updated
+- A summary like: "Created 5 entity pages, 3 concept pages. 1 contradiction flagged."
 
 **Tips:**
-- Run /weave on a small batch first (use `folder=Daily/`) to see how it works
-- Check the backups at `.byoao/backups/` if you want to undo
-- Re-run /weave anytime — it's idempotent (won't duplicate existing links)
-- After /weave, consider running `/organize` to restructure directories based on enriched metadata
+- Run /cook on a few core notes first (use `/cook "topic name"`) to see how it works
+- Re-run /cook anytime — it's incremental (only processes new/modified notes)
+- After /cook, run `/health` to check for issues
 
 ---
 
-## 2. Organizing After Weave — Restructuring Your Vault
+## 2. Organizing After Cook — Restructuring Your Vault
 
-**When:** You've run `/weave` and your notes now have frontmatter, but files are scattered across a messy directory structure (common when adopting an existing knowledge base).
+**When:** You've run `/prep` and your notes now have frontmatter, but files are scattered across a messy directory structure (common when adopting an existing knowledge base).
 
 **Steps:**
 
-1. Make sure you've already run `/weave` (the agent needs `type` metadata to decide where files belong)
+1. Make sure you've already run `/prep` (the agent needs `type` metadata to decide where files belong)
 2. Run `/organize` to see the proposed directory restructuring
 
 ```
 /organize                    # Full vault analysis
 /organize dry-run            # Preview changes without executing
-/organize scope=Knowledge/   # Focus on a specific folder
+/organize scope=Projects/    # Focus on a specific folder
 ```
 
 3. Review the before/after summary — the agent groups moves by action (e.g. "Move 12 meeting notes to Meetings/")
@@ -56,10 +53,9 @@ Real scenarios showing how to use BYOAO day-to-day. Each workflow introduces the
 5. The agent uses `obsidian move` for each file, which automatically updates all wikilinks
 
 **What to expect:**
-- Files reorganized by type: dailies → `Daily/`, meetings → `Meetings/`, references → `Knowledge/`
+- Files reorganized by type based on frontmatter metadata
 - Coherent groups stay together (a sprint folder with related files won't be split up)
 - All wikilinks and backlinks update automatically — no broken references
-- A verification step confirms graph health after moves
 
 **Tips:**
 - Start with `dry-run` to see what would change before committing
@@ -68,30 +64,31 @@ Real scenarios showing how to use BYOAO day-to-day. Each workflow introduces the
 
 ---
 
-## 3. Weekly Review — Keeping the Graph Fresh
+## 3. Weekly Review — Keeping the Knowledge Base Fresh
 
-**When:** You've been writing notes all week and want to integrate them into the graph.
+**When:** You've been writing notes all week and want to integrate them into the knowledge base.
 
 **Steps:**
 
-1. Run `/weave` to connect this week's notes
-2. Run `/diagnose` to check vault health
+1. Run `/cook` to compile this week's notes into knowledge
+2. Run `/health` to audit agent pages
 
 ```
-/weave
-/diagnose
+/cook
+/health
 ```
 
-**What /diagnose reports:**
-- Notes without frontmatter (new, unprocessed notes)
-- Orphan notes (not connected to anything)
+**What /health reports:**
+- Orphan pages (not connected to anything)
 - Broken wikilinks (links to non-existent notes)
-- AGENTS.md drift (references to notes that don't exist)
+- Stale content (outdated agent pages)
+- Frontmatter violations
+- Tag taxonomy drift
 
 **Follow-up actions:**
-- For orphan notes: decide if they should be connected or archived
-- For broken links: create the missing note or fix the link
-- For missing frontmatter: /weave will handle this on the next run
+- For orphan pages: decide if they should be connected or archived
+- For broken links: fix the link or create the missing page
+- For stale content: /cook will update on the next run
 
 ---
 
@@ -120,35 +117,7 @@ Real scenarios showing how to use BYOAO day-to-day. Each workflow introduces the
 
 ---
 
-## 5. Discovering Hidden Patterns — What Am I Missing?
-
-**When:** Your vault has 50+ notes and you want to see the big picture.
-
-**Steps:**
-
-```
-/emerge
-```
-
-**What you get:**
-- **Recurring unanswered questions** — "You've asked 'what's the migration timeline?' in 4 notes but never answered it"
-- **Implicit decisions** — "Notes shifted from Option A to Option B around April, but no decision record exists"
-- **Forgotten threads** — "'Data mesh' appears in 6 notes between Jan-Mar but hasn't been mentioned since"
-- **Cross-domain connections** — "Your 'payments' and 'auth' notes both reference 'rate limiting' but never link to each other"
-- **Structural observations** — most connected note, busiest domain, potential blind spots
-
-**When to use:**
-- Monthly — as a "vault retrospective"
-- When starting a new quarter — what patterns emerged?
-- When feeling stuck — let the vault show you what you've been circling around
-
-**Tips:**
-- Use `scope=Projects/` to focus on a specific area
-- Use `depth=deep` for thorough analysis (reads every note, takes longer)
-
----
-
-## 6. Bridging Two Topics — Finding Hidden Connections
+## 5. Bridging Two Topics — Finding Hidden Connections
 
 **When:** You suspect two topics are related but can't articulate how.
 
@@ -176,7 +145,7 @@ Real scenarios showing how to use BYOAO day-to-day. Each workflow introduces the
 
 ---
 
-## 7. Generating Ideas — What Should I Work On Next?
+## 6. Generating Ideas — What Should I Work On Next?
 
 **When:** Your vault has substantial content and you want creative, actionable suggestions.
 
@@ -203,7 +172,7 @@ Every idea cites 2+ vault notes and includes a concrete next step.
 
 ---
 
-## 8. Challenging a Belief — Am I Right About This?
+## 7. Challenging a Belief — Am I Right About This?
 
 **When:** You're about to make a big decision and want to test it against your own history.
 
@@ -229,7 +198,7 @@ Every idea cites 2+ vault notes and includes a concrete next step.
 
 ---
 
-## 9. Detecting Drift — Am I Doing What I Said I Would?
+## 8. Detecting Drift — Am I Doing What I Said I Would?
 
 **When:** You want to compare your stated plans with what actually happened.
 
@@ -261,15 +230,14 @@ Here's a rhythm that works well:
 | Frequency | Action | Skill |
 |-----------|--------|-------|
 | Daily | Write a daily note, capture meetings and ideas | — |
-| Weekly | Connect new notes, check health | `/weave` + `/diagnose` |
-| After weave | Restructure directories if needed | `/organize` |
+| Weekly | Compile new notes, audit health | `/cook` + `/health` |
+| After cook | Restructure directories if needed | `/organize` |
 | When curious | Trace how a topic evolved | `/trace` |
-| Monthly | Look for patterns across the vault | `/emerge` |
 | Quarterly | Generate ideas, review drift | `/ideas` + `/drift` |
 | Before big decisions | Pressure-test your assumptions | `/challenge` |
 | As needed | Bridge two topics you're working on | `/connect` |
 
-The goal is not to run every skill every day. Write freely, weave weekly, think monthly, reflect quarterly.
+The goal is not to run every skill every day. Write freely, cook weekly, think quarterly.
 
 ---
 

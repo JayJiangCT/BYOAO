@@ -7,8 +7,8 @@ tags: [onboarding]
 
 # Welcome to {{KB_NAME}}
 
-Your personal knowledge base. Curate what matters, and let AI
-connect the dots into a knowledge graph.
+Your LLM-powered knowledge base. Write notes freely, and let AI
+compile them into structured, cross-referenced knowledge pages.
 
 ## Choose Your Path
 
@@ -25,58 +25,43 @@ you decide what belongs in your local knowledge base.
    and drop them into this vault folder.
 2. **Obsidian Web Clipper** — Install the browser extension to save
    any web page directly into your vault as a clean markdown note.
-3. **Write summaries** — You don't need full copies. Create a local
-   note that captures the key insights and link back to the source:
+3. **Write summaries** — Create a local note that captures key insights.
 
-```yaml
----
-title: "Migration Plan Q2"
-source: "https://confluence.example.com/pages/12345"
----
-```
-
-> The `source` property keeps the connection between your local note
-> and the cloud original. Add it whenever a note originates from an
-> external document.
-
-**Once you have a few notes → run `/weave`** (see below).
+**Once you have a few notes → run `/cook`** (see below).
 
 ### Path B: I already have local notes
 
-If you have existing markdown files — whether organized or scattered:
+If you have existing markdown files:
 
 1. **Drop them in** — Copy or move your files into this vault folder.
-   (Or if you ran `byoao init --from`, they're already here.)
-2. **Don't worry about structure** — Your files don't need frontmatter,
-   wikilinks, or any particular organization yet.
+2. **Don't worry about structure** — Your files don't need frontmatter
+   or any particular organization yet.
 
-**Run `/weave` now** — it will scan your notes, add frontmatter
-metadata (including dates from file timestamps), discover connections,
-and build your [[Glossary]] from frequently mentioned concepts.
+**Run `/cook` now** — it will scan your notes, identify entities and
+concepts, and compile them into structured knowledge pages.
 
 ### Path C: Starting fresh
 
 No existing notes? No problem.
 
 1. Press `Cmd+T` (Mac) or `Ctrl+T` (Windows) → choose "Daily Note".
-2. Write what's on your mind today. Don't worry about structure.
-3. After a few notes, run `/weave` to connect them.
+2. Write what's on your mind today.
+3. After a few notes, run `/cook` to compile them.
 
 ---
 
-## /weave — Where the Magic Happens
+## /cook — Where the Magic Happens
 
-Open your AI agent and type `/weave`. It will:
+Open your AI agent and type `/cook`. It will:
 
-- **Add frontmatter** — title, date, type, domain, tags
-- **Create wikilinks** — connect related notes automatically
-- **Build your Glossary** — extract key terms and concepts
-- **Suggest organization** — propose directory structure (with your approval)
+- **Read your notes** — from anywhere in the vault
+- **Identify entities** — people, organizations, products, systems
+- **Identify concepts** — methods, rules, decisions, processes
+- **Create/update pages** — in `entities/`, `concepts/`, `comparisons/`, `queries/`
+- **Flag contradictions** — when notes disagree
+- **Report in plain language** — what changed, what needs your attention
 
-Watch: scattered files become a connected knowledge graph.
-
-After weaving, press `Cmd+G` (Mac) or `Ctrl+G` (Windows) to see your
-knowledge visualized. Every node is a note, every line is a connection.
+After cooking, press `Cmd+G` to open Graph View and see the connections.
 
 ---
 
@@ -97,15 +82,17 @@ knowledge visualized. Every node is a note, every line is a connection.
 
 | Command | What it does |
 |---------|-------------|
-| `/weave` | Connect your notes into a knowledge graph |
-| `/organize` | Reorganize vault directories using enriched metadata |
+| `/cook` | Compile notes into structured knowledge pages |
+| `/health` | Check knowledge page health |
+| `/wiki` | Generate INDEX.base knowledge map |
+| `/organize` | Reorganize vault directories |
+| `/ask` | Open-ended Q&A against your knowledge |
 | `/trace` | Track how an idea evolved over time |
-| `/emerge` | Discover patterns you haven't noticed |
 | `/connect` | Bridge two seemingly unrelated topics |
 | `/ideas` | Generate actionable ideas from your vault |
 | `/challenge` | Pressure-test a belief against your own notes |
 | `/drift` | Compare intentions vs actions over time |
-| `/diagnose` | Check knowledge graph health |
+| `/diagnose` | Check overall vault health |
 
 {{#if HAS_MCP_SERVICES}}
 
@@ -122,11 +109,13 @@ These services authenticate via your browser. If a connection expires,
 tell the agent: "reconnect to {service name}".
 
 {{/if}}
+
 ---
 
 ## Key Files
 
-- **[[Glossary]]** — Domain terms and key concepts
+- **[[SCHEMA]]** — Tag taxonomy and knowledge conventions
+- **[[log]]** — Agent activity log
 - **AGENTS.md** — How AI agents navigate this vault
 
 ---

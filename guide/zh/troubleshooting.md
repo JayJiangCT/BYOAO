@@ -1,4 +1,4 @@
-<!-- Translated from en/troubleshooting.md | Last synced: 2026-03-29 -->
+<!-- Translated from en/troubleshooting.md | Last synced: 2026-04-09 -->
 
 [← 返回目录](index.md) | [English](../en/troubleshooting.md)
 
@@ -8,7 +8,86 @@
 
 ---
 
-## Agent Client 卡在"Connecting to OpenCode..."
+## Obsidian 设置问题
+
+### Obsidian CLI 不可用
+
+**症状：** /cook 或其他技能报错 "Obsidian CLI is not available."
+
+**解决：**
+1. 确保 Obsidian 正在运行且知识库已打开
+2. 进入 **Settings** → **General** → 滚动到 **Advanced** → 启用 **Command line interface**
+
+![在 Obsidian General 设置中启用 CLI](../assets/obsidian-general-cli.png)
+
+3. 在终端验证：`obsidian --version`
+4. 如果找不到命令，重启 Obsidian 后再试
+
+> CLI 开关仅在 Obsidian 运行时生效。如果关闭 Obsidian，CLI 将不可用。
+
+---
+
+### INDEX.base 打不开 / 显示 "Unknown file type"
+
+**症状：** 在 Obsidian 中点击 `INDEX.base` 没有反应或显示错误。
+
+**解决：** 需要启用 **Bases** 核心插件。
+
+1. 进入 **Settings** → **Core plugins**
+2. 找到 **Bases** 并启用
+
+![Core plugins — 启用 Bases](../assets/obsidian-core-plugins-1.png)
+
+---
+
+### 侧边栏看不到 Frontmatter
+
+**症状：** Agent 页面有 YAML frontmatter 但侧边栏看不到元数据字段。
+
+**解决：** 启用 **Properties view** 核心插件。
+
+1. 进入 **Settings** → **Core plugins**
+2. 向下滚动，启用 **Properties view**
+
+![Core plugins — 启用 Properties view](../assets/obsidian-core-plugins-2.png)
+
+Properties view 在侧边栏以结构化面板显示 `type`、`tags`、`sources` 等 frontmatter 字段。
+
+---
+
+### 图片散落在笔记旁边
+
+**症状：** 粘贴或拖拽图片到 Obsidian 时，图片落在笔记所在文件夹而不是专用文件夹。
+
+**解决：** 配置附件文件夹：
+
+1. 进入 **Settings** → **Files and links**
+2. 将 **Default location for new attachments** 设为 **"In the folder specified below"**
+3. 在 **Attachment folder path** 中输入 `Attachments`
+
+![Files and links — 附件文件夹设置](../assets/obsidian-files-and-links.png)
+
+---
+
+### 必需核心插件清单
+
+首次打开知识库后，在 **Settings** → **Core plugins** 中确认以下插件已启用：
+
+| 插件 | 用途 | 默认状态 |
+|------|------|----------|
+| **Backlinks** | 查看 agent 页面的入站链接 | 开启 |
+| **Bases** | 打开 `INDEX.base` 知识地图 | 开启 |
+| **Canvas** | vault 中的画布文件 | 开启 |
+| **Command palette** | `Cmd+P` 命令访问 | 开启 |
+| **Properties view** | 侧边栏查看 frontmatter | 开启 |
+
+如有禁用，直接打开即可，无需重启。
+
+---
+
+## Agent Client 问题
+
+### Agent Client 卡在 "Connecting to OpenCode..."
 
 **症状：** Obsidian 中的 Agent Client 面板一直显示 "Connecting to OpenCode..."，无法连接。
 
@@ -21,70 +100,18 @@
 
 ---
 
-## Obsidian CLI 不可用
+### Obsidian 插件未显示
 
-**症状：** /weave 或其他技能报错 "Obsidian CLI is not available."
-
-**解决：**
-1. 确保 Obsidian 正在运行
-2. 确保你的知识库在 Obsidian 中已打开
-3. 启用 CLI：**设置** → **通用** → **高级** → **命令行界面**
-4. 验证：在终端运行 `obsidian --version`
-
----
-
-## byoao install 提示 "OpenCode not installed"
-
-**症状：** 安装时警告找不到 OpenCode。
+**症状：** `byoao init` 后 Agent Client 或 BRAT 未出现。
 
 **解决：**
-- 安装 OpenCode：`npm install -g opencode` 或访问 [opencode.ai](https://opencode.ai)
-- 如果刚安装，打开一个新终端窗口（PATH 可能未更新）
-- 没有 OpenCode 也可以使用 `byoao init` 和 `byoao status` — 只是 AI 技能不可用
+1. 首次打开知识库时，点击 **"Trust author and enable plugins"**（信任作者并启用插件）
+2. 前往 **Settings** → **Community plugins** 确认已启用
+3. 如果 `byoao init` 期间 Obsidian 正在运行，重启 Obsidian 或使用 **Cmd+P** → "Reload app without saving"
 
 ---
 
-## byoao init 失败
-
-**常见原因：**
-
-- **路径权限：** 确保对目标目录有写入权限
-- **路径是文件而非目录：** 知识库路径必须是目录
-- **未安装 Obsidian：** `byoao init` 会先检查 Obsidian。从 [obsidian.md](https://obsidian.md) 安装
-
----
-
-## /weave 找不到我的笔记
-
-**可能原因：**
-
-- **文件被排除：** /weave 跳过 `.obsidian/`、`.git/`、`node_modules/`、模板、AGENTS.md 和二进制文件
-- **自定义排除：** 检查文件是否匹配了内置排除规则（参见 /weave 文档）
-- **错误的知识库：** 确保在 Obsidian 中打开了正确的知识库
-- **非 Markdown 文件：** /weave 只处理 `.md` 文件。PDF、图片等文件会被跳过（结束时报告数量）
-
----
-
-## Glossary 术语未被链接
-
-**可能原因：**
-
-- **大小写不匹配：** Glossary 术语匹配有一定灵活性，但差异太大可能无法匹配。确保 Glossary 中的术语与笔记中的写法一致
-- **在代码块内：** /weave 不在代码块或已有 wikilinks 内创建链接
-- **已经链接：** /weave 是幂等的 — 如果术语已经是 `[[wikilink]]`，不会重复处理
-
----
-
-## AGENTS.md 看起来不对或缺少部分
-
-**解决：**
-- 运行 `byoao upgrade` 重新生成标记之间的 AGENTS.md 区域
-- `<!-- byoao:...:start/end -->` 标记之外的手动编辑会被保留
-- 标记之间的内容是自动生成的 — 不要手动编辑
-
----
-
-## 插件在 OpenCode 中未加载
+### 插件在 OpenCode 中未加载
 
 **症状：** BYOAO 工具未出现在 OpenCode 会话中。
 
@@ -95,57 +122,126 @@
 
 ---
 
-## Obsidian 插件未显示
+## 知识库问题
 
-**症状：** `byoao init` 后 Agent Client 或 BRAT 未出现。
+### /cook 找不到我的笔记
+
+**可能原因：**
+
+- **文件被排除：** /cook 跳过 `.obsidian/`、`.git/`、`node_modules/`、agent 目录、AGENTS.md 和二进制文件
+- **错误的知识库：** 确保在 Obsidian 中打开了正确的知识库
+- **非 Markdown 文件：** /cook 只处理 `.md` 文件。PDF、图片等文件会被跳过
+- **已经处理：** 增量模式下，/cook 只处理上次运行后修改的笔记。使用 `/cook --all` 重新读取所有内容
+
+---
+
+### AGENTS.md 看起来不对或缺少部分
 
 **解决：**
-1. 首次打开知识库时，点击 **"信任作者并启用插件"**
-2. 前往 **设置** → **第三方插件** 确认已启用
-3. 如果 `byoao init` 期间 Obsidian 正在运行，重启 Obsidian 或使用 **Cmd+P** → "Reload app without saving"
+- 运行 `byoao upgrade` 重新生成标记之间的 AGENTS.md 区域
+- `<!-- byoao:...:start/end -->` 标记之外的手动编辑会被保留
+- 标记之间的内容是自动生成的 — 不要手动编辑
 
 ---
 
-## 备份和撤销更改
+### 撤销 agent 页面更改
 
-/weave 在修改文件前会在 `.byoao/backups/<timestamp>/` 创建备份。
+Agent 页面位于 `entities/`、`concepts/`、`comparisons/` 和 `queries/` 中。由于 /cook 绝不修改你自己的笔记，你可以安全地删除任何 agent 页面，然后重新运行 `/cook` 来重新生成。
 
-恢复文件：
+查看最近的变更，检查 `log.md` 或运行：
 ```bash
-cp .byoao/backups/2026-03-29T14-30/my-note.md ./my-note.md
-```
-
-查找最新备份：
-```bash
-ls -la .byoao/backups/
+byoao logs
 ```
 
 ---
 
-## MCP 服务连接过期（Atlassian / BigQuery）
+## 安装问题
+
+### 终端提示 "command not found: node" 或 "command not found: npm"
+
+**症状：** 尝试安装 BYOAO 时，终端提示找不到 `node` 或 `npm` 命令。
+
+**解决：**
+1. 你需要先安装 Node.js。访问 [nodejs.org](https://nodejs.org/)，下载 **LTS** 版本
+2. 运行安装程序 — 它会同时安装 `node` 和 `npm`
+3. **安装完成后，关闭并重新打开终端**（终端需要刷新 PATH 环境变量）
+4. 验证：`node --version` 应该输出 `v18.x.x` 或更高版本
+
+**安装后仍然不行？**
+- **Mac：** 尝试打开新的 Terminal 窗口。如果使用 zsh，运行 `source ~/.zshrc`
+- **Windows：** 完全关闭 PowerShell 并重新打开。如果仍然失败，重启电脑
+
+---
+
+### 运行 npm install -g 时提示 "EACCES permission denied"
+
+**症状：** `npm install -g @jayjiang/byoao` 因权限错误而失败。
+
+**解决（Mac/Linux）：**
+```bash
+sudo npm install -g @jayjiang/byoao
+```
+输入电脑密码即可。`sudo` 命令以管理员权限运行安装。
+
+**解决（Windows）：** 右键点击 PowerShell，选择「以管理员身份运行」，然后重试安装命令。
+
+**更好的长期方案：** 配置 npm 全局安装不需要 sudo：
+```bash
+mkdir -p ~/.npm-global
+npm config set prefix '~/.npm-global'
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.zshrc
+source ~/.zshrc
+```
+
+---
+
+### byoao install 提示 "OpenCode not installed"
+
+**症状：** 安装时警告找不到 OpenCode。
+
+**解决：**
+- 安装 OpenCode：`npm install -g opencode` 或访问 [opencode.ai](https://opencode.ai)
+- 如果刚安装，打开一个新终端窗口（PATH 可能未更新）
+- 没有 OpenCode 也可以使用 `byoao init` 和 `byoao status` — 只是 AI 技能不可用
+
+---
+
+### byoao init 失败
+
+**常见原因：**
+
+- **路径权限：** 确保对目标目录有写入权限
+- **路径是文件而非目录：** 知识库路径必须是目录
+- **未安装 Obsidian：** `byoao init` 会先检查 Obsidian。从 [obsidian.md](https://obsidian.md) 安装
+
+---
+
+## MCP 服务问题
+
+### MCP 服务连接过期（Atlassian / BigQuery）
 
 **症状：** Agent 提示 "Atlassian connection failed" 或 BigQuery 查询返回认证错误。
 
 **解决：**
 1. 点击 Agent Client 面板右上角 "..." 菜单 → **Restart agent**
 2. 浏览器会弹出重新认证页面
-4. Google 服务请确保选择正确的 Google 账号（工作账号，非个人账号）
-5. 完成登录后返回 Obsidian
-6. 让 agent 重试之前的请求
+3. Google 服务请确保选择正确的 Google 账号（工作账号，非个人账号）
+4. 完成登录后返回 Obsidian
+5. 让 agent 重试之前的请求
 
 如果仍然不行，完全重启 Obsidian。
 
 ---
 
-## BigQuery：需要认证
+### BigQuery：需要认证
 
 **症状：** Agent 提示 BigQuery 工具不可用，或查询时返回认证错误。
 
-BigQuery 认证是延迟触发的——当你第一次让 agent 查询 BigQuery 时，它会通过 `byoao_mcp_auth` 工具自动调用 `gcloud auth application-default login`。
+BigQuery 认证是延迟触发的 —— 当你第一次让 agent 查询 BigQuery 时，它会通过 `byoao_mcp_auth` 工具自动调用 `gcloud auth application-default login`。
 
 **解决：**
 1. 确保已安装 gcloud CLI：https://cloud.google.com/sdk/docs/install
-2. 让 agent 执行一个 BigQuery 查询——它应该会自动调用 `byoao_mcp_auth`
+2. 让 agent 执行一个 BigQuery 查询 —— 它应该会自动调用 `byoao_mcp_auth`
 3. 在弹出的浏览器窗口中完成 Google 登录
 4. 点击 "..." → **Restart agent**，然后重试
 
@@ -153,7 +249,7 @@ BigQuery 认证是延迟触发的——当你第一次让 agent 查询 BigQuery 
 
 ## 查看错误日志
 
-如果遇到问题但不确定原因，可以查看错误日志：
+如果遇到问题但不确定原因：
 
 ```bash
 byoao logs
@@ -165,7 +261,7 @@ byoao logs
 byoao logs --export ~/Desktop/byoao-logs.txt
 ```
 
-导出的文件包含 BYOAO 版本、Node 版本和操作系统信息——排障所需的一切。分享前请检查文件内容，确保不含敏感信息。
+导出的文件包含 BYOAO 版本、Node 版本和操作系统信息。分享前请检查文件内容，确保不含敏感信息。
 
 更多选项见 [CLI 参考 — byoao logs](cli-reference.md#byoao-logs)。
 

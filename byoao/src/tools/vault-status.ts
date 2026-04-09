@@ -4,7 +4,7 @@ import { checkObsidian, formatObsidianStatus } from "../vault/obsidian-check.js"
 
 export const byoao_vault_status = tool({
   description:
-    "Check the health of an Obsidian vault — note count, wikilink count, broken links, directory breakdown, and Obsidian installation status.",
+    "Check the health of an Obsidian vault — note count, wikilink count, broken links, directory breakdown, Obsidian installation status, and LLM Wiki v2 signals: per-directory markdown counts under entities/, concepts/, comparisons/, queries/, plus presence of SCHEMA.md, log.md, and INDEX.base at the vault root.",
   args: {
     vaultPath: tool.schema.string().describe("Path to the Obsidian vault"),
   },

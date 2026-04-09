@@ -21,7 +21,7 @@ describe("writeManifest", () => {
       skills: [".opencode/skills/byoao-conventions/SKILL.md"],
       commands: [".opencode/commands/vault-doctor.md"],
       obsidianConfig: [".obsidian/core-plugins.json"],
-      templates: ["Knowledge/templates/Daily Note.md"],
+      templates: ["Knowledge/templates/Example.md"],
     };
 
     await writeManifest(tmpDir, "pm-tpm", installedFiles);
@@ -37,7 +37,7 @@ describe("writeManifest", () => {
     expect(manifest.infrastructure.skills).toEqual([".opencode/skills/byoao-conventions/SKILL.md"]);
     expect(manifest.infrastructure.commands).toEqual([".opencode/commands/vault-doctor.md"]);
     expect(manifest.infrastructure.obsidianConfig).toEqual([".obsidian/core-plugins.json"]);
-    expect(manifest.infrastructure.templates).toEqual(["Knowledge/templates/Daily Note.md"]);
+    expect(manifest.infrastructure.templates).toEqual(["Knowledge/templates/Example.md"]);
   });
 
   it("creates .byoao/ directory if it does not exist", async () => {

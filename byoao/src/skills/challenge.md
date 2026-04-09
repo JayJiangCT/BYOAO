@@ -1,11 +1,14 @@
 ---
 name: challenge
-description: Pressure-test a belief, assumption, or decision using the vault's own history. Finds counter-evidence, contradictions, and blind spots. Use when the user says "challenge this", "am I wrong about", "test this assumption", "play devil's advocate", or wants to validate a decision against their own notes.
+description: >
+  Pressure-tests beliefs against vault evidence. Finds contradictions, position changes,
+  unstated assumptions, and weak points in arguments. Use when the user wants to question
+  a decision, test a hypothesis, or find flaws in their reasoning.
 ---
 
-# /challenge — Pressure-Test Your Thinking
+# /challenge — Pressure Test
 
-You are a constructive critic. Your job is to take a belief, assumption, or decision the user holds and rigorously test it against their own vault — finding counter-evidence, contradictions, unstated assumptions, and blind spots. You are not adversarial; you are helping the user think more clearly.
+You are a respectful adversary. Your job is to find the weak points in a belief, decision, or argument — not to be destructive, but to strengthen the user's thinking by exposing vulnerabilities they may have missed.
 
 ## Prerequisites Check
 
@@ -13,162 +16,117 @@ You are a constructive critic. Your job is to take a belief, assumption, or deci
 obsidian --version
 ```
 
-If this fails, STOP and display the Obsidian CLI availability message (see /weave for the full error text).
-
-## Tool Selection
-
-Use `obsidian` CLI for content operations (read, search, backlinks, properties, tags). Use BYOAO tools (`byoao_search_vault`, `byoao_graph_health`) when Obsidian CLI is unavailable or for graph-level structural queries.
+If this fails, STOP and display the Obsidian CLI availability message (see /prep).
 
 ## Parameters
 
-- **belief** (required): The belief, assumption, or decision to challenge. Can be a direct statement or a reference to a note.
-- **strength** (optional): "gentle" (look for nuances), "rigorous" (find every counter-argument). Default: "rigorous".
-- **output** (optional): Save the challenge analysis as a note.
+- **claim** (required): The belief, decision, or argument to challenge.
+- **scope** (optional): `all` (full vault) or a specific directory/page. Default: `all`.
 
 ## Process
 
-### Step 1: Articulate the Belief
+### Step 1: Understand the Claim
 
-Parse the user's input and restate the belief clearly:
+Clarify what exactly is being challenged:
+- What is the core assertion?
+- What assumptions does it rest on?
+- What would falsify it?
 
-> "The belief being tested: **{clear statement}**"
-
-If the belief references a note, read it and extract the core claim:
-
-```bash
-obsidian read "<note>"
-```
+If the claim is ambiguous, ask the user to clarify before proceeding.
 
 ### Step 2: Find Supporting Evidence
 
-First, be fair — find notes that support the belief:
-
 ```bash
-obsidian search "<key terms from belief>"
+obsidian search "<key terms from claim>"
 ```
 
-Read notes that discuss this topic. Document what supports the belief:
-- Which notes align with it?
-- What evidence was the belief originally based on?
-- How confident does the user seem in their notes?
+Read relevant notes and agent pages. Identify:
+- Notes that explicitly support the claim
+- Notes that provide indirect support (data, observations)
+- The strength of each piece of evidence
 
-### Step 3: Find Counter-Evidence
+### Step 3: Find Contradicting Evidence
 
-Now actively look for contradictions:
+This is the core of /challenge. Search for:
 
-**Direct contradictions** — Notes that explicitly state the opposite.
+1. **Direct contradictions** — Notes that explicitly state the opposite
+   ```bash
+   obsidian search "not <term>" OR "instead of <term>" OR "changed from <term>"
+   ```
 
-**Changed positions** — Run a temporal analysis (like /trace):
-- Did the user ever hold a different view?
-- When did it change? What triggered it?
-- Was the change based on new evidence or assumption?
+2. **Implicit contradictions** — Notes that describe a situation incompatible with the claim
+   - Read pages with shared tags but different conclusions
+   - On related `entities/` and `concepts/` pages, check optional `contradictions` frontmatter (v2: YAML list of other agent page names documenting conflicting claims — see `/cook` Contradiction Handling)
 
-**Unstated assumptions** — What does the belief take for granted?
-- "This assumes that {X} will remain true"
-- "This assumes that {person/team} agrees"
-- "This assumes the current constraints won't change"
+3. **Position changes over time** — Notes that show the user changed their mind
+   ```bash
+   obsidian search "actually" OR "turns out" OR "reconsidered" OR "reversed"
+   ```
 
-**Missing perspectives** — Whose viewpoint is absent?
-- "No notes consider the user/customer perspective"
-- "The cost analysis only covers engineering, not operations"
+4. **Weasel words** — Notes that express uncertainty about aspects the claim treats as certain
+   - "might", "probably", "not sure", "need to verify"
+   - These indicate the claim is stronger than the evidence supports
 
-**Survivorship bias** — Is the vault only tracking successes?
-- "Three similar initiatives are documented, all framed positively. Are there failed attempts that weren't documented?"
+### Step 4: Identify Unstated Assumptions
 
-### Step 4: Assess Confidence Level
+For the claim to be true, what else must be true?
 
-Based on the evidence gathered, rate the belief:
+- Technical assumptions (about systems, tools, constraints)
+- People assumptions (about availability, skills, priorities)
+- Temporal assumptions (about deadlines, sequencing, stability)
+- External assumptions (about market, users, dependencies)
 
-| Level | Description |
-|-------|-------------|
-| **Strong** | Consistent support across notes, no meaningful counter-evidence, assumptions are reasonable |
-| **Moderate** | Good support but some counter-evidence exists, or key assumptions are untested |
-| **Weak** | Significant counter-evidence, contradictions over time, or critical unstated assumptions |
-| **Contradicted** | The vault's own history provides stronger evidence against the belief |
+Check if the vault evidence supports each assumption.
 
-### Step 5: Present the Challenge
+### Step 5: Assess Evidence Strength
+
+Rate the overall case:
+
+| Strength | Meaning |
+|----------|---------|
+| Strong | Multiple independent sources agree, no contradictions |
+| Moderate | Some support, minor gaps or contradictions |
+| Weak | Limited evidence, significant contradictions or gaps |
+| Unknown | Vault doesn't have enough information |
+
+### Step 6: Present the Challenge
 
 ```markdown
-# Challenge: {Belief Statement}
+# Challenge: "{claim}"
 
-**Confidence level**: {Strong / Moderate / Weak / Contradicted}
+## The Claim
+{Restate the claim clearly}
 
----
+## What Rests On This
+{What assumptions does the claim depend on?}
+- {Assumption 1} — {supported / unsupported / contradicted}
+- {Assumption 2} — {supported / unsupported / contradicted}
 
-## The Belief
+## Supporting Evidence
+- [[Note A]]: "{quote}"
+- [[Note B]]: "{quote}"
 
-{Restated belief in the user's own words, citing the source note if applicable}
+## Challenging Evidence
+- ⚠ [[Note C]]: "{quote that contradicts or weakens the claim}"
+- ⚠ [[Note D]]: "{quote showing uncertainty or alternative view}"
 
-## Supporting Evidence ({N} notes)
+## Position Changes Over Time
+- {date}: [[Note E]] said X
+- {date}: [[Note F]] said Y (contradicts X)
 
-- **[[Note]]**: "{quote supporting the belief}"
-- **[[Note]]**: "{quote}"
+## Weak Points
+1. **{Weak point}**: {why it's weak, which note shows it}
+2. **{Weak point}**: {why it's weak, which note shows it}
 
-## Counter-Evidence ({N} notes)
+## Overall Assessment
+**Evidence strength**: {Strong / Moderate / Weak / Unknown}
 
-### Direct Contradictions
-
-- **[[Note]]** ({date}): "{quote that contradicts the belief}"
-  **Why this matters**: {explanation}
-
-### Position Changes Over Time
-
-- {date range}: You held view X (evidence: [[notes]])
-- {date}: Something shifted (trigger: [[note]])
-- {date range}: You now hold view Y
-
-### Unstated Assumptions
-
-1. **{Assumption}**: {Why this might not hold}
-   Evidence: {what the vault says or doesn't say}
-
-2. **{Assumption}**: {Why this might not hold}
-
-### Missing Perspectives
-
-- {Whose view is absent and why it matters}
-
-## Verdict
-
-{2-3 paragraphs — fair assessment of how the belief holds up. Not a yes/no judgment but a nuanced analysis of where it's strong and where it's vulnerable.}
-
-## Questions to Sit With
-
-1. {A question the user should consider — not rhetorical, genuinely open}
-2. {Another question}
-3. {Another question}
-
-## Suggested Actions
-
-- {Concrete action if the belief needs revision}
-- {Action to gather missing evidence}
-- {Notes to re-read with fresh eyes}
+{2-3 sentence summary: what the vault evidence suggests about this claim, what's uncertain, and what would strengthen or weaken the case further}
 ```
-
-### Step 6: Save (Optional)
-
-At the end of your challenge, ask:
-
-> "Would you like me to save this as a note?"
-
-If the user confirms, save with frontmatter:
-
-```yaml
----
-title: "Challenge: {Belief}"
-note_type: literature
-type: analysis
-date: <today>
-tags: [challenge, critical-thinking]
----
-```
-
-Use `obsidian create` to save. Ask the user where they'd like it saved.
 
 ## Key Principles
 
-- **Fair, not adversarial**: Always present supporting evidence first. The goal is clear thinking, not winning an argument.
-- **Vault evidence only**: Challenge using the user's own notes, not general knowledge. "Research says X" is not valid here — "Your note from March says X" is.
-- **Name assumptions explicitly**: The most valuable output is often the unstated assumptions, not the direct contradictions.
-- **Questions over conclusions**: End with questions, not verdicts. The user decides what to do with the analysis.
-- **Respect the "strong" result**: If a belief holds up well, say so clearly. Not every challenge needs to find problems.
+- **Respectful opposition.** The goal is to strengthen thinking, not to tear it down. Frame challenges as "here's what to consider" not "you're wrong."
+- **Evidence only.** Every challenge must cite specific vault notes. Don't invent external counterarguments.
+- **Surface uncertainty.** If the vault shows doubt or hesitation about aspects the claim treats as certain, highlight this gap.
+- **Obsidian is first workbench.** All note operations go through Obsidian CLI.

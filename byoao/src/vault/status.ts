@@ -10,6 +10,19 @@ export interface VaultStatus {
   directories: Record<string, number>;
   hasObsidianConfig: boolean;
   hasAgentMd: boolean;
+  /** LLM Wiki v2: markdown page counts per agent-maintained directory */
+  agentPages: {
+    entities: number;
+    concepts: number;
+    comparisons: number;
+    queries: number;
+  };
+  /** LLM Wiki v2: SCHEMA.md present at vault root */
+  hasSchema: boolean;
+  /** LLM Wiki v2: log.md present at vault root */
+  hasLog: boolean;
+  /** LLM Wiki v2: INDEX.base (Obsidian Base) present at vault root */
+  hasIndexBase: boolean;
 }
 
 async function countFilesInDir(dirPath: string, ext = ".md"): Promise<number> {
@@ -63,6 +76,10 @@ export async function getVaultStatus(vaultPath: string): Promise<VaultStatus> {
       directories: {},
       hasObsidianConfig: false,
       hasAgentMd: false,
+      agentPages: { entities: 0, concepts: 0, comparisons: 0, queries: 0 },
+      hasSchema: false,
+      hasLog: false,
+      hasIndexBase: false,
     };
   }
 
@@ -107,6 +124,19 @@ export async function getVaultStatus(vaultPath: string): Promise<VaultStatus> {
     }
   }
 
+  const agentDirNames = ["entities", "concepts", "comparisons", "queries"] as const;
+  const agentPages = {
+    entities: 0,
+    concepts: 0,
+    comparisons: 0,
+    queries: 0,
+  };
+  for (const name of agentDirNames) {
+    const dirPath = path.join(vaultPath, name);
+    const mdFiles = await getAllMarkdownFiles(dirPath);
+    agentPages[name] = mdFiles.length;
+  }
+
   return {
     exists: true,
     vaultPath,
@@ -117,6 +147,10 @@ export async function getVaultStatus(vaultPath: string): Promise<VaultStatus> {
     hasObsidianConfig: await fs.pathExists(path.join(vaultPath, ".obsidian")),
     hasAgentMd: await fs.pathExists(path.join(vaultPath, "AGENTS.md")) ||
                 await fs.pathExists(path.join(vaultPath, "AGENT.md")),
+    agentPages,
+    hasSchema: await fs.pathExists(path.join(vaultPath, "SCHEMA.md")),
+    hasLog: await fs.pathExists(path.join(vaultPath, "log.md")),
+    hasIndexBase: await fs.pathExists(path.join(vaultPath, "INDEX.base")),
   };
 }
 
@@ -140,6 +174,14 @@ export function formatVaultStatus(status: VaultStatus): string {
   lines.push("");
   lines.push(`Config: ${status.hasObsidianConfig ? "✓" : "✗"} .obsidian/`);
   lines.push(`Agent:  ${status.hasAgentMd ? "✓" : "✗"} AGENTS.md`);
+  lines.push("");
+  lines.push("LLM Wiki v2 (agent pages):");
+  lines.push(
+    `  entities: ${status.agentPages.entities} · concepts: ${status.agentPages.concepts} · comparisons: ${status.agentPages.comparisons} · queries: ${status.agentPages.queries}`
+  );
+  lines.push(
+    `  SCHEMA.md: ${status.hasSchema ? "✓" : "✗"} · log.md: ${status.hasLog ? "✓" : "✗"} · INDEX.base: ${status.hasIndexBase ? "✓" : "✗"}`
+  );
 
   if (status.brokenLinks.length > 0) {
     lines.push("");

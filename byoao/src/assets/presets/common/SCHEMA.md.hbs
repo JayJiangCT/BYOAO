@@ -1,0 +1,57 @@
+# SCHEMA.md
+
+Knowledge taxonomy and conventions for [[{{KB_NAME}}]].
+
+## Knowledge Domains
+
+{{#if WIKI_DOMAIN}}
+{{WIKI_DOMAIN}}
+{{else}}
+Not yet defined. The Agent will populate this as it learns the domain.
+{{/if}}
+
+## Tag Taxonomy
+
+Tags follow these conventions:
+- 2-5 tags per page, alphabetically sorted
+- Tags should be singular (use `#project` not `#projects`)
+- New tags should be added here first before use
+
+### Current Tags
+
+No tags defined yet. The Agent will propose new tags as knowledge pages are created.
+
+## Domain Taxonomy
+
+No domains defined yet. The Agent will propose domains as knowledge pages are created.
+
+## Agent Page Conventions
+
+| Directory | Purpose |
+|-----------|---------|
+| `entities/` | Concrete, named things (people, organizations, products, systems) |
+| `concepts/` | Abstract ideas (methods, rules, decisions, processes) |
+| `comparisons/` | Side-by-side analyses of options |
+| `queries/` | User-question-driven answers worth keeping |
+
+## Frontmatter Schema
+
+See the /cook skill specification for the complete frontmatter schema. Key required fields:
+
+- `title` — concise one-line summary
+- `date` — primary temporal anchor (ISO 8601)
+- `created` — page creation date
+- `updated` — last content change date (bump on every edit)
+- `type` — one of: entity, concept, comparison, query
+- `tags` — 2-5 tags from this taxonomy, alphabetically sorted
+- `sources` — relative paths to contributing notes
+
+## Page Thresholds
+
+- Create a page when: entity/concept appears in 2+ notes OR is central subject of one note
+- Split a page when: it exceeds ~200 lines
+- Do NOT create pages for: passing mentions, minor details, out-of-domain topics
+
+## Custom Fields
+
+No custom fields defined yet. The Agent documents new fields here when first used.
