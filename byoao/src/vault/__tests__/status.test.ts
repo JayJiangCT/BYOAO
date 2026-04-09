@@ -85,17 +85,11 @@ describe("getVaultStatus", () => {
 
   it("detects config files", async () => {
     await fs.ensureDir(path.join(tmpDir, ".obsidian"));
-    await fs.ensureDir(path.join(tmpDir, "Knowledge"));
-    await fs.writeFile(path.join(tmpDir, "AGENT.md"), "# Agent");
-    await fs.writeFile(
-      path.join(tmpDir, "Knowledge/Glossary.md"),
-      "# Glossary"
-    );
+    await fs.writeFile(path.join(tmpDir, "AGENTS.md"), "# Agent");
 
     const status = await getVaultStatus(tmpDir);
     expect(status.hasObsidianConfig).toBe(true);
     expect(status.hasAgentMd).toBe(true);
-    expect(status.hasGlossary).toBe(true);
   });
 
   it("reports false for missing config files", async () => {
@@ -104,7 +98,6 @@ describe("getVaultStatus", () => {
     const status = await getVaultStatus(tmpDir);
     expect(status.hasObsidianConfig).toBe(false);
     expect(status.hasAgentMd).toBe(false);
-    expect(status.hasGlossary).toBe(false);
   });
 });
 
@@ -119,7 +112,6 @@ describe("formatVaultStatus", () => {
       directories: {},
       hasObsidianConfig: false,
       hasAgentMd: false,
-      hasGlossary: false,
     };
     expect(formatVaultStatus(status)).toContain("not found");
   });
@@ -134,7 +126,6 @@ describe("formatVaultStatus", () => {
       directories: { People: 3, Projects: 2 },
       hasObsidianConfig: true,
       hasAgentMd: true,
-      hasGlossary: false,
     };
     const output = formatVaultStatus(status);
     expect(output).toContain("Notes: 10");
@@ -154,7 +145,6 @@ describe("formatVaultStatus", () => {
       directories: {},
       hasObsidianConfig: false,
       hasAgentMd: false,
-      hasGlossary: false,
     };
     const output = formatVaultStatus(status);
     expect(output).toContain("Broken links (2)");

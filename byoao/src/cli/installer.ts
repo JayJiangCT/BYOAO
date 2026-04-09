@@ -6,6 +6,8 @@ import { createRequire } from "node:module";
 import { checkObsidian } from "../vault/obsidian-check.js";
 import { checkOpenCode } from "../vault/opencode-check.js";
 import { checkGcloud } from "../vault/toolbox.js";
+import { configureObsidianPlugins } from "../vault/obsidian-plugins.js";
+import { loadPreset } from "../vault/preset.js";
 import {
   printSectionHeader,
   printProgress,
@@ -324,7 +326,7 @@ export async function install(
     : path.join(options.projectDir || process.cwd(), ".opencode/commands");
 
   await fs.ensureDir(skillsDestDir);
-  const byoaoSkillsSrc = path.join(resolveAssetsDir(), "..", "skills");
+  const byoaoSkillsSrc = path.join(resolveAssetsDir(), "skills");
 
   if (await fs.pathExists(byoaoSkillsSrc)) {
     const skillFiles = await fs.readdir(byoaoSkillsSrc);
@@ -351,7 +353,32 @@ export async function install(
     printProgressWithBar("BYOAO skills", "ok", 100, "0 commands");
   }
 
-  // ── Getting Started ───────────────────────────────────────────
+  // ── 2d. Install Obsidian plugins (minimal preset) ───────────
+  const projectDir = options.projectDir || process.cwd();
+  const vaultRoot = detectVaultRoot(projectDir);
+
+  if (vaultRoot) {
+    const { config: presetConfig } = loadPreset("minimal");
+    const pluginsResult = await configureObsidianPlugins(vaultRoot, presetConfig);
+
+    if (pluginsResult) {
+      const added = pluginsResult.pluginsAdded.length;
+      const skipped = pluginsResult.pluginsSkipped.length;
+      const label = added > 0
+        ? `${added} installed`
+        : skipped > 0
+          ? `${skipped} already installed`
+          : "none required";
+      printProgress("Obsidian plugins", "ok", label);
+      if (pluginsResult.errors.length > 0) {
+        for (const err of pluginsResult.errors) {
+          printWarning(`${err.pluginId}: ${err.error}`);
+        }
+      }
+    }
+  } else {
+    printProgress("Obsidian plugins", "skip", "no vault detected");
+  }
   const gettingStartedItems: { cmd: string; desc: string }[] = [
     { cmd: "byoao init", desc: "# Create a knowledge base" },
     { cmd: "byoao status <path>", desc: "# Check vault health" },
@@ -505,4 +532,13 @@ function resolveAssetsDir(): string {
   if (fs.existsSync(srcAssets)) return srcAssets;
   if (fs.existsSync(distAssets)) return distAssets;
   return srcAssets;
+}
+
+/**
+ * Detect if the given directory is an Obsidian vault (has .obsidian/).
+ * Returns the vault root, or null.
+ */
+function detectVaultRoot(dir: string): string | null {
+  if (fs.existsSync(path.join(dir, ".obsidian"))) return dir;
+  return null;
 }

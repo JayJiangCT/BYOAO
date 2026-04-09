@@ -10,7 +10,6 @@ export interface VaultStatus {
   directories: Record<string, number>;
   hasObsidianConfig: boolean;
   hasAgentMd: boolean;
-  hasGlossary: boolean;
 }
 
 async function countFilesInDir(dirPath: string, ext = ".md"): Promise<number> {
@@ -64,7 +63,6 @@ export async function getVaultStatus(vaultPath: string): Promise<VaultStatus> {
       directories: {},
       hasObsidianConfig: false,
       hasAgentMd: false,
-      hasGlossary: false,
     };
   }
 
@@ -119,7 +117,6 @@ export async function getVaultStatus(vaultPath: string): Promise<VaultStatus> {
     hasObsidianConfig: await fs.pathExists(path.join(vaultPath, ".obsidian")),
     hasAgentMd: await fs.pathExists(path.join(vaultPath, "AGENTS.md")) ||
                 await fs.pathExists(path.join(vaultPath, "AGENT.md")),
-    hasGlossary: await fs.pathExists(path.join(vaultPath, "Knowledge/Glossary.md")),
   };
 }
 
@@ -143,7 +140,6 @@ export function formatVaultStatus(status: VaultStatus): string {
   lines.push("");
   lines.push(`Config: ${status.hasObsidianConfig ? "✓" : "✗"} .obsidian/`);
   lines.push(`Agent:  ${status.hasAgentMd ? "✓" : "✗"} AGENTS.md`);
-  lines.push(`Glossary: ${status.hasGlossary ? "✓" : "✗"} Glossary.md`);
 
   if (status.brokenLinks.length > 0) {
     lines.push("");
