@@ -97,19 +97,23 @@ These are compiled knowledge pages. You can create and update them.
 
 ### 3. Copy Skills
 
-BYOAO skills work with Claude Code. Copy them to `.claude/commands/`:
+BYOAO skills work with Claude Code. Copy them to `.claude/skills/` (each skill gets its own directory with a `SKILL.md` file):
 
 ```bash
-mkdir -p .claude/commands
-cp .opencode/commands/*.md .claude/commands/
+for f in .opencode/commands/*.md; do
+  name=$(basename "$f" .md)
+  mkdir -p ".claude/skills/$name"
+  cp "$f" ".claude/skills/$name/SKILL.md"
+done
 ```
 
 Or use symlinks:
 
 ```bash
-mkdir -p .claude/commands
 for f in .opencode/commands/*.md; do
-  ln -s "../../$f" ".claude/commands/$(basename $f)"
+  name=$(basename "$f" .md)
+  mkdir -p ".claude/skills/$name"
+  ln -s "../../../$f" ".claude/skills/$name/SKILL.md"
 done
 ```
 
@@ -158,12 +162,15 @@ your-vault/
 │   ├── CLAUDE.md                   # Imports AGENTS.md + SCHEMA.md
 │   ├── settings.json               # MCP servers (optional)
 │   ├── settings.local.json         # Personal overrides (gitignored)
-│   └── rules/
-│       ├── obsidian-cli.md         # Obsidian CLI usage
-│       ├── user-notes-readonly.md  # Read-only user notes
-│       └── agent-pages.md          # Agent page conventions
+│   ├── rules/
+│   │   ├── obsidian-cli.md         # Obsidian CLI usage
+│   │   ├── user-notes-readonly.md  # Read-only user notes
+│   │   └── agent-pages.md          # Agent page conventions
+│   └── skills/
+│       ├── cook/SKILL.md           # Knowledge compilation
+│       ├── health/SKILL.md         # Health check
+│       └── .../SKILL.md            # Other BYOAO skills
 ├── .opencode/                      # OpenCode config (existing)
-│   ├── skills/
 │   └── commands/
 └── .opencode.json
 ```
@@ -186,7 +193,7 @@ Claude Code's auto memory works automatically. Notes are stored at `~/.claude/pr
 |--------|----------|-------------|
 | Agent guide | `AGENTS.md` (injected by hook) | `.claude/CLAUDE.md` (imports `@../AGENTS.md`) |
 | Rules | Dynamic (hook-based) | Static (`.claude/rules/*.md` with path scoping) |
-| Skills | `.opencode/commands/` | `.claude/commands/` |
+| Skills | `.opencode/commands/` | `.claude/skills/<name>/SKILL.md` |
 | MCP config | Plugin handles it | `.claude/settings.json` |
 | Auth recovery | `byoao_mcp_auth` tool | Native (not needed) |
 
@@ -198,7 +205,7 @@ Claude Code's auto memory works automatically. Notes are stored at `~/.claude/pr
 - Verify path patterns in rules match your file structure
 
 **Skills not found?**
-- Ensure skills are in `.claude/commands/` (not `.claude/skills/`)
+- Ensure each skill is at `.claude/skills/<name>/SKILL.md` (e.g., `.claude/skills/cook/SKILL.md`)
 - Check file permissions if using symlinks
 
 **Obsidian CLI not available?**

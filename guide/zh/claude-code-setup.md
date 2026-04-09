@@ -97,19 +97,23 @@ These are compiled knowledge pages. You can create and update them.
 
 ### 3. 复制 Skills
 
-BYOAO 的 skills 与 Claude Code 兼容。复制到 `.claude/commands/`：
+BYOAO 的 skills 与 Claude Code 兼容。复制到 `.claude/skills/`（每个 skill 需要独立的目录和 `SKILL.md` 文件）：
 
 ```bash
-mkdir -p .claude/commands
-cp .opencode/commands/*.md .claude/commands/
+for f in .opencode/commands/*.md; do
+  name=$(basename "$f" .md)
+  mkdir -p ".claude/skills/$name"
+  cp "$f" ".claude/skills/$name/SKILL.md"
+done
 ```
 
 或使用符号链接：
 
 ```bash
-mkdir -p .claude/commands
 for f in .opencode/commands/*.md; do
-  ln -s "../../$f" ".claude/commands/$(basename $f)"
+  name=$(basename "$f" .md)
+  mkdir -p ".claude/skills/$name"
+  ln -s "../../../$f" ".claude/skills/$name/SKILL.md"
 done
 ```
 
@@ -158,12 +162,15 @@ your-vault/
 │   ├── CLAUDE.md                   # 导入 AGENTS.md + SCHEMA.md
 │   ├── settings.json               # MCP 服务器（可选）
 │   ├── settings.local.json         # 个人覆盖配置（gitignore）
-│   └── rules/
-│       ├── obsidian-cli.md         # Obsidian CLI 使用规则
-│       ├── user-notes-readonly.md  # 用户笔记只读
-│       └── agent-pages.md          # Agent 页面规范
+│   ├── rules/
+│   │   ├── obsidian-cli.md         # Obsidian CLI 使用规则
+│   │   ├── user-notes-readonly.md  # 用户笔记只读
+│   │   └── agent-pages.md          # Agent 页面规范
+│   └── skills/
+│       ├── cook/SKILL.md           # 知识编译
+│       ├── health/SKILL.md         # 健康检查
+│       └── .../SKILL.md            # 其他 BYOAO skills
 ├── .opencode/                      # OpenCode 配置（现有）
-│   ├── skills/
 │   └── commands/
 └── .opencode.json
 ```
@@ -186,7 +193,7 @@ Claude Code 的自动记忆功能开箱即用。笔记存储在 `~/.claude/proje
 |------|----------|-------------|
 | Agent 指南 | `AGENTS.md`（通过 hook 注入） | `.claude/CLAUDE.md`（导入 `@../AGENTS.md`） |
 | 规则 | 动态（基于 hook） | 静态（`.claude/rules/*.md` 支持路径限定） |
-| Skills | `.opencode/commands/` | `.claude/commands/` |
+| Skills | `.opencode/commands/` | `.claude/skills/<name>/SKILL.md` |
 | MCP 配置 | 插件自动处理 | `.claude/settings.json` |
 | 认证恢复 | `byoao_mcp_auth` 工具 | 原生支持（不需要） |
 
@@ -198,7 +205,7 @@ Claude Code 的自动记忆功能开箱即用。笔记存储在 `~/.claude/proje
 - 验证 rules 中的路径模式是否匹配文件结构
 
 **找不到 Skills？**
-- 确保 skills 在 `.claude/commands/` 中（不是 `.claude/skills/`）
+- 确保每个 skill 在 `.claude/skills/<name>/SKILL.md`（例如 `.claude/skills/cook/SKILL.md`）
 - 如果使用符号链接，检查文件权限
 
 **Obsidian CLI 不可用？**
