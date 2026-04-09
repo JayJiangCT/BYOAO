@@ -2,6 +2,14 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.2] — 2026-04-09
+
+### Bug Fixes
+- Fixed `byoao install -g` not migrating old `~/.config/opencode/commands/` to `skills/<name>/SKILL.md`
+- Fixed deprecated v1 commands (`weave.md`, `emerge.md`) not cleaned up from global commands directory
+
+---
+
 ## [v2.0.1] — 2026-04-09
 
 ### Skills Restructure

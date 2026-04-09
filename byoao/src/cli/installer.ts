@@ -349,6 +349,32 @@ export async function install(
       100,
       `${installedCount} skills`
     );
+
+    // Clean up legacy commands/ directory
+    const legacyCommandsDir = options.global
+      ? path.join(os.homedir(), ".config/opencode/commands")
+      : path.join(options.projectDir || process.cwd(), ".opencode/commands");
+
+    if (await fs.pathExists(legacyCommandsDir)) {
+      const entries2 = await fs.readdir(byoaoSkillsSrc, { withFileTypes: true });
+      const skillNames = entries2.filter((e) => e.isDirectory()).map((e) => e.name);
+      const deprecated = ["weave", "emerge"];
+      let removedCount = 0;
+      for (const name of [...skillNames, ...deprecated]) {
+        const legacy = path.join(legacyCommandsDir, `${name}.md`);
+        if (await fs.pathExists(legacy)) {
+          await fs.remove(legacy);
+          removedCount++;
+        }
+      }
+      const remaining = await fs.readdir(legacyCommandsDir);
+      if (remaining.length === 0) {
+        await fs.remove(legacyCommandsDir);
+      }
+      if (removedCount > 0) {
+        printProgress("Legacy commands", "ok", `migrated ${removedCount} → skills/`);
+      }
+    }
   } else {
     completedSteps++;
     printProgressWithBar("BYOAO skills", "ok", 100, "0 skills");
