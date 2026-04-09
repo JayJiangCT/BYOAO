@@ -2,8 +2,11 @@
 name: diagnose
 description: >
   Vault health check at the structural level. Checks frontmatter coverage, orphan notes,
-  broken links, AGENTS.md and SCHEMA.md drift, v2 agent directories, and overall vault configuration.
-  Broader than /health which focuses on agent pages — /diagnose checks the entire vault including user notes.
+  broken links, AGENTS.md and SCHEMA.md drift, v2 agent directories, and overall vault
+  configuration. Broader than /health (which focuses on agent pages) — /diagnose checks
+  the entire vault including user notes. Use when the user says "check my vault", "is
+  everything set up correctly", "vault health", "diagnose issues", or wants a full
+  structural audit beyond just agent pages.
 ---
 
 # /diagnose — Vault Diagnosis

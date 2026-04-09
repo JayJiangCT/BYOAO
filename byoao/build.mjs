@@ -85,12 +85,11 @@ const assetsDst = "dist/assets";
 cpSync(assetsSrc, assetsDst, { recursive: true, force: true });
 
 // Step 1.7: Copy BYOAO skills to dist/assets/skills/ (overlay on top of assets copy)
+// Skills are now in directory layout: src/skills/<name>/SKILL.md
 console.log("copy BYOAO skills…");
 const skillsSrc = "src/skills";
 const skillsDst = "dist/assets/skills";
-if (readdirSync("src/skills").some((f) => f.endsWith(".md"))) {
-  cpSync(skillsSrc, skillsDst, { recursive: true, force: true });
-}
+cpSync(skillsSrc, skillsDst, { recursive: true, force: true });
 
 // Step 2: Bundle dist/index.js with esbuild
 console.log("esbuild bundle for OpenCode plugin entry…");

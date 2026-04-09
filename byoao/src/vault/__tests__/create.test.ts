@@ -111,7 +111,7 @@ describe("createVault", () => {
     expect(manifest.version).toBeDefined();
     expect(manifest.preset).toBe("minimal");
     expect(manifest.infrastructure.skills.length).toBeGreaterThan(0);
-    expect(manifest.infrastructure.commands.length).toBeGreaterThan(0);
+    expect(manifest.infrastructure.commands).toEqual([]);
   });
 
   it("minimal preset creates only LLM Wiki core directories", async () => {

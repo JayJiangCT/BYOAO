@@ -342,20 +342,19 @@ async function configureOpenCodeProject(
     }
   }
 
-  const byoaoSkillsSrc = path.join(assetsDir, "..", "skills");
-  const commandsDest = path.join(vaultPath, ".opencode", "commands");
+  const byoaoSkillsSrc = path.join(assetsDir, "skills");
 
   if (await fs.pathExists(byoaoSkillsSrc)) {
-    await fs.ensureDir(commandsDest);
-    const files = await fs.readdir(byoaoSkillsSrc);
-    for (const file of files) {
-      if (file.endsWith(".md")) {
-        await fs.copy(
-          path.join(byoaoSkillsSrc, file),
-          path.join(commandsDest, file),
-          { overwrite: true },
-        );
-        installedFiles.commands.push(`.opencode/commands/${file}`);
+    const entries = await fs.readdir(byoaoSkillsSrc, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const srcSkill = path.join(byoaoSkillsSrc, entry.name, "SKILL.md");
+        if (await fs.pathExists(srcSkill)) {
+          const destDir = path.join(skillsDest, entry.name);
+          await fs.ensureDir(destDir);
+          await fs.copy(srcSkill, path.join(destDir, "SKILL.md"), { overwrite: true });
+          installedFiles.skills.push(`.opencode/skills/${entry.name}/SKILL.md`);
+        }
       }
     }
   }

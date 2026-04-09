@@ -2,8 +2,10 @@
 name: health
 description: >
   Scan agent-maintained directories for health issues: orphan pages, broken wikilinks,
-  stale content, frontmatter violations, tag taxonomy drift, oversized pages. Use when
-  the user wants to audit the knowledge base quality.
+  stale content, frontmatter violations, tag taxonomy drift, oversized pages. Use this
+  skill whenever the user wants to audit knowledge base quality, check for broken links,
+  find stale or orphan pages, or says anything like "check my wiki", "are there any issues",
+  "audit the knowledge base", "find broken links", or "what needs fixing".
 ---
 
 # /health — Knowledge Health Check

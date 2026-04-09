@@ -321,24 +321,25 @@ export async function install(
   }
 
   // ── 2c. Install BYOAO skills ─────────────────────────────────
-  const skillsDestDir = options.global
-    ? path.join(os.homedir(), ".config/opencode/commands")
-    : path.join(options.projectDir || process.cwd(), ".opencode/commands");
+  const byoaoSkillsDestDir = options.global
+    ? path.join(os.homedir(), ".config/opencode/skills")
+    : path.join(options.projectDir || process.cwd(), ".opencode/skills");
 
-  await fs.ensureDir(skillsDestDir);
+  await fs.ensureDir(byoaoSkillsDestDir);
   const byoaoSkillsSrc = path.join(resolveAssetsDir(), "skills");
 
   if (await fs.pathExists(byoaoSkillsSrc)) {
-    const skillFiles = await fs.readdir(byoaoSkillsSrc);
+    const entries = await fs.readdir(byoaoSkillsSrc, { withFileTypes: true });
     let installedCount = 0;
-    for (const file of skillFiles) {
-      if (file.endsWith(".md")) {
-        await fs.copy(
-          path.join(byoaoSkillsSrc, file),
-          path.join(skillsDestDir, file),
-          { overwrite: true }
-        );
-        installedCount++;
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const srcSkill = path.join(byoaoSkillsSrc, entry.name, "SKILL.md");
+        if (await fs.pathExists(srcSkill)) {
+          const destDir = path.join(byoaoSkillsDestDir, entry.name);
+          await fs.ensureDir(destDir);
+          await fs.copy(srcSkill, path.join(destDir, "SKILL.md"), { overwrite: true });
+          installedCount++;
+        }
       }
     }
     completedSteps++;
@@ -346,11 +347,11 @@ export async function install(
       "BYOAO skills",
       "ok",
       100,
-      `${installedCount} commands`
+      `${installedCount} skills`
     );
   } else {
     completedSteps++;
-    printProgressWithBar("BYOAO skills", "ok", 100, "0 commands");
+    printProgressWithBar("BYOAO skills", "ok", 100, "0 skills");
   }
 
   // ── 2d. Install Obsidian plugins (minimal preset) ───────────
@@ -480,31 +481,44 @@ export async function uninstall(
     }
   }
 
-  // ── 3. Remove BYOAO commands ────────────────────────────────
-  const commandsDirs = [
+  // ── 3. Remove BYOAO skills ──────────────────────────────────
+  const byoaoSkillsSrc = path.join(assetsDir, "skills");
+  const byoaoSkillsDirs = [
+    path.join(os.homedir(), ".config/opencode/skills"),
+    path.join(options.projectDir || process.cwd(), ".opencode/skills"),
+  ];
+  const legacyCommandsDirs = [
     path.join(os.homedir(), ".config/opencode/commands"),
     path.join(options.projectDir || process.cwd(), ".opencode/commands"),
   ];
 
-  const byoaoSkillsSrc = path.join(assetsDir, "..", "skills");
-
   if (await fs.pathExists(byoaoSkillsSrc)) {
     let removedCount = 0;
-    const skillFiles = await fs.readdir(byoaoSkillsSrc);
-    for (const commandsDir of commandsDirs) {
-      if (!(await fs.pathExists(commandsDir))) continue;
-      for (const file of skillFiles) {
-        if (file.endsWith(".md")) {
-          const dest = path.join(commandsDir, file);
-          if (await fs.pathExists(dest)) {
-            await fs.remove(dest);
-            removedCount++;
-          }
+    const entries = await fs.readdir(byoaoSkillsSrc, { withFileTypes: true });
+    const skillNames = entries.filter((e) => e.isDirectory()).map((e) => e.name);
+
+    for (const dir of byoaoSkillsDirs) {
+      if (!(await fs.pathExists(dir))) continue;
+      for (const name of skillNames) {
+        const destDir = path.join(dir, name);
+        if (await fs.pathExists(destDir)) {
+          await fs.remove(destDir);
+          removedCount++;
+        }
+      }
+    }
+    for (const dir of legacyCommandsDirs) {
+      if (!(await fs.pathExists(dir))) continue;
+      for (const name of skillNames) {
+        const legacy = path.join(dir, `${name}.md`);
+        if (await fs.pathExists(legacy)) {
+          await fs.remove(legacy);
+          removedCount++;
         }
       }
     }
     if (removedCount > 0) {
-      removedItems.push(`BYOAO commands (${removedCount} files)`);
+      removedItems.push(`BYOAO skills (${removedCount} files)`);
     }
   }
 

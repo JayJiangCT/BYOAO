@@ -223,6 +223,39 @@ Every idea cites 2+ vault notes and includes a concrete next step.
 
 ---
 
+## 9. Capturing Web Content — From Browser to Knowledge Base
+
+**When:** You read articles, research papers, documentation, or anything online that's relevant to your work.
+
+**Setup:** Install [Obsidian Web Clipper](https://obsidian.md/clipper) for your browser. See [Getting Started → Web Clipper](getting-started.md#recommended-obsidian-web-clipper) for template setup.
+
+**Steps:**
+
+1. Find an article or page worth keeping
+2. Highlight key passages (optional — highlights are preserved in the clipping)
+3. Click the Web Clipper icon → clip to your vault
+4. The page saves as Markdown with frontmatter in your `Clippings/` folder
+
+```
+/cook
+```
+
+5. On the next `/cook` cycle, the AI reads your clippings alongside your own notes
+6. Entities, concepts, and connections from the clipped content get compiled into the knowledge base
+
+**What to expect:**
+- Clipped articles treated as source material, same as your handwritten notes
+- People, companies, and concepts mentioned in articles get entity/concept pages
+- The `sources` field on compiled pages links back to the original clipping
+- Contradictions between clipped content and existing knowledge get flagged
+
+**Tips:**
+- Set up auto-apply rules in Web Clipper for different sites (articles, papers, recipes)
+- Clip liberally — `/cook` is incremental, so new clippings are processed on the next run
+- Use highlights to mark the most important passages; they're visible when you revisit the page
+
+---
+
 ## Building a Routine
 
 Here's a rhythm that works well:
@@ -230,7 +263,8 @@ Here's a rhythm that works well:
 | Frequency | Action | Skill |
 |-----------|--------|-------|
 | Daily | Write a daily note, capture meetings and ideas | — |
-| Weekly | Compile new notes, audit health | `/cook` + `/health` |
+| While browsing | Clip useful articles and references to the vault | [Web Clipper](https://obsidian.md/clipper) |
+| Weekly | Compile new notes + clippings, audit health | `/cook` + `/health` |
 | After cook | Restructure directories if needed | `/organize` |
 | When curious | Trace how a topic evolved | `/trace` |
 | Quarterly | Generate ideas, review drift | `/ideas` + `/drift` |

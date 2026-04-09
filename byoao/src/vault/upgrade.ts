@@ -229,6 +229,42 @@ This file describes the vault knowledge schema. Update it as your model evolves.
   }
 }
 
+const BYOAO_SKILL_NAMES = [
+  "ask", "challenge", "connect", "cook", "diagnose", "drift",
+  "health", "ideas", "organize", "prep", "trace", "wiki",
+] as const;
+
+/**
+ * Migrate BYOAO skills from .opencode/commands/<name>.md to
+ * .opencode/skills/<name>/SKILL.md (idempotent).
+ */
+async function migrateCommandsToSkills(vaultPath: string): Promise<void> {
+  const commandsDir = path.join(vaultPath, ".opencode", "commands");
+  if (!(await fs.pathExists(commandsDir))) return;
+
+  const skillsDir = path.join(vaultPath, ".opencode", "skills");
+
+  for (const name of BYOAO_SKILL_NAMES) {
+    const src = path.join(commandsDir, `${name}.md`);
+    if (!(await fs.pathExists(src))) continue;
+
+    const destDir = path.join(skillsDir, name);
+    const dest = path.join(destDir, "SKILL.md");
+    if (await fs.pathExists(dest)) {
+      await fs.remove(src);
+      continue;
+    }
+
+    await fs.ensureDir(destDir);
+    await fs.move(src, dest);
+  }
+
+  const remaining = await fs.readdir(commandsDir);
+  if (remaining.length === 0) {
+    await fs.remove(commandsDir);
+  }
+}
+
 /**
  * v1 infrastructure still on disk that must appear as deprecated in the plan
  * (Knowledge/templates/*.md; legacy weave/emerge commands). Merged after
@@ -339,14 +375,17 @@ function resolvePackageAssets(preset: string): PackageAssets {
     }
   }
 
-  // 2. BYOAO commands (src/skills/) → .opencode/commands/
+  // 2. BYOAO skills (src/skills/<name>/SKILL.md) → .opencode/skills/<name>/SKILL.md
   if (fs.existsSync(skillsDir)) {
-    for (const file of fs.readdirSync(skillsDir)) {
-      if (file.endsWith(".md")) {
-        commands.push({
-          relativePath: `.opencode/commands/${file}`,
-          sourcePath: path.join(skillsDir, file),
-        });
+    for (const entry of fs.readdirSync(skillsDir, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        const skillMd = path.join(skillsDir, entry.name, "SKILL.md");
+        if (fs.existsSync(skillMd)) {
+          skills.push({
+            relativePath: `.opencode/skills/${entry.name}/SKILL.md`,
+            sourcePath: skillMd,
+          });
+        }
       }
     }
   }
@@ -447,6 +486,11 @@ export async function upgradeVault(
   // 3c. v1→v2 vault layout (agent dirs, SCHEMA.md, log.md)
   if (!dryRun) {
     await migrateV1ToV2Infrastructure(vaultPath);
+  }
+
+  // 3d. Migrate .opencode/commands/ → .opencode/skills/<name>/SKILL.md
+  if (!dryRun) {
+    await migrateCommandsToSkills(vaultPath);
   }
 
   // 4. Resolve package assets and build plan

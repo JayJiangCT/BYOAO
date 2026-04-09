@@ -1,10 +1,12 @@
 ---
 name: ask
 description: >
-  Open-ended Q&A against the knowledge base. Agent reads INDEX.base for page discovery and
-  SCHEMA.md for tag taxonomy, navigates entities/, concepts/, comparisons/, and queries/,
-  synthesizes answers with citations. Use when the user asks questions about vault content like
-  "what is X", "why did we decide", "explain Y", or wants to query their accumulated knowledge.
+  Open-ended Q&A against the knowledge base. Agent reads INDEX.base for page discovery
+  and SCHEMA.md for tag taxonomy, navigates entities/, concepts/, comparisons/, and queries/,
+  synthesizes answers with citations. Use when the user asks questions about vault content
+  like "what is X", "why did we decide Y", "explain Z", "what do my notes say about",
+  "summarize what I know about", or any question that should be answered from accumulated
+  knowledge rather than general training data.
 ---
 
 # /ask — Knowledge Q&A

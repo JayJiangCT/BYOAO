@@ -3,7 +3,9 @@ name: trace
 description: >
   Chronological timeline of an idea across notes. Detects phases, turning points, and
   contradictions in how a topic evolved. Use when the user asks "how did X evolve",
-  "trace the history of Y", "timeline of Z", or wants to understand how an idea changed over time.
+  "trace the history of Y", "timeline of Z", "when did we start thinking about",
+  "show how this idea changed", or wants to understand the chronological evolution of
+  any topic, decision, or concept in their notes.
 ---
 
 # /trace — Chronological Timeline

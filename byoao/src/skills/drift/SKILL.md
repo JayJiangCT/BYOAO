@@ -1,9 +1,10 @@
 ---
 name: drift
 description: >
-  Intention-vs-action gap analysis over time. Compares what the user said they would do with
-  what actually happened. Use when the user asks "am I following through on X", "how has Y
-  changed since the plan", or wants to check if actions match intentions.
+  Intention-vs-action gap analysis over time. Compares what the user said they would do
+  with what actually happened. Use when the user asks "am I following through on X",
+  "how has Y changed since the plan", "did I stick to the decision", "compare plan vs
+  reality", "what drifted", or wants to check if actions match stated intentions.
 ---
 
 # /drift — Intention vs. Action

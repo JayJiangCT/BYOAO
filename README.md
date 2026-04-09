@@ -35,6 +35,14 @@ BYOAO is an [OpenCode](https://opencode.ai) plugin that turns [Obsidian](https:/
 | **[Node.js](https://nodejs.org/) 18+** | JavaScript runtime (needed to install BYOAO) | Download the **LTS** version from [nodejs.org](https://nodejs.org/). This also installs `npm` (the package manager) automatically |
 | **[OpenCode](https://opencode.ai)** | AI engine that runs BYOAO's skills | `npm install -g opencode` or download from [opencode.ai](https://opencode.ai) |
 
+### Recommended: Obsidian Web Clipper
+
+Install **[Obsidian Web Clipper](https://obsidian.md/clipper)** to capture articles, research, and references directly into your vault from any browser. Clipped pages become raw material for `/cook` — the AI compiles them into structured knowledge alongside your own notes.
+
+- Customizable templates auto-apply frontmatter (author, tags, source URL)
+- Highlight passages on any web page and save them to Obsidian in one click
+- Everything stays local as plain Markdown — no lock-in
+
 > **Never used a terminal before?** On Mac, open **Terminal** (search "Terminal" in Spotlight). On Windows, open **PowerShell**. You only need the terminal for installation — after setup, everything happens inside Obsidian.
 
 **Verify your setup:**
@@ -69,7 +77,8 @@ Then open in Obsidian, enable CLI, and run `/cook` to compile your notes into kn
 | `/ideas` | Generate actionable ideas from your vault |
 | `/challenge` | Pressure-test a belief against your own notes |
 | `/drift` | Compare stated intentions vs actual behavior |
-| `/diagnose` | Check knowledge base health |
+| `/ask` | Open-ended Q&A against your knowledge base |
+| `/diagnose` | Full vault structural health check |
 
 ## Documentation
 

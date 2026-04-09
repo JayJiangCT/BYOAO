@@ -2,8 +2,9 @@
 name: connect
 description: >
   Bridges two topics using the link graph, shared people, tags, domains, and conceptual
-  overlap. Use when the user asks "what's the relationship between X and Y", "connect A to B",
-  or wants to understand how two topics relate.
+  overlap. Use when the user asks "what's the relationship between X and Y", "connect A
+  to B", "how are these related", "find connections between", "what do X and Y have in
+  common", or wants to understand how two topics, people, or concepts relate across notes.
 ---
 
 # /connect — Bridge Two Topics

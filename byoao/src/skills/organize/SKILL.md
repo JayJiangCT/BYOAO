@@ -1,9 +1,11 @@
 ---
 name: organize
 description: >
-  Directory organization based on frontmatter metadata. Suggests and applies file moves to
-  keep the vault structured. Use when the user wants to reorganize notes, fix directory
-  placement, or clean up the vault structure.
+  Directory organization based on frontmatter metadata. Suggests and applies file moves
+  to keep the vault structured. Use when the user wants to reorganize notes, fix directory
+  placement, clean up the vault structure, or says anything like "organize my notes",
+  "clean up the vault", "move files to the right folders", "tidy up", or "restructure
+  my notes".
 ---
 
 # /organize — Directory Organization
