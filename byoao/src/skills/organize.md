@@ -1,206 +1,107 @@
 ---
 name: organize
-description: Reorganize vault directory structure using Obsidian CLI's move command, which safely updates all backlinks. Analyzes enriched frontmatter (type, domain) to propose a logical folder layout. Use when the user says "organize my vault", "reorganize files", "clean up folders", "restructure", or after running /weave on a messy vault.
+description: >
+  Directory organization based on frontmatter metadata. Suggests and applies file moves to
+  keep the vault structured. Use when the user wants to reorganize notes, fix directory
+  placement, or clean up the vault structure.
 ---
 
-# /organize — Vault Directory Reorganization
+# /organize — Directory Organization
 
-You are a vault organizer. Your job is to analyze the current directory structure, propose a logical reorganization based on enriched frontmatter metadata, and execute moves safely using Obsidian CLI — which automatically updates all backlinks and wikilinks.
+You are a librarian. Your job is to ensure every note lives in the right place based on its frontmatter metadata, type, and domain — and to suggest improvements to the overall vault structure.
 
 ## Prerequisites Check
-
-**Before doing anything else:**
-
-1. Verify Obsidian CLI is available:
 
 ```bash
 obsidian --version
 ```
 
-If this fails, STOP and display:
-
-```
-Obsidian CLI is not available. Please ensure:
-1. Obsidian is running
-2. This vault is open in Obsidian
-3. CLI is enabled: Settings → General → Advanced → Command-line interface
-```
-
-2. Check that files have frontmatter (specifically `type`). Run:
-
-```bash
-obsidian properties sort=count counts
-```
-
-If `type` property has very low coverage (< 30% of notes), STOP and suggest:
-
-```
-Most files lack a `type` property — /organize needs frontmatter to
-decide where files belong. Run /weave first to enrich your notes,
-then come back to /organize.
-```
+If this fails, STOP and display the Obsidian CLI availability message (see /prep).
 
 ## Parameters
 
-- **scope** (optional): `all` (default) or a specific directory path to reorganize
-- **dry-run** (optional): If set, show proposed changes without executing
-- **aggressive** (optional): Also suggest consolidating existing directory structures (e.g., merge year-based sprint folders into `Sprints/`)
-
-## File Exclusion Rules
-
-Never move or suggest moving:
-
-| Pattern | Reason |
-|---------|--------|
-| `AGENTS.md` | BYOAO-managed root file |
-| `INDEX.base` | Knowledge graph index — do not move |
-| `Start Here.md` | BYOAO onboarding file |
-| `.obsidian/`, `.git/`, `.byoao/` | System directories |
-| `.opencode/`, `.cursor/`, `.claude/` | Tool config directories |
-| `.env`, `credentials.*`, `*.key` | Sensitive files |
+- **scope** (optional): `all` (full vault), `agents` (agent pages only), `sources` (user notes), or a specific directory. Default: `all`.
+- **dry_run** (optional): `true` to only suggest, `false` to apply changes. Default: `true`.
 
 ## Process
 
-### Step 1: Analyze Current Structure
-
-Build a complete picture of the vault:
+### Step 1: Scan Current Structure
 
 ```bash
 obsidian list
 ```
 
-Then read frontmatter for every file to build a map of `path → {type, domain, project, tags}`. Use batch reading:
+Build a picture of:
+- Current directory structure
+- Notes in each directory
+- Notes that seem misplaced based on their frontmatter
+
+### Step 2: Check Agent Pages
+
+Agent pages should live in their designated directories:
+
+| `type` frontmatter | Expected directory |
+|-------------------|-------------------|
+| `entity` | `entities/` |
+| `concept` | `concepts/` |
+| `comparison` | `comparisons/` |
+| `query` | `queries/` |
+
+For each agent page, check:
+- Does its current directory match its `type`?
+- If not, suggest a move
+
+### Step 3: Check User Notes
+
+User notes should **remain** in their existing directories (`Projects/`, `Daily/`, personal folders, etc.). Do not suggest moving them into agent directories. Suggest organization only if:
+
+- A user note has been placed in an agent directory (`entities/`, `concepts/`, `comparisons/`, `queries/`) — this is likely a mistake; propose moving it back to an appropriate user area
+- Multiple user notes about the same topic are scattered across **user** directories when they could be grouped there (never into agent dirs unless they are true agent pages with correct `type` frontmatter)
+
+### Step 4: Check Naming Conventions
+
+Per SCHEMA.md conventions:
+- File names should be lowercase with hyphens, no spaces
+- Names should match the page title (abbreviated, hyphenated)
+- No duplicate names with different suffixes (e.g., `feature-a.md` and `feature-a-1.md`)
+
+Flag any naming violations.
+
+### Step 5: Suggest Moves
+
+For each misplaced file:
+
+```
+Move: entities/wrong-place.md → concepts/wrong-place.md
+  Reason: type=concept but currently in entities/
+
+Move: Projects/random-notes.md → Projects/feature-a/
+  Reason: Content is about Feature A, should be grouped with other Feature A notes
+```
+
+### Step 6: Apply Moves (If Confirmed)
+
+Use Obsidian CLI to rename/move files:
 
 ```bash
-obsidian read "<note name>"
+obsidian rename file="old-path.md" new_name="new-path.md"
 ```
 
-Categorize every file into one of:
-- **Has type** — can be auto-organized based on the mapping table
-- **No type but in coherent directory** — already organized, leave in place
-- **No type and in root/flat dir** — suggest running `/weave` first
+Always show the full plan before applying. Never move files silently.
 
-### Step 2: Build Reorganization Map
+### Step 7: Update Wikilinks
 
-For each file with a `type` property, determine if it should move based on this mapping:
-
-| `type` | Target Directory | Notes |
-|--------|-----------------|-------|
-| `daily` | `Daily/` | |
-| `meeting` | Project folder if `project` field exists, else `Meetings/` | Group by project when possible |
-| `feature` | `Projects/<project>/` | Use `project` frontmatter field |
-| `project` | `Projects/` | Top-level project notes |
-| `sprint-handoff` | `Sprints/` | |
-| `reference` | `Knowledge/` or user's preferred reference location | General reference material |
-| `person` | `People/` | |
-| `investigation` | Project folder if `project` field exists, else `Knowledge/` | |
-| `idea` | `Knowledge/` | |
-| `decision` | Project folder if `project` field exists, else `Knowledge/` | |
-
-**Smart rules — when NOT to move:**
-
-1. **Already in the right place** — if a `type: meeting` file is already in `Meetings/` or inside a project folder, skip it
-2. **Part of a coherent group** — if a file sits in `2025 Sprint/Sprint22/JIRA ticket/` alongside related files, the entire group is already organized even if the parent folder name doesn't match BYOAO conventions. Do NOT break up coherent groups
-3. **Deep nesting** — if a file is 3+ levels deep in a project-specific directory, it's likely intentionally placed. Leave it unless the user explicitly asks to flatten
-4. **Name collisions** — if moving a file would create a name collision in the target directory, flag it and skip
-
-**When `aggressive` mode is enabled**, also suggest structural consolidation:
-- Multiple year/sprint directories (e.g., `2025 Sprint/`, `2026 Sprint/`) → merge under `Sprints/2025/`, `Sprints/2026/`
-- Scattered documentation directories → consolidate under `Knowledge/`
-- This is a larger operation — always present as a separate approval step
-
-### Step 3: Present Plan
-
-Group proposed moves by category and show a clear summary:
-
-```
-/organize analysis complete.
-
-## Files to move (23 of 504)
-
-### Root files → proper directories
-  HANDOVER-2026-03-04.md → Knowledge/Handovers/HANDOVER-2026-03-04.md
-  HANDOVER-2026-03-02.md → Knowledge/Handovers/HANDOVER-2026-03-02.md
-  BigQuery_Syntax_Guide.md → Knowledge/BigQuery_Syntax_Guide.md
-
-### Meeting notes → Meetings/
-  standup-2026-03-15.md → Meetings/standup-2026-03-15.md
-
-### Reference docs → Knowledge/
-  API_Overview.md → Knowledge/API_Overview.md
-
-## New directories to create
-  Knowledge/Handovers/
-  Meetings/
-
-## Files staying in place: 481
-  (Already in coherent directory structures)
-
-## Files without `type` (cannot auto-organize): 12
-  Run /weave on these first, then re-run /organize.
-
-Options:
-  1. Approve all moves
-  2. Review one-by-one
-  3. Skip — make no changes
-```
-
-Wait for user response before proceeding.
-
-### Step 4: Execute Moves
-
-For each approved move, use `obsidian move`:
+After moving files, check that all wikilinks to the moved files are still valid:
 
 ```bash
-obsidian move file="HANDOVER-2026-03-04" to="Knowledge/Handovers/"
+obsidian backlinks "moved-file"
 ```
 
-**Execution rules:**
+Obsidian typically handles wikilink updates on rename automatically, but verify for safety.
 
-- Create target directories first if they don't exist:
-  ```bash
-  mkdir -p "<vault path>/<target directory>"
-  ```
-- Execute moves one at a time and verify each succeeds
-- If a move fails (name collision, file locked, etc.), log the error and continue with remaining moves
-- Report progress every 10 moves: "Moved 10/23 files..."
+## Key Principles
 
-**Why `obsidian move` instead of `mv`:**
-
-`obsidian move` tells Obsidian to perform the move internally. Obsidian automatically updates **all wikilinks and backlinks** across the entire vault that reference the moved file. Using file system `mv` would leave broken links.
-
-### Step 5: Verify
-
-After all moves complete:
-
-1. Get the updated file list:
-   ```bash
-   obsidian list
-   ```
-
-2. Check for broken links:
-   ```bash
-   byoao_graph_health
-   ```
-
-3. Report results:
-
-```
-/organize complete:
-  - Moved: 23 files
-  - Skipped: 0 (errors)
-  - New directories created: 2
-  - Broken links after moves: 0
-  - Files still without `type`: 12 (run /weave to fix)
-```
-
-If any broken links are found, report them and suggest fixes.
-
-## Important Guidelines
-
-- **Conservative by default**: Only suggest moves where the benefit is clear. A file that's "good enough" where it is should stay
-- **Never break coherent groups**: If files are organized together in a project directory, don't scatter them even if their `type` would suggest different target directories
-- **User approval is mandatory**: Never move files without explicit confirmation
-- **`obsidian move` only**: Never use file system `mv`, `cp`, or rename commands for vault files — only `obsidian move` and `obsidian rename` preserve link integrity
-- **Idempotent**: Running /organize twice should not propose moves for files that were already correctly placed in the first run
-- **Reversible**: If the user wants to undo, they can run `/organize` again with manual adjustments, or restore from git history
+- **Suggest first, act second.** Default to dry_run mode. Show the full plan before making any changes.
+- **Agent directories are sacred.** Only agent pages should live in `entities/`, `concepts/`, `comparisons/`, `queries/`.
+- **User notes are user territory.** Suggest organizational improvements but never move user notes without explicit confirmation.
+- **Obsidian is first workbench.** All note operations go through Obsidian CLI.

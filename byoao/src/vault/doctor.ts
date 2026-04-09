@@ -1,11 +1,25 @@
 import { fs } from "../lib/cjs-modules.js";
 import path from "node:path";
+import { stat } from "node:fs/promises";
 import { matter } from "../lib/cjs-modules.js";
-import { isObsidianCliAvailable, execObsidianCmd } from "./obsidian-cli.js";
+
+export type DiagnosticCategory =
+  | "frontmatter"
+  | "orphan"
+  | "agent-drift"
+  | "broken-link"
+  | "contradiction";
+
+const LLM_WIKI_V2_AGENT_DIRS = ["entities", "concepts", "comparisons", "queries"] as const;
+
+function isAgentWikiPage(relativePath: string): boolean {
+  const top = relativePath.split(path.sep)[0];
+  return (LLM_WIKI_V2_AGENT_DIRS as readonly string[]).includes(top);
+}
 
 export interface DiagnosticIssue {
   severity: "warning" | "info";
-  category: "frontmatter" | "orphan" | "agent-drift" | "broken-link";
+  category: DiagnosticCategory;
   file?: string;
   message: string;
 }
@@ -92,6 +106,21 @@ export async function getVaultDiagnosis(vaultPath: string): Promise<DiagnosticRe
       }
     }
 
+    const contra = data?.contradictions;
+    const contraList =
+      Array.isArray(contra) &&
+      contra.some((x) => x != null && String(x).trim() !== "");
+    const contraStr = typeof contra === "string" && contra.trim() !== "";
+    if (contraList || contraStr) {
+      issues.push({
+        severity: "warning",
+        category: "contradiction",
+        file: relativePath,
+        message:
+          "Note lists `contradictions` in frontmatter — review conflicting claims against linked agent pages",
+      });
+    }
+
     if (!hasIssue) healthyNotes++;
   }
 
@@ -119,6 +148,36 @@ export async function getVaultDiagnosis(vaultPath: string): Promise<DiagnosticRe
     }
   }
 
+  // LLM Wiki v2: agent directories and root index files
+  for (const dirName of LLM_WIKI_V2_AGENT_DIRS) {
+    const dirPath = path.join(vaultPath, dirName);
+    const exists = await fs.pathExists(dirPath);
+    const isDir = exists && (await stat(dirPath)).isDirectory();
+    if (!isDir) {
+      issues.push({
+        severity: "warning",
+        category: "agent-drift",
+        message: `LLM Wiki v2: expected agent directory \`${dirName}/\` at vault root`,
+      });
+    }
+  }
+  const schemaPath = path.join(vaultPath, "SCHEMA.md");
+  if (!(await fs.pathExists(schemaPath))) {
+    issues.push({
+      severity: "warning",
+      category: "agent-drift",
+      message: "LLM Wiki v2: missing SCHEMA.md at vault root",
+    });
+  }
+  const logMdPath = path.join(vaultPath, "log.md");
+  if (!(await fs.pathExists(logMdPath))) {
+    issues.push({
+      severity: "warning",
+      category: "agent-drift",
+      message: "LLM Wiki v2: missing log.md at vault root",
+    });
+  }
+
   // Check 4: Orphan notes (no incoming or outgoing wikilinks)
   const allLinksMap = new Map<string, Set<string>>();
   const incomingLinks = new Set<string>();
@@ -137,6 +196,7 @@ export async function getVaultDiagnosis(vaultPath: string): Promise<DiagnosticRe
     const relativePath = path.relative(vaultPath, filePath);
     if (relativePath.startsWith("Knowledge/templates/")) continue;
     if (relativePath === "AGENT.md" || relativePath === "AGENTS.md") continue;
+    if (isAgentWikiPage(relativePath)) continue;
 
     const name = path.basename(filePath, ".md");
     const outgoing = allLinksMap.get(name) || new Set();

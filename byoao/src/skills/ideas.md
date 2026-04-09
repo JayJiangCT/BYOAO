@@ -1,11 +1,16 @@
 ---
 name: ideas
-description: Deep vault scan to generate actionable ideas by combining insights across domains, finding gaps, and proposing concrete next steps. Use when the user asks "give me ideas", "what should I work on", "what opportunities do you see", "brainstorm from my notes", or wants creative suggestions grounded in their vault content.
+description: >
+  Deep vault scan to generate actionable ideas by combining insights across domains, finding gaps,
+  and proposing concrete next steps. Uses INDEX.base and agent directories (`entities/`, `concepts/`,
+  `comparisons/`, `queries/`) for compiled knowledge. Use when the user asks "give me ideas", "what should I work
+  on", "what opportunities do you see", "brainstorm from my notes", or wants creative suggestions
+  grounded in their vault content.
 ---
 
 # /ideas — Generate Actionable Ideas
 
-You are a strategic thinking partner. Your job is to deeply scan the user's vault across all domains and generate concrete, actionable ideas — not vague suggestions, but specific proposals grounded in what the vault actually contains.
+You are a strategic thinking partner. Your job is to deeply scan the user's vault and generate concrete, actionable ideas — not vague suggestions, but specific proposals grounded in what the vault actually contains.
 
 ## Prerequisites Check
 
@@ -13,11 +18,7 @@ You are a strategic thinking partner. Your job is to deeply scan the user's vaul
 obsidian --version
 ```
 
-If this fails, STOP and display the Obsidian CLI availability message (see /weave for the full error text).
-
-## Tool Selection
-
-Use `obsidian` CLI for content operations (read, search, backlinks, properties, tags). Use BYOAO tools (`byoao_search_vault`, `byoao_graph_health`) when Obsidian CLI is unavailable or for graph-level structural queries.
+If this fails, STOP and display the Obsidian CLI availability message (see /prep).
 
 ## Parameters
 
@@ -48,6 +49,7 @@ Read notes across domains, prioritizing:
 - Highly connected notes (many backlinks) — central concepts
 - Notes with `status: active` — current work
 - `INDEX.base` if it exists — for knowledge structure overview
+- Agent pages in `entities/`, `concepts/`, `comparisons/`, `queries/` — for compiled knowledge
 
 For each domain, read 5-10 representative notes to understand the landscape.
 
@@ -140,7 +142,8 @@ Rank the three highest-impact, most immediately actionable ideas:
 
 - Run `/trace topic="X"` to explore Idea 1 further
 - Run `/connect from="A" to="B"` to validate Idea 3
-- Create a decision record for Idea 5
+- Run `/cook` to compile or refresh `entities/`, `concepts/`, `comparisons/`, or `queries/` pages when an idea exposes a knowledge gap
+- Add or extend a page under `queries/` for Idea 5 if it is question-shaped knowledge worth keeping
 ```
 
 ### Step 7: Save (Optional)
@@ -154,8 +157,6 @@ If the user confirms, save with frontmatter:
 ```yaml
 ---
 title: "Ideas: {focus}"
-note_type: literature
-type: analysis
 date: <today>
 tags: [ideas, proactive]
 ---

@@ -2,40 +2,81 @@
 
 # Skills Reference
 
-All 9 AI skills available in BYOAO. Run these in the Agent Client panel inside Obsidian.
+All AI skills available in BYOAO. Run these in the Agent Client panel inside Obsidian.
 
 > **Prerequisite:** All skills require the Obsidian CLI to be enabled. See [Getting Started](getting-started.md#step-3-open-in-obsidian).
 
 ---
 
-## /weave — Connect Notes into a Knowledge Graph
+## /cook — Compile Notes into Knowledge
 
-**What it does:** Scans vault notes, adds frontmatter + wikilinks, maintains the Glossary, creates hub notes.
+**What it does:** Reads your notes and external sources, distills them into structured knowledge pages in `entities/`, `concepts/`, `comparisons/`, and `queries/`.
 
 **How to run:**
 
 ```
-/weave                    # Scan entire vault
-/weave folder=Daily/      # Scan a specific folder
-/weave file=my-note.md    # Process a single file
+/cook                     # Incremental — new/modified notes since last cook
+/cook --all               # Full — re-read all notes in the vault
+/cook "Feature A"         # Targeted — notes matching a keyword
+/cook path/to/note.md     # Targeted — a specific note
 ```
 
 **Process:**
-1. Reads Glossary to load known entities
-2. Scans files (respects exclusion rules)
-3. Identifies entities: people, projects, concepts, tools
-4. Proposes frontmatter additions (never overwrites existing fields) — `date` is mandatory, inferred from content or file creation time
-5. Proposes wikilinks (first occurrence only, not inside code blocks)
-6. Backs up files before modification
-7. After scan: suggests new Glossary terms (5+ mentions auto-suggest, 3+ verify with user) and hub notes
-8. Suggests running `/organize` if directories need restructuring
-9. Reports summary: files enriched, wikilinks added, terms suggested
+1. Reads target notes (incremental by default)
+2. Identifies entities (named things) and concepts (abstract ideas)
+3. Matches against existing agent pages
+4. Creates new pages or updates existing ones
+5. Checks for contradictions across sources
+6. Updates INDEX.base and log.md
+7. Reports a natural-language summary of changes
 
 **Key behaviors:**
-- Idempotent — running twice won't duplicate links
-- Preserves existing frontmatter — only adds missing fields, merges arrays
-- Backs up to `.byoao/backups/<timestamp>/`
-- Skips: `.obsidian/`, `.git/`, templates, AGENTS.md, binary files
+- Never modifies user notes — only creates/updates pages in agent directories
+- Detects contradictions and flags them for review
+- Reports in natural language: "Updated 2 existing pages, created 1 new concept page"
+- Follows page thresholds from SCHEMA.md
+
+---
+
+## /health — Audit Knowledge Base Quality
+
+**What it does:** Scans agent-maintained directories for structural issues and reports grouped by severity.
+
+**How to run:**
+
+```
+/health
+```
+
+**Checks performed:**
+1. Orphan pages — no inbound wikilinks from any note
+2. Broken wikilinks — links to non-existent targets
+3. Stale content — `updated` date > 90 days behind most recent source
+4. Frontmatter violations — missing required fields
+5. Tag taxonomy drift — tags not defined in SCHEMA.md
+6. Oversized pages — candidates for splitting (> 200 lines)
+
+**Fix suggestions:** Each issue gets a concrete action (run /cook, fix a link, split a page). Always asks before making changes.
+
+---
+
+## /prep — Enrich Frontmatter and Cross-References
+
+**What it does:** Scans all user notes and enriches frontmatter, suggests wikilinks and cross-references. Also serves as the prerequisites check for Obsidian CLI availability.
+
+**How to run:**
+
+```
+/prep                     # Scan entire vault
+/prep folder=Daily/       # Scan a specific folder
+```
+
+**Process:**
+1. Verifies Obsidian CLI is available
+2. Scans user notes for missing frontmatter
+3. Suggests frontmatter additions (title, date, type, tags)
+4. Suggests wikilinks to existing agent pages
+5. Reports summary of enrichments
 
 ---
 
@@ -52,14 +93,14 @@ All 9 AI skills available in BYOAO. Run these in the Agent Client panel inside O
 /organize aggressive         # Also suggest consolidating existing structures
 ```
 
-**Prerequisites:** Run `/weave` first — `/organize` needs `type` frontmatter to decide where files belong.
+**Prerequisites:** Run `/prep` first — `/organize` needs `type` frontmatter to decide where files belong.
 
 **Process:**
 1. Analyzes current structure via `obsidian list` and frontmatter
-2. Maps files to target directories based on `type` (daily → `Daily/`, meeting → `Meetings/`, reference → `Knowledge/`, etc.)
+2. Maps files to target directories based on `type`
 3. Presents a grouped before/after summary for your approval
 4. Executes moves using `obsidian move` (auto-updates all wikilinks)
-5. Verifies no broken links remain via `byoao_graph_health`
+5. Verifies no broken links remain
 
 **Key behaviors:**
 - Conservative — only suggests moves where the benefit is clear
@@ -94,33 +135,6 @@ All 9 AI skills available in BYOAO. Run these in the Agent Client panel inside O
 
 ---
 
-## /emerge — Surface Hidden Patterns
-
-**What it does:** Analyzes the vault to find patterns, contradictions, and insights that no single note explicitly states.
-
-**How to run:**
-
-```
-/emerge                        # Quick scan of entire vault
-/emerge scope=Projects/        # Focus on a folder
-/emerge depth=deep             # Read every note (thorough but slower)
-```
-
-**Parameters:**
-- `scope` (optional) — limit to a folder, domain, or tag
-- `depth` (optional) — "quick" (default) or "deep"
-- `output` (optional) — save findings as a note
-
-**Patterns it detects:**
-- Recurring unanswered questions
-- Implicit decisions (direction changed without a decision record)
-- Convergent threads heading toward the same conclusion
-- Forgotten threads that went silent
-- Expertise gaps (topics referenced but never explored deeply)
-- Contradictions across notes
-
----
-
 ## /connect — Bridge Two Domains
 
 **What it does:** Finds hidden relationships between two topics using the vault's link graph.
@@ -147,7 +161,7 @@ All 9 AI skills available in BYOAO. Run these in the Agent Client panel inside O
 
 ---
 
-## /diagnose — Check Knowledge Graph Health
+## /diagnose — Check Knowledge Base Health
 
 **What it does:** Runs 5 diagnostic checks on your vault and suggests fixes.
 
@@ -164,7 +178,7 @@ All 9 AI skills available in BYOAO. Run these in the Agent Client panel inside O
 4. Orphan notes — no incoming or outgoing wikilinks
 5. Broken wikilinks — links to non-existent notes
 
-**Fix suggestions:** Each issue gets a concrete action (run /weave, create a note, fix a link). Always asks before making changes.
+**Fix suggestions:** Each issue gets a concrete action (run /cook, create a note, fix a link). Always asks before making changes.
 
 ---
 

@@ -151,8 +151,8 @@ program
 program
   .command("init")
   .description(
-    "Create a personal knowledge base — sets up folders, templates, " +
-    "glossary, and an AI routing index (AGENTS.md). Works with empty " +
+    "Create an LLM Wiki knowledge base — sets up agent directories, " +
+    "SCHEMA.md, log.md, and AI routing (AGENTS.md). Works with empty " +
     "directories or adopts existing folders."
   )
   .option("--kb <name>", "Knowledge base name (skips interactive prompt)")
@@ -176,7 +176,7 @@ program
     let ownerName = opts.name || "";
     let vaultPath = opts.path || opts.from;
     let presetName = opts.preset || "minimal";
-    let members: { name: string; role: string }[] = [];
+    let wikiDomain = "";
     let mcpSkip: string[] = opts.mcpSkip || [];
     let gcpProjectId = opts.gcpProject || "";
 
@@ -266,15 +266,15 @@ program
           }
         }
 
-        // 4. Optional work preset
+        // 4. Work profile (preset)
         const presets = listPresets().filter(p => p.name !== "minimal");
         if (presets.length > 0) {
           const { selectedPreset } = await inquirer.prompt([{
             type: "list",
             name: "selectedPreset",
-            message: "Add a work preset? (optional)",
+            message: "Choose your work profile:",
             choices: [
-              { name: "No — start with a minimal personal KB", value: "minimal" },
+              { name: "Minimal — core LLM Wiki only", value: "minimal" },
               ...presets.map(p => ({
                 name: `${p.displayName} — ${p.description}`,
                 value: p.name,
@@ -284,7 +284,16 @@ program
           presetName = selectedPreset;
         }
 
-        // 5. MCP service selection (only if preset has MCP servers)
+        // 5. Wiki domain (optional)
+        const { domain } = await inquirer.prompt([{
+          type: "input",
+          name: "domain",
+          message: "What domain does this knowledge base cover? (optional, press Enter to skip)",
+          default: "",
+        }]);
+        wikiDomain = domain.trim();
+
+        // 6. MCP service selection (only if preset has MCP servers)
         if (presetName !== "minimal") {
           const { config: presetCfg } = loadPreset(presetName);
           const mcpEntries = Object.entries(presetCfg.mcpServers);
@@ -325,10 +334,6 @@ program
           }
         }
 
-        // Create owner as a member if a preset with People/ is selected
-        if (ownerName && presetName !== "minimal") {
-          members.push({ name: ownerName, role: presetName === "pm-tpm" ? "PM/TPM" : "Team Member" });
-        }
       } catch {
         // inquirer not available — fall through to require --kb
         if (!kbName) {
@@ -356,12 +361,11 @@ program
       kbName,
       ownerName,
       vaultPath,
-      members,
-      projects: [],
       preset: presetName,
       provider: providerOpt,
       gcpProjectId,
       mcpSkip,
+      wikiDomain,
     });
 
     const spinner = startSpinner(`Creating knowledge base "${kbName}"`);
@@ -475,7 +479,7 @@ program
     printEventDetail(`     ${result.vaultPath}`);
     printEventDetail("  2. Enable Obsidian CLI: Settings → General → Advanced → Command-line interface");
     printEventDetail('  3. Read "Start Here.md" for a quick orientation');
-    printEventDetail("  4. Open the Agent Client panel and run /weave to connect your notes");
+    printEventDetail("  4. Open the Agent Client panel and run /cook to compile your notes into knowledge pages");
   });
 
 // ── byoao status ─────────────────────────────────────────────────

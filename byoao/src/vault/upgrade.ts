@@ -8,15 +8,12 @@ import {
   type InstalledFiles,
 } from "./manifest.js";
 import { loadPreset, getCommonDir } from "./preset.js";
+import { renderTemplate } from "./template.js";
 import { detectVaultContext } from "./vault-detect.js";
 
 // ── Constants ───────────────────────────────────────────────────
 
-const OBSIDIAN_CONFIG_FILES = [
-  "core-plugins.json",
-  "daily-notes.json",
-  "templates.json",
-];
+const OBSIDIAN_CONFIG_FILES = ["core-plugins.json"];
 
 // ── Types ───────────────────────────────────────────────────────
 
@@ -106,7 +103,7 @@ async function scanSkillDirs(vaultPath: string): Promise<string[]> {
 
 // ── Bootstrap ───────────────────────────────────────────────────
 
-const DEFAULT_PRESET = "pm-tpm";
+const DEFAULT_PRESET = "minimal";
 
 /** Bootstrap a manifest for vaults created before the manifest existed. */
 export async function bootstrapManifest(
@@ -186,29 +183,138 @@ export function buildUpgradePlan(
   };
 }
 
+// ── v1→v2 migration ────────────────────────────────────────────
+
+const LLM_WIKI_AGENT_DIRS = ["entities", "concepts", "comparisons", "queries"] as const;
+
+const LOG_MD_PLACEHOLDER = `# Agent Activity Log
+
+Entries are appended here during /cook operations.
+
+`;
+
+/** Create v2 wiki layout dirs and baseline files (idempotent). */
+async function migrateV1ToV2Infrastructure(vaultPath: string): Promise<void> {
+  for (const dir of LLM_WIKI_AGENT_DIRS) {
+    const dirPath = path.join(vaultPath, dir);
+    if (!(await fs.pathExists(dirPath))) {
+      await fs.ensureDir(dirPath);
+    }
+  }
+
+  const schemaPath = path.join(vaultPath, "SCHEMA.md");
+  if (!(await fs.pathExists(schemaPath))) {
+    const commonDir = getCommonDir();
+    const schemaTemplatePath = path.join(commonDir, "SCHEMA.md.hbs");
+    let content: string;
+    if (await fs.pathExists(schemaTemplatePath)) {
+      const schemaTemplate = await fs.readFile(schemaTemplatePath, "utf-8");
+      content = renderTemplate(schemaTemplate, {
+        KB_NAME: path.basename(vaultPath),
+        WIKI_DOMAIN: "",
+      });
+    } else {
+      content = `# SCHEMA
+
+This file describes the vault knowledge schema. Update it as your model evolves.
+
+`;
+    }
+    await fs.writeFile(schemaPath, content, "utf-8");
+  }
+
+  const logPath = path.join(vaultPath, "log.md");
+  if (!(await fs.pathExists(logPath))) {
+    await fs.writeFile(logPath, LOG_MD_PLACEHOLDER, "utf-8");
+  }
+}
+
+/**
+ * v1 infrastructure still on disk that must appear as deprecated in the plan
+ * (Knowledge/templates/*.md; legacy weave/emerge commands). Merged after
+ * resolvePackageAssets + buildUpgradePlan — see mergeForcedDeprecatedIntoPlan.
+ */
+async function collectV1DeprecatedInfrastructureItems(
+  vaultPath: string,
+): Promise<UpgradePlanItem[]> {
+  const items: UpgradePlanItem[] = [];
+  const templatesDir = path.join(vaultPath, "Knowledge", "templates");
+  if (await fs.pathExists(templatesDir)) {
+    const files = await fs.readdir(templatesDir);
+    for (const f of files) {
+      if (f.endsWith(".md")) {
+        items.push({
+          file: `Knowledge/templates/${f}`,
+          action: "deprecated",
+          category: "templates",
+        });
+      }
+    }
+  }
+  for (const cmd of ["weave.md", "emerge.md"] as const) {
+    const rel = `.opencode/commands/${cmd}`;
+    if (await fs.pathExists(path.join(vaultPath, rel))) {
+      items.push({
+        file: rel,
+        action: "deprecated",
+        category: "commands",
+      });
+    }
+  }
+  return items;
+}
+
+/** Prefer forced deprecation over add/update for the same path (v1 removals). */
+function mergeForcedDeprecatedIntoPlan(
+  items: UpgradePlanItem[],
+  forced: UpgradePlanItem[],
+): UpgradePlanItem[] {
+  const forcedFiles = new Set(forced.map((i) => i.file));
+  const filtered = items.filter(
+    (i) => !(forcedFiles.has(i.file) && (i.action === "add" || i.action === "update")),
+  );
+  const byFile = new Map<string, UpgradePlanItem>(filtered.map((i) => [i.file, i]));
+  for (const f of forced) {
+    byFile.set(f.file, f);
+  }
+  return [...byFile.values()];
+}
+
 // ── Asset Resolution ────────────────────────────────────────────
 
 function resolveAssetsDir(): string {
+  // When running from dist/ (bundled): dist/assets
+  const distAssets = path.resolve(import.meta.dirname, "assets");
+  // When running from dist/ via tsc only: ../assets
   const srcAssets = path.resolve(import.meta.dirname, "..", "assets");
-  const distAssets = path.resolve(
-    import.meta.dirname, "..", "..", "src", "assets"
-  );
-  if (fs.existsSync(srcAssets)) return srcAssets;
+  // When running from src/ via tsx: ../../src/assets
+  const devAssets = path.resolve(import.meta.dirname, "..", "..", "src", "assets");
+
   if (fs.existsSync(distAssets)) return distAssets;
-  return srcAssets;
+  if (fs.existsSync(srcAssets)) return srcAssets;
+  if (fs.existsSync(devAssets)) return devAssets;
+  return distAssets; // will fail downstream with a clear error
 }
 
 function resolveSkillsDir(): string {
+  // When running from dist/ (bundled): dist/assets/skills
+  const distSkills = path.resolve(import.meta.dirname, "assets", "skills");
+  // When running from dist/ via tsc only: ../skills
   const srcSkills = path.resolve(import.meta.dirname, "..", "skills");
-  const distSkills = path.resolve(
-    import.meta.dirname, "..", "..", "src", "skills"
-  );
-  if (fs.existsSync(srcSkills)) return srcSkills;
+  // When running from src/ via tsx: ../../src/skills
+  const devSkills = path.resolve(import.meta.dirname, "..", "..", "src", "skills");
+
   if (fs.existsSync(distSkills)) return distSkills;
-  return srcSkills;
+  if (fs.existsSync(srcSkills)) return srcSkills;
+  if (fs.existsSync(devSkills)) return devSkills;
+  return distSkills;
 }
 
-/** Resolve package assets for a given preset. */
+/**
+ * Resolve package assets for a given preset.
+ * Legacy v1 paths (Knowledge/templates/*.md, weave/emerge commands on disk) are
+ * folded into the upgrade plan's deprecated items by collectV1DeprecatedInfrastructureItems.
+ */
 function resolvePackageAssets(preset: string): PackageAssets {
   const assetsDir = resolveAssetsDir();
   const skillsDir = resolveSkillsDir();
@@ -338,10 +444,22 @@ export async function upgradeVault(
     await fs.rename(legacyAgentMd, newAgentsMd);
   }
 
+  // 3c. v1→v2 vault layout (agent dirs, SCHEMA.md, log.md)
+  if (!dryRun) {
+    await migrateV1ToV2Infrastructure(vaultPath);
+  }
+
   // 4. Resolve package assets and build plan
   const effectivePreset = preset ?? manifest.preset;
   const packageAssets = resolvePackageAssets(effectivePreset);
-  const plan = buildUpgradePlan(vaultPath, manifest, packageAssets);
+  let plan = buildUpgradePlan(vaultPath, manifest, packageAssets);
+  plan = {
+    ...plan,
+    items: mergeForcedDeprecatedIntoPlan(
+      plan.items,
+      await collectV1DeprecatedInfrastructureItems(vaultPath),
+    ),
+  };
 
   // 5. Execute plan (or dry run)
   const added: string[] = [];

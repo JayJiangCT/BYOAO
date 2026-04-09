@@ -76,7 +76,7 @@ byoao init --kb "My KB" --name "Jay" --preset pm-tpm
 
 ## byoao status
 
-Check the health of a vault: note count, directories, wikilinks, broken links.
+Check the health of a vault: agent page count by type, broken links, INDEX.base completeness.
 
 ```bash
 byoao status              # Check current directory
@@ -91,7 +91,7 @@ byoao status ~/my-kb      # Check specific path
 
 ## byoao upgrade
 
-Upgrade the BYOAO CLI and vault infrastructure (skills, commands, templates, Obsidian config) to the latest version.
+Upgrade the BYOAO CLI and vault infrastructure (skills, commands, SCHEMA.md, Obsidian config) to the latest version.
 
 The command runs in two phases: first it checks for a newer CLI version on npm and offers to update it, then it upgrades the vault content. If the CLI is updated, the process exits and you run `byoao upgrade` again to complete the vault upgrade.
 

@@ -521,17 +521,17 @@ export async function uninstall(
 }
 
 function resolveAssetsDir(): string {
+  // When running from dist/ (bundled): dist/assets
+  const distAssets = path.resolve(import.meta.dirname, "assets");
+  // When running from dist/cli/: ../assets = dist/assets
   const srcAssets = path.resolve(import.meta.dirname, "..", "assets");
-  const distAssets = path.resolve(
-    import.meta.dirname,
-    "..",
-    "..",
-    "src",
-    "assets"
-  );
-  if (fs.existsSync(srcAssets)) return srcAssets;
+  // When running from src/ via tsx: ../../src/assets
+  const devAssets = path.resolve(import.meta.dirname, "..", "..", "src", "assets");
+
   if (fs.existsSync(distAssets)) return distAssets;
-  return srcAssets;
+  if (fs.existsSync(srcAssets)) return srcAssets;
+  if (fs.existsSync(devAssets)) return devAssets;
+  return distAssets;
 }
 
 /**

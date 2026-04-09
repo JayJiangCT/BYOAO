@@ -1,6 +1,21 @@
+import { fs } from "../lib/cjs-modules.js";
+import path from "node:path";
 import { log } from "../lib/logger.js";
 import { detectVaultContext } from "../vault/vault-detect.js";
 import { readOpencodeConfig } from "../vault/opencode-config.js";
+
+function readVaultMarkdown(vaultPath: string, fileName: string): string | null {
+  const full = path.join(vaultPath, fileName);
+  if (!fs.existsSync(full)) return null;
+  try {
+    return fs.readFileSync(full, "utf-8");
+  } catch {
+    void log("warn", "hook:system-transform", `Failed to read ${fileName}`, {
+      context: { path: full },
+    }).catch(() => {});
+    return null;
+  }
+}
 
 /**
  * Build MCP auth failure guidance for the system prompt.
@@ -48,13 +63,31 @@ async function buildMcpAuthGuidance(): Promise<string | null> {
 }
 
 /**
- * Hook: inject MCP auth guidance into system prompt.
+ * Hook: inject AGENTS.md, SCHEMA.md, and MCP auth guidance into system prompt.
  * Mutating pattern — modifies output.system in place.
  */
 export async function systemTransformHook(
   _input: { sessionID?: string; model: unknown },
   output: { system: string[] }
 ): Promise<void> {
+  const vaultPath = detectVaultContext(process.cwd());
+  if (vaultPath) {
+    let agentsTitle = "## AGENTS.md";
+    let agents = readVaultMarkdown(vaultPath, "AGENTS.md");
+    if (!agents) {
+      agents = readVaultMarkdown(vaultPath, "AGENT.md");
+      if (agents) agentsTitle = "## AGENT.md";
+    }
+    if (agents) {
+      output.system.push(`\n---\n${agentsTitle}\n\n${agents}`);
+    }
+
+    const schema = readVaultMarkdown(vaultPath, "SCHEMA.md");
+    if (schema) {
+      output.system.push(`\n---\n## SCHEMA.md\n\n${schema}`);
+    }
+  }
+
   const mcpGuidance = await buildMcpAuthGuidance();
   if (mcpGuidance) {
     output.system.push(mcpGuidance);

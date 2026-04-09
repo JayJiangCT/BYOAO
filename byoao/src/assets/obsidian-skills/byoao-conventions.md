@@ -11,8 +11,8 @@ You MUST follow these conventions when creating or modifying any note in this va
 
 Before creating any note:
 
-1. Read `AGENTS.md` — check the knowledge base structure and note types
-2. Identify the note type: `fleeting` (raw input), `literature` (processed reference), or `permanent` (atomic concept)
+1. Read `AGENTS.md` — check the knowledge base structure (user notes vs agent-maintained pages)
+2. Decide where the note belongs: **user notes** stay in their existing areas (e.g. `Projects/`, `Daily/`); **agent knowledge pages** live only under `entities/`, `concepts/`, `comparisons/`, or `queries/`
 3. Use `obsidian create` to create notes — never use file write tools directly
 
 ## Creating Notes
@@ -32,8 +32,7 @@ Every note MUST have these fields:
 | Field | Values |
 |-------|--------|
 | `title` | Descriptive title |
-| `note_type` | `fleeting`, `literature`, or `permanent` |
-| `type` | `meeting`, `idea`, `reference`, `daily`, `project`, `person`, etc. |
+| `type` | `meeting`, `idea`, `reference`, `daily`, `project`, `person`, `entity`, `concept`, `comparison`, `query`, etc. |
 | `date` | YYYY-MM-DD — today's date or extracted from content |
 | `tags` | Array of relevant tags |
 
@@ -44,7 +43,10 @@ Additional fields (optional):
 | `domain` | Knowledge area (e.g. ai-agents, product-strategy) |
 | `references` | Related notes as wikilinks: `[[Note Name]]` |
 | `status` | `draft`, `active`, `completed`, `archived` |
-| `source` | URL to cloud origin (Confluence, Google Docs, etc.) |
+| `updated` | YYYY-MM-DD — last substantive edit (common on agent pages) |
+| `contradictions` | Cross-links when conflicting claims need review (agent pages) |
+
+For material **fetched from a single public URL** (e.g. web clip), you may add `source_url` and `fetched` (date). Do not use a generic `source` field for cloud documents.
 
 ## Wikilink Rules
 
@@ -65,7 +67,8 @@ Rules:
 
 - Use Title Case or kebab-case for file names
 - No special characters, no leading/trailing spaces
-- Daily notes: `YYYY-MM-DD` format
+- Daily notes: `YYYY-MM-DD` format where applicable
+- Agent knowledge pages: one topic per file under `entities/`, `concepts/`, `comparisons/`, or `queries/` (see `AGENTS.md` and `/cook`)
 
 ## Post-Creation Verification
 

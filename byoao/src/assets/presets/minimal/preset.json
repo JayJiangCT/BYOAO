@@ -1,9 +1,9 @@
 {
   "name": "minimal",
-  "displayName": "Personal Knowledge Base",
-  "description": "A minimal personal knowledge base — just Daily notes, templates, and Glossary. Add structure as you go.",
+  "displayName": "Minimal",
+  "description": "Core LLM Wiki with no extra MCP servers or role-specific directories",
   "directories": [],
-  "agentDescription": "Personal knowledge base. Notes are connected through wikilinks and frontmatter. Use /weave to discover and strengthen connections.",
+  "agentDescription": "LLM Wiki knowledge base. Use /cook to digest notes and external sources. Use /health to health-check.",
   "frontmatterExtras": {},
   "templates": [],
   "mcpServers": {},

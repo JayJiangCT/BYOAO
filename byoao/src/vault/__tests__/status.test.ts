@@ -112,6 +112,10 @@ describe("formatVaultStatus", () => {
       directories: {},
       hasObsidianConfig: false,
       hasAgentMd: false,
+      agentPages: { entities: 0, concepts: 0, comparisons: 0, queries: 0 },
+      hasSchema: false,
+      hasLog: false,
+      hasIndexBase: false,
     };
     expect(formatVaultStatus(status)).toContain("not found");
   });
@@ -126,6 +130,10 @@ describe("formatVaultStatus", () => {
       directories: { People: 3, Projects: 2 },
       hasObsidianConfig: true,
       hasAgentMd: true,
+      agentPages: { entities: 0, concepts: 0, comparisons: 0, queries: 0 },
+      hasSchema: false,
+      hasLog: false,
+      hasIndexBase: false,
     };
     const output = formatVaultStatus(status);
     expect(output).toContain("Notes: 10");
@@ -145,6 +153,10 @@ describe("formatVaultStatus", () => {
       directories: {},
       hasObsidianConfig: false,
       hasAgentMd: false,
+      agentPages: { entities: 0, concepts: 0, comparisons: 0, queries: 0 },
+      hasSchema: false,
+      hasLog: false,
+      hasIndexBase: false,
     };
     const output = formatVaultStatus(status);
     expect(output).toContain("Broken links (2)");

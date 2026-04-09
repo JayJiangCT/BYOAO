@@ -3,14 +3,18 @@ import path from "node:path";
 import { PresetConfigSchema, type PresetConfig } from "../plugin-config.js";
 
 function getPresetsDir(): string {
+  // When running from dist/ (bundled): dist/assets/presets
+  const distAssets = path.resolve(import.meta.dirname, "assets", "presets");
+  // When running from dist/ via tsc only: ../assets/presets
   const srcPresets = path.resolve(import.meta.dirname, "..", "assets", "presets");
-  const distPresets = path.resolve(
-    import.meta.dirname, "..", "..", "src", "assets", "presets"
-  );
+  // When running from src/ via tsx: ../../src/assets/presets
+  const devPresets = path.resolve(import.meta.dirname, "..", "..", "src", "assets", "presets");
+
+  if (fs.existsSync(distAssets)) return distAssets;
   if (fs.existsSync(srcPresets)) return srcPresets;
-  if (fs.existsSync(distPresets)) return distPresets;
+  if (fs.existsSync(devPresets)) return devPresets;
   throw new Error(
-    `Cannot find presets directory. Looked in:\n  ${srcPresets}\n  ${distPresets}`
+    `Cannot find presets directory. Looked in:\n  ${distAssets}\n  ${srcPresets}\n  ${devPresets}`
   );
 }
 

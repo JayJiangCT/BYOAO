@@ -9,10 +9,9 @@ describe("VaultConfigSchema", () => {
     });
     expect(result.kbName).toBe("My KB");
     expect(result.ownerName).toBe("");
-    expect(result.members).toEqual([]);
-    expect(result.projects).toEqual([]);
-    expect(result.glossaryEntries).toEqual([]);
     expect(result.preset).toBe("minimal");
+    expect(result.wikiDomain).toBe("");
+    expect(result.compilationMode).toBe("review");
   });
 
   it("rejects missing kbName", () => {
@@ -38,16 +37,14 @@ describe("VaultConfigSchema", () => {
       kbName: "Alpha KB",
       ownerName: "Alice",
       vaultPath: "/v",
-      members: [{ name: "A", role: "Eng" }],
-      projects: [{ name: "P" }],
-      glossaryEntries: [{ term: "T", definition: "D" }],
-      jiraHost: "jira.example.com",
-      jiraProject: "PROJ",
       preset: "pm-tpm",
+      wikiDomain: "AI/ML research",
+      compilationMode: "auto",
     });
-    expect(result.members).toHaveLength(1);
-    expect(result.projects[0].description).toBe("");
     expect(result.ownerName).toBe("Alice");
+    expect(result.preset).toBe("pm-tpm");
+    expect(result.wikiDomain).toBe("AI/ML research");
+    expect(result.compilationMode).toBe("auto");
   });
 });
 

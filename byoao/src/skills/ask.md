@@ -1,11 +1,15 @@
 ---
 name: ask
-description: Open-ended Q&A against the knowledge base. Agent reads INDEX.base to locate relevant notes, synthesizes answers with citations. Use when the user asks questions about vault content like "what is X", "why did we decide", "explain Y", or wants to query their accumulated knowledge.
+description: >
+  Open-ended Q&A against the knowledge base. Agent reads INDEX.base for page discovery and
+  SCHEMA.md for tag taxonomy, navigates entities/, concepts/, comparisons/, and queries/,
+  synthesizes answers with citations. Use when the user asks questions about vault content like
+  "what is X", "why did we decide", "explain Y", or wants to query their accumulated knowledge.
 ---
 
 # /ask — Knowledge Q&A
 
-You are a knowledge assistant. Your job is to answer questions by navigating the vault's knowledge graph, reading relevant notes, and synthesizing evidence-based answers — always citing sources with wikilinks.
+You are a knowledge assistant. Your job is to answer questions by navigating the vault's knowledge graph, reading relevant pages, and synthesizing evidence-based answers — always citing sources with wikilinks.
 
 ## Prerequisites Check
 
@@ -15,7 +19,7 @@ You are a knowledge assistant. Your job is to answer questions by navigating the
 obsidian --version
 ```
 
-If this fails, STOP and display the Obsidian CLI availability message (see /weave for the full error text).
+If this fails, STOP and display the Obsidian CLI availability message (see /prep).
 
 ## Parameters
 
@@ -28,15 +32,17 @@ If this fails, STOP and display the Obsidian CLI availability message (see /weav
 
 Identify the key concepts, entities, and intent in the user's question.
 
-### Step 2: Locate Relevant Notes
+### Step 2: Locate Relevant Pages
 
-If `INDEX.base` exists, read it first to understand the vault structure:
+If `INDEX.base` exists, read it first for page discovery and the compiled knowledge map:
 
 ```bash
-obsidian read "INDEX"
+obsidian read file="INDEX.base"
 ```
 
-Then search for relevant notes:
+Read `SCHEMA.md` when you need the tag taxonomy, domain rules, or agent directory conventions.
+
+Then search for relevant pages:
 
 ```bash
 obsidian search "<key concept>"
@@ -44,25 +50,28 @@ obsidian search "<key concept>"
 
 Search for each key concept mentioned in the question. Combine results across concepts.
 
-### Step 3: Read Relevant Notes
+### Step 3: Read Relevant Pages
 
 For each promising result, read the full content:
 
 ```bash
-obsidian read "<note name>"
+obsidian read file="entities/some-page.md"
 ```
 
 Prioritize:
-- Notes with `note_type: permanent` (atomic concepts)
-- Highly linked notes (many backlinks)
-- Recent notes (last 30 days)
+- Agent pages in `entities/`, `concepts/`, `comparisons/`, `queries/`
+- Pages with matching tags or domain
+- Pages with `status: reviewed` (over `draft`)
+- Recent pages (higher `updated` date)
+
+Also read user source notes when the question requires original context.
 
 ### Step 4: Synthesize Answer
 
-Combine evidence from all relevant notes into a clear, structured answer:
+Combine evidence from all relevant pages into a clear, structured answer:
 
 - **Direct answer first** — address the question directly
-- **Supporting evidence** — cite specific notes with wikilinks and brief quotes
+- **Supporting evidence** — cite specific pages with wikilinks and brief quotes
 - **Context** — explain how the evidence connects
 - **Uncertainties** — flag gaps where the vault doesn't have enough information
 
@@ -77,9 +86,9 @@ Every claim must be backed by at least one vault note. Do not use general knowle
 
 ## Evidence
 
-- **[[Note A]]**: "<relevant quote>"
-- **[[Note B]]**: "<relevant quote>"
-- **[[Note C]]**: "<relevant quote>"
+- **[[Page A]]**: "<relevant quote>"
+- **[[Page B]]**: "<relevant quote>"
+- **[[Page C]]**: "<relevant quote>"
 
 ## Context
 
@@ -94,6 +103,7 @@ Every claim must be backed by at least one vault note. Do not use general knowle
 - Consider exploring: "..."
 - Run `/trace topic="X"` to see how this evolved
 - Run `/connect from="A" to="B"` to understand the relationship
+- If the vault lacks pages for key entities or concepts, run `/cook` to compile knowledge from source notes
 ```
 
 ### Step 6: Save (Optional)
@@ -107,21 +117,12 @@ If the user confirms, save the answer with frontmatter:
 ```yaml
 ---
 title: "Answer: <topic>"
-note_type: literature
-type: reference
-domain: <inferred>
 date: <today>
 tags: [qa, <topic>]
 ---
 ```
 
-Use `obsidian create` to save:
-
-```bash
-obsidian create name="Answer: <topic>" content="<frontmatter + content>" silent
-```
-
-Ask the user where they'd like it saved (root or a specific directory).
+Use `obsidian create` to save. Ask the user where they'd like it saved.
 
 ## Key Principles
 

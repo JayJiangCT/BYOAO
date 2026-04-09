@@ -1,0 +1,167 @@
+---
+name: cook
+description: >
+  The core knowledge compilation skill. Reads raw material (user notes, external sources)
+  and distills it into structured, cross-referenced knowledge pages in entities/, concepts/,
+  comparisons/, and queries/. Use when the user wants to compile notes into knowledge,
+  digest external material, or periodically maintain the knowledge base.
+---
+
+# /cook — Knowledge Compilation
+
+You are a knowledge compiler. Your job is to read raw material (user notes, external sources)
+and distill it into structured, cross-referenced knowledge pages.
+
+## Prerequisites Check
+
+```bash
+obsidian --version
+```
+
+If this fails, STOP and display the Obsidian CLI availability message (see /prep).
+
+## Parameters
+
+- **target** (optional): What to cook. Default: incremental (new/modified notes since last cook).
+  - `--all` or `full`: Read all user notes in the vault
+  - `"Topic Name"`: Read notes matching this keyword
+  - `path/to/note.md`: Read a specific note
+  - `<URL>`: Fetch external article and digest it
+
+## Input Scope
+
+### Incremental Mode (default)
+
+When user runs `/cook` with no arguments:
+1. Read `log.md` for last cook timestamp
+2. Scan for `.md` files outside agent directories with `modified` date after that timestamp
+3. Include any unprocessed files
+
+### Full Mode
+
+When user runs `/cook --all`:
+- Read all user notes in the vault (exclude `entities/`, `concepts/`, `comparisons/`, `queries/`)
+- Re-evaluate all entities and concepts
+
+### Targeted Mode
+
+When user runs `/cook "Feature A"` or `/cook path/to/note.md`:
+- Read only the specified notes or notes matching the keyword
+
+### External URL
+
+When user provides a URL:
+1. Fetch content using WebFetch or Obsidian Web Clipper
+2. Save as a user note in the vault (ask the user where to save, or use a sensible default like the vault root with a descriptive filename: `<slug>.md`)
+3. Add frontmatter: `title`, `source_url`, `fetched` date
+4. Process normally — the saved note becomes raw material for /cook
+
+**Note:** No dedicated `raw/` directory. External material is saved as regular user notes, consistent with the brownfield principle.
+
+## Processing Pipeline
+
+### Step 1: Read & Parse
+- Read all target notes
+- Extract frontmatter, content, wikilinks
+- Identify entities (named things), concepts (abstract ideas), decisions, contradictions
+
+### Step 2: Match Against Existing Pages
+- Check `INDEX.base` or scan `entities/`, `concepts/` for existing pages
+- Determine: create new vs. update existing
+
+### Step 3: Create/Update Pages
+- **New entities:** Create in `entities/<name>.md`
+- **New concepts:** Create in `concepts/<name>.md`
+- **Updates:** Add new information, bump `updated` date
+- **Contradictions:** Follow Update Policy
+
+**Create page thresholds:**
+- Appears in 2+ notes, OR is central subject of one note
+- Do NOT create for: passing mentions, minor details, out-of-domain topics
+
+### Step 4: Cross-Reference
+- Ensure every new/updated page has at least 2 outbound wikilinks
+- Check existing pages link back where relevant
+
+### Step 5: Update Navigation
+- `INDEX.base` auto-updates via Obsidian Base query
+- Append entry to `log.md`
+
+### Step 6: Report
+Present structured summary (see Output Report Format below).
+
+## Contradiction Handling
+
+### Detection
+- Compare claims across notes about the same entity/concept
+- Check dates — newer claims may supersede older
+- Look for explicit contradictions (e.g., "we changed from X to Y")
+
+### Resolution Workflow
+1. Note both positions with dates and source references
+2. Mark in frontmatter: `contradictions: [page-name]`
+3. Report to user with specific sources
+4. Offer to create a comparison page
+5. User decides
+
+### Update Policy
+- Newer sources generally supersede older
+- If both positions still valid (e.g., A/B testing), note both
+- Never silently overwrite — always flag for review
+
+## Output Report Format
+
+```
+Cook complete. Here's what changed:
+
+New knowledge:
+• [[feature-a]] — Response time monitoring feature
+• [[response-time-metrics]] — Why median replaced avg
+
+Updated:
+• [[zhang-san]] — Added Feature A assignment
+
+Contradiction found:
+⚠ PRD says avg(response_time) > baseline, but experiment notes say median
+  Sources: Projects/Feature-A-PRD.md vs Daily/2026-04-05.md
+  Want me to create a comparison page?
+
+Log: 1 entry added to log.md
+```
+
+**Design principles:**
+- Natural language, no technical jargon
+- Structured for quick scanning
+- Actionable (asks for decisions on contradictions)
+- Wikilinks for easy navigation
+
+## Auto-Trigger Behavior
+
+The Agent should automatically run `/cook` after:
+- Writing a note (brief report: "Cooked 1 note. Updated [[x]], created [[y]].")
+- User drops new files into the vault
+
+**When NOT to auto-trigger:**
+- Rapid-fire note creation (batch and cook once at the end)
+- `/cook` was already run in the last 5 minutes
+
+## Agent Page Identification
+
+Agent pages are identified by directory:
+| Location | Ownership |
+|----------|-----------|
+| `entities/**/*.md` | Agent |
+| `concepts/**/*.md` | Agent |
+| `comparisons/**/*.md` | Agent |
+| `queries/**/*.md` | Agent |
+| All other `.md` | User (read-only during /cook) |
+
+No `owner` frontmatter field needed.
+
+## Key Principles
+
+- **Evidence-based**: Every knowledge page cites its sources
+- **Never modify user notes**: User notes are read-only during /cook
+- **Thresholds matter**: 2+ mentions or central subject to create a page
+- **Split at 200 lines**: Break large pages into sub-topics
+- **Flag contradictions**: Never silently overwrite

@@ -1,25 +1,29 @@
 # AI Agent Guide
 
-## 关于本知识库
-这是一个基于 Zettelkasten 理念构建的个人知识库。知识通过原子化的笔记和双向链接形成网络。你可以保留自己的目录组织习惯，笔记之间的关联由 Agent 通过 `/weave` 自动维护。
+## About This Knowledge Base
+This is an LLM Wiki knowledge base. Your notes are raw material — the Agent compiles them into structured knowledge pages via `/cook`. Both coexist in the same vault, connected through wikilinks.
 
-## 从哪里开始
-知识图谱：运行 `/wiki` 生成 `INDEX.base` 后，从这里探索知识库的结构。
+## Getting Started
+Run `/wiki` to generate `INDEX.base`, then explore the knowledge structure from there.
 
-## 笔记类型
-每条笔记通过 frontmatter 的 `note_type` 分为三类：
-- **fleeting** — 原始摄入，待处理
-- **literature** — 对某来源的整理笔记
-- **permanent** — 原子概念笔记
+## Note Types
+User notes: Your existing notes, kept in their original directories (Projects/, Daily/, etc.) — untouched.
+Agent pages: Knowledge pages maintained by the Agent, located in `entities/`, `concepts/`, `comparisons/`, `queries/`.
 
-## 操作规则
-**使用 Obsidian CLI 进行所有笔记操作**（`obsidian read`、`obsidian search`、`obsidian create` 等）。
-不要用 bash（`cat`、`grep`、`find`、`sed` 等）直接处理笔记文件——Obsidian CLI 能正确维护 wikilink、frontmatter 和文件关系。
+## Operating Rules
+**Use Obsidian CLI for all note operations** (`obsidian read`, `obsidian search`, `obsidian create`, etc.).
+Do not use bash (`cat`, `grep`, `find`, `sed`, etc.) to manipulate note files directly — Obsidian CLI correctly maintains wikilinks, frontmatter, and file relationships.
 
-## 可用能力
-- **/weave** — 编织新笔记：提取概念、建立 wikilink、生成 frontmatter
-- **/wiki** — 生成 INDEX.base 知识图谱索引
-- **/organize** — 按需重组目录结构
-- **/ask** — 对知识库进行开放式问答
-- **Thinking Tools** — /trace、/emerge、/connect、/ideas、/challenge、/drift
-- **/diagnose** — 检查知识库健康状态，查看哪些笔记需要编织
+## Available Skills
+- **/cook** — Digest notes and external sources, compile knowledge pages
+- **/health** — Check knowledge page health (orphans, stale content, contradictions)
+- **/prep** — Fix frontmatter and broken wikilinks
+- **/wiki** — Generate INDEX.base knowledge map
+- **/organize** — Reorganize directory structure as needed
+- **/ask** — Open-ended Q&A against the knowledge base
+- **Thinking Tools** — /trace, /connect, /ideas, /challenge, /drift
+- **/diagnose** — Check overall vault health
+
+{{#if ROLE_SECTION}}
+## {{ROLE_SECTION}}
+{{/if}}

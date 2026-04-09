@@ -6,7 +6,86 @@ Common issues and how to fix them.
 
 ---
 
-## Agent Client stuck on "Connecting to OpenCode..."
+## Obsidian Setup Issues
+
+### Obsidian CLI not available
+
+**Symptom:** /cook or other skills fail with "Obsidian CLI is not available."
+
+**Fix:**
+1. Make sure Obsidian is running and your vault is open
+2. Go to **Settings** → **General** → scroll to **Advanced** → enable **Command line interface**
+
+![Enable CLI in Obsidian General settings](../assets/obsidian-general-cli.png)
+
+3. Verify in your terminal: `obsidian --version`
+4. If the command is not found, restart Obsidian and try again
+
+> The CLI toggle only takes effect while Obsidian is running. If you close Obsidian, the CLI becomes unavailable.
+
+---
+
+### INDEX.base doesn't open / shows "Unknown file type"
+
+**Symptom:** Clicking `INDEX.base` in Obsidian does nothing or shows an error.
+
+**Fix:** The **Bases** core plugin must be enabled.
+
+1. Go to **Settings** → **Core plugins**
+2. Find **Bases** and enable it
+
+![Core plugins — enable Bases](../assets/obsidian-core-plugins-1.png)
+
+---
+
+### Frontmatter not visible in sidebar
+
+**Symptom:** Agent pages have YAML frontmatter but you can't see the metadata fields in the sidebar.
+
+**Fix:** Enable the **Properties view** core plugin.
+
+1. Go to **Settings** → **Core plugins**
+2. Scroll down and enable **Properties view**
+
+![Core plugins — enable Properties view](../assets/obsidian-core-plugins-2.png)
+
+Properties view shows `type`, `tags`, `sources`, and other frontmatter fields in a structured sidebar panel.
+
+---
+
+### Images scattered alongside notes
+
+**Symptom:** When you paste or drag images into Obsidian, they land in the same folder as the note instead of a dedicated folder.
+
+**Fix:** Configure the attachment folder:
+
+1. Go to **Settings** → **Files and links**
+2. Set **Default location for new attachments** to **"In the folder specified below"**
+3. Set **Attachment folder path** to `Attachments`
+
+![Files and links — attachment folder settings](../assets/obsidian-files-and-links.png)
+
+---
+
+### Required core plugins checklist
+
+After opening your vault for the first time, verify these core plugins are enabled in **Settings** → **Core plugins**:
+
+| Plugin | Required for | Default |
+|--------|-------------|---------|
+| **Backlinks** | Viewing incoming links to agent pages | On |
+| **Bases** | Opening `INDEX.base` knowledge map | On |
+| **Canvas** | Canvas files in the vault | On |
+| **Command palette** | `Cmd+P` command access | On |
+| **Properties view** | Viewing frontmatter in sidebar | On |
+
+If any are disabled, toggle them on. No restart required.
+
+---
+
+## Agent Client Issues
+
+### Agent Client stuck on "Connecting to OpenCode..."
 
 **Symptom:** The Agent Client panel in Obsidian shows "Connecting to OpenCode..." and never connects.
 
@@ -19,19 +98,102 @@ Common issues and how to fix them.
 
 ---
 
-## Obsidian CLI not available
+### Obsidian plugins not appearing
 
-**Symptom:** /weave or other skills fail with "Obsidian CLI is not available."
+**Symptom:** Agent Client or BRAT don't show up after `byoao init`.
 
 **Fix:**
-1. Make sure Obsidian is running
-2. Make sure your vault is open in Obsidian
-3. Enable CLI: **Settings** → **General** → **Advanced** → **Command-line interface**
-4. Verify: run `obsidian --version` in your terminal
+1. When opening the vault for the first time, click **"Trust author and enable plugins"**
+2. Go to **Settings** → **Community plugins** and verify they are enabled
+3. If Obsidian was running during `byoao init`, restart it or use **Cmd+P** → "Reload app without saving"
 
 ---
 
-## byoao install says "OpenCode not installed"
+### Plugin not loading in OpenCode
+
+**Symptom:** BYOAO tools don't appear in OpenCode sessions.
+
+**Fix:**
+1. Check that BYOAO is registered: look for `"byoao"` in `.opencode.json` (project-level) or `~/.config/opencode/opencode.json` (global)
+2. Re-run `byoao install` to re-register
+3. Restart OpenCode after installing
+
+---
+
+## Knowledge Base Issues
+
+### /cook doesn't find my notes
+
+**Possible reasons:**
+
+- **Files are excluded:** /cook skips `.obsidian/`, `.git/`, `node_modules/`, agent directories, AGENTS.md, and binary files
+- **Wrong vault:** Make sure the correct vault is open in Obsidian
+- **Non-markdown files:** /cook only processes `.md` files. PDFs, images, and other files are skipped
+- **Already processed:** In incremental mode, /cook only processes notes modified since the last run. Use `/cook --all` to re-read everything
+
+---
+
+### AGENTS.md looks wrong or has missing sections
+
+**Fix:**
+- Run `byoao upgrade` to regenerate AGENTS.md sections between markers
+- Manual edits outside `<!-- byoao:...:start/end -->` markers are preserved
+- Content between markers is auto-generated — don't edit it manually
+
+---
+
+### Undoing agent page changes
+
+Agent pages live in `entities/`, `concepts/`, `comparisons/`, and `queries/`. Since /cook never modifies your own notes, you can safely delete any agent page and re-run `/cook` to regenerate it.
+
+To see what changed recently, check `log.md` or run:
+```bash
+byoao logs
+```
+
+---
+
+## Installation Issues
+
+### "command not found: node" or "command not found: npm"
+
+**Symptom:** Terminal says `node` or `npm` is not recognized when you try to install BYOAO.
+
+**Fix:**
+1. You need to install Node.js first. Go to [nodejs.org](https://nodejs.org/) and download the **LTS** version
+2. Run the installer — it installs both `node` and `npm` together
+3. **Close and reopen your terminal** after installation (the terminal needs to refresh its PATH)
+4. Verify: `node --version` should print `v18.x.x` or higher
+
+**Still not working after install?**
+- **Mac:** Try opening a new Terminal window. If using zsh, run `source ~/.zshrc`
+- **Windows:** Close PowerShell completely and reopen it. If still failing, restart your computer
+
+---
+
+### "EACCES permission denied" when running npm install -g
+
+**Symptom:** `npm install -g @jayjiang/byoao` fails with a permission error.
+
+**Fix (Mac/Linux):**
+```bash
+sudo npm install -g @jayjiang/byoao
+```
+Enter your computer password when prompted. The `sudo` command runs the install with administrator privileges.
+
+**Fix (Windows):** Right-click PowerShell and select "Run as Administrator", then retry the install command.
+
+**Better long-term fix:** Configure npm to install global packages without sudo:
+```bash
+mkdir -p ~/.npm-global
+npm config set prefix '~/.npm-global'
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.zshrc
+source ~/.zshrc
+```
+
+---
+
+### byoao install says "OpenCode not installed"
 
 **Symptom:** Install warns that OpenCode is not found.
 
@@ -42,7 +204,7 @@ Common issues and how to fix them.
 
 ---
 
-## byoao init fails
+### byoao init fails
 
 **Common causes:**
 
@@ -52,90 +214,24 @@ Common issues and how to fix them.
 
 ---
 
-## /weave doesn't find my notes
+## MCP Service Issues
 
-**Possible reasons:**
-
-- **Files are excluded:** /weave skips `.obsidian/`, `.git/`, `node_modules/`, templates, AGENTS.md, and binary files
-- **Custom exclusions:** Check if the file matches a built-in exclusion pattern (see /weave documentation)
-- **Wrong vault:** Make sure the correct vault is open in Obsidian
-- **Non-markdown files:** /weave only processes `.md` files. PDFs, images, and other files are skipped (count reported at the end)
-
----
-
-## Glossary terms not being linked
-
-**Possible reasons:**
-
-- **Case mismatch:** Glossary terms are matched with some flexibility, but very different casing may not match. Ensure the term in the Glossary matches how it appears in your notes.
-- **Inside code blocks:** /weave doesn't create links inside code blocks or existing wikilinks
-- **Already linked:** /weave is idempotent — if a term is already a `[[wikilink]]`, it won't be touched
-
----
-
-## AGENTS.md looks wrong or has missing sections
-
-**Fix:**
-- Run `byoao upgrade` to regenerate AGENTS.md sections between markers
-- Manual edits outside `<!-- byoao:...:start/end -->` markers are preserved
-- Content between markers is auto-generated — don't edit it manually
-
----
-
-## Plugin not loading in OpenCode
-
-**Symptoms:** BYOAO tools don't appear in OpenCode sessions.
-
-**Fix:**
-1. Check that BYOAO is registered: look for `"byoao"` in `.opencode.json` (project-level) or `~/.config/opencode/opencode.json` (global)
-2. Re-run `byoao install` to re-register
-3. Restart OpenCode after installing
-
----
-
-## Obsidian plugins not appearing
-
-**Symptoms:** Agent Client or BRAT don't show up after `byoao init`.
-
-**Fix:**
-1. When opening the vault for the first time, click **"Trust author and enable plugins"**
-2. Go to **Settings** → **Community plugins** and verify they are enabled
-3. If Obsidian was running during `byoao init`, restart it or use **Cmd+P** → "Reload app without saving"
-
----
-
-## Backups and undoing changes
-
-/weave creates backups at `.byoao/backups/<timestamp>/` before modifying any file.
-
-To restore a file:
-```bash
-cp .byoao/backups/2026-03-29T14-30/my-note.md ./my-note.md
-```
-
-To find the latest backup:
-```bash
-ls -la .byoao/backups/
-```
-
----
-
-## MCP service connection expired (Atlassian / BigQuery)
+### MCP service connection expired (Atlassian / BigQuery)
 
 **Symptom:** Agent says "Atlassian connection failed" or BigQuery queries return authentication errors.
 
 **Fix:**
 1. Click the "..." menu in the Agent Client panel → **Restart agent**
 2. A browser window should open for re-authentication
-4. For Google services, make sure to select your work account
-5. Complete the login, then return to Obsidian
-6. Ask the agent to retry your request
+3. For Google services, make sure to select your work account
+4. Complete the login, then return to Obsidian
+5. Ask the agent to retry your request
 
 If this doesn't work, restart Obsidian completely.
 
 ---
 
-## BigQuery: authentication required
+### BigQuery: authentication required
 
 **Symptom:** Agent says BigQuery tools are unavailable, or queries fail with authentication errors.
 
@@ -149,9 +245,9 @@ BigQuery authentication happens lazily — the first time you ask the agent to q
 
 ---
 
-## Checking error logs
+## Checking Error Logs
 
-If something isn't working but you're not sure what went wrong, check the error logs:
+If something isn't working but you're not sure what went wrong:
 
 ```bash
 byoao logs
@@ -163,13 +259,13 @@ This shows recent errors from tools, hooks, and CLI commands. To share logs with
 byoao logs --export ~/Desktop/byoao-logs.txt
 ```
 
-The exported file includes your BYOAO version, Node version, and OS — everything needed for debugging. Review it before sharing to make sure it doesn't contain sensitive information.
+The exported file includes your BYOAO version, Node version, and OS. Review it before sharing to make sure it doesn't contain sensitive information.
 
 See [CLI Reference — byoao logs](cli-reference.md#byoao-logs) for all options.
 
 ---
 
-## Still stuck?
+## Still Stuck?
 
 - Run `byoao logs --export ~/Desktop/byoao-logs.txt` and attach the file to your report
 - Check [GitHub Issues](https://github.com/JayJiangCT/BYOAO/issues) for known problems
