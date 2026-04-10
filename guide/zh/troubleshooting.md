@@ -137,10 +137,13 @@ Properties view 在侧边栏以结构化面板显示 `type`、`tags`、`sources`
 
 ### AGENTS.md 看起来不对或缺少部分
 
-**解决：**
-- 运行 `byoao upgrade` 重新生成标记之间的 AGENTS.md 区域
-- `<!-- byoao:...:start/end -->` 标记之外的手动编辑会被保留
-- 标记之间的内容是自动生成的 — 不要手动编辑
+**`byoao upgrade` 实际会做什么：** 当 `.byoao/manifest.json` 里记录的知识库 BYOAO **版本低于**当前安装的 CLI 时，才会同步打包进来的基础设施（例如 `.opencode/skills/`）。若两者版本已经一致（例如都是 2.0.3），会提示知识库已是最新，**不会对知识库文件做修改**。
+
+**重要：** `byoao upgrade` **不会**覆盖库根目录的 **`AGENTS.md`** 和 **`SCHEMA.md`**。这两个文件只在 **`byoao init`** 时按模板生成一次，之后视为你的内容，避免覆盖自定义修改和分类。
+
+**最省事 — `byoao sync-docs`：** 在知识库根目录执行 `byoao sync-docs`（可加 `--dry-run` 先看会改什么）。若缺少对应标题，会自动插入包里的 **Knowledge Retrieval (Q&A)**（`AGENTS.md`）和 **Retrieval**（`SCHEMA.md`），不整文件覆盖。注意 `AGENTS.md` 里需保留 `## Available Skills` 标题，工具才能把检索小节插在它的前面。
+
+**手动合并：** 从 [仓库](https://github.com/JayJiangCT/BYOAO) 的 `byoao/src/assets/presets/common/` 下模板，或 `node_modules/@jayjiang/byoao/` 中复制段落，粘贴进你的 `AGENTS.md`、`SCHEMA.md`。
 
 ---
 

@@ -2,6 +2,17 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.4] — 2026-04-10
+
+### New Features
+- **`byoao sync-docs`**: Inserts packaged **Knowledge Retrieval (Q&A)** and **SCHEMA Retrieval** sections into existing vault `AGENTS.md` / `SCHEMA.md` when missing (safe merge; `--dry-run` supported). Does not overwrite whole files.
+
+### Documentation
+- **Troubleshooting (EN/ZH)**: Corrected what `byoao upgrade` does vs root docs; documented `sync-docs` as the preferred path for template updates.
+- **CLI reference (EN/ZH)**: Added `sync-docs`; clarified that `upgrade` does not refresh vault-root `AGENTS.md` / `SCHEMA.md` content.
+
+---
+
 ## [v2.0.3] — 2026-04-10
 
 ### Documentation

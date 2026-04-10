@@ -12,6 +12,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import os from "node:os";
 import { upgradeVault } from "../vault/upgrade.js";
+import { syncRootDocsFromTemplates } from "../vault/sync-root-docs.js";
 import { checkForCliUpdate, selfUpdateCli } from "../vault/self-update.js";
 import { detectVaultContext, detectInitMode } from "../vault/vault-detect.js";
 import { loadPreset } from "../vault/preset.js";
@@ -698,6 +699,69 @@ function getCategoryLabel(filePath: string): string {
   if (filePath.startsWith("Knowledge/templates/")) return "templates";
   return "other";
 }
+
+function formatSyncDocStatus(file: string, status: string, dryRun: boolean): string {
+  const prefix = dryRun ? "(dry-run) " : "";
+  switch (status) {
+    case "unchanged":
+      return `${prefix}${file}: already includes packaged sections — no change`;
+    case "updated":
+      return `${prefix}${file}: inserted missing section(s)`;
+    case "skipped-missing-file":
+      return `${prefix}${file}: file not found — skipped`;
+    case "skipped-missing-template":
+      return `${prefix}${file}: template missing in package — skipped`;
+    case "skipped-no-anchor":
+      return `${prefix}${file}: no "## Available Skills" heading — add text manually or restore that heading`;
+    default:
+      return `${prefix}${file}: ${status}`;
+  }
+}
+
+// ── byoao sync-docs ─────────────────────────────────────────────
+program
+  .command("sync-docs")
+  .argument("[path]", "Path to vault root (default: current directory)")
+  .description(
+    "Insert packaged sections into AGENTS.md and SCHEMA.md when missing " +
+      "(safe merge; does not replace whole files)"
+  )
+  .option("--dry-run", "Show what would change without writing files", false)
+  .action(async (vaultArg, opts) => {
+    printLogo();
+    printVersion(PKG_VERSION);
+
+    const targetPath = vaultArg ?? process.cwd();
+    const vaultRoot = detectVaultContext(targetPath);
+
+    if (!vaultRoot) {
+      printWarning("No BYOAO vault found. Run `byoao init` to create one.");
+      process.exit(1);
+      return;
+    }
+
+    printEvent("Syncing root docs from templates");
+    printEventDetail(`Vault: ${vaultRoot}`);
+    if (opts.dryRun) {
+      printEventDetail("(dry-run: no files will be written)");
+    }
+    console.log();
+
+    try {
+      const result = await syncRootDocsFromTemplates(vaultRoot, { dryRun: opts.dryRun });
+      printEventCheck(formatSyncDocStatus("AGENTS.md", result.agents, result.dryRun));
+      printEventCheck(formatSyncDocStatus("SCHEMA.md", result.schema, result.dryRun));
+      console.log();
+      printEventDone(opts.dryRun ? "Dry run complete" : "Done");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      void log("error", "cli:sync-docs", msg, {
+        error: err instanceof Error ? err : undefined,
+      }).catch(() => {});
+      printWarning(msg);
+      process.exit(1);
+    }
+  });
 
 // ── byoao logs ──────────────────────────────────────────────────
 program

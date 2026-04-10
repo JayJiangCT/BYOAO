@@ -135,10 +135,13 @@ If any are disabled, toggle them on. No restart required.
 
 ### AGENTS.md looks wrong or has missing sections
 
-**Fix:**
-- Run `byoao upgrade` to regenerate AGENTS.md sections between markers
-- Manual edits outside `<!-- byoao:...:start/end -->` markers are preserved
-- Content between markers is auto-generated — don't edit it manually
+**What `byoao upgrade` actually does:** It syncs packaged infrastructure (for example `.opencode/skills/`) when your vault’s recorded BYOAO version in `.byoao/manifest.json` is **older** than the installed CLI. If both versions already match (e.g. CLI and vault are both 2.0.3), the tool reports the vault as up to date and **does not change vault files**.
+
+**Important:** `byoao upgrade` does **not** overwrite vault-root **`AGENTS.md`** or **`SCHEMA.md`**. Those files are generated once at **`byoao init`** from the package templates; afterward they are yours so custom edits and taxonomy are not wiped.
+
+**Easiest — `byoao sync-docs`:** From the vault root, run `byoao sync-docs` (use `--dry-run` to preview). It inserts packaged sections such as **Knowledge Retrieval (Q&A)** in `AGENTS.md` and **Retrieval** in `SCHEMA.md` only when those headings are missing, without replacing whole files. Your `AGENTS.md` must still contain a `## Available Skills` heading so the tool knows where to insert the block.
+
+**Manual merge:** Copy sections from the templates in the [repository](https://github.com/JayJiangCT/BYOAO) (`byoao/src/assets/presets/common/AGENTS.md.hbs`, `SCHEMA.md.hbs`) or from `node_modules/@jayjiang/byoao/`, then paste into your vault files.
 
 ---
 
