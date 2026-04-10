@@ -91,7 +91,7 @@ byoao status ~/my-kb      # Check specific path
 
 ## byoao upgrade
 
-Upgrade the BYOAO CLI and vault infrastructure (OpenCode skills, Obsidian plugin config, etc.) to the latest version. Root `AGENTS.md` / `SCHEMA.md` are not overwritten; use **`byoao sync-docs`** to merge missing template sections into existing vaults.
+Upgrade the BYOAO CLI and vault infrastructure (OpenCode skills under the vault’s `.opencode/skills/`, Obsidian plugin config, etc.) to the latest version. If **`~/.config/opencode/skills`** already exists (from a prior **`byoao install -g`**), a successful vault upgrade **also refreshes** that global skills directory from the current package so it does not go stale. Root `AGENTS.md` / `SCHEMA.md` are not overwritten; use **`byoao sync-docs`** to merge missing template sections into existing vaults.
 
 The command runs in two phases: first it checks for a newer CLI version on npm and offers to update it, then it upgrades the vault content. If the CLI is updated, the process exits and you run `byoao upgrade` again to complete the vault upgrade.
 
@@ -106,7 +106,7 @@ byoao upgrade --skip-cli  # Only upgrade vault, skip CLI update
 |------|-------------|
 | `-y, --yes` | Skip confirmation prompts |
 | `--dry-run` | Show plan without executing |
-| `--force` | Run even if versions match |
+| `--force` | Run even if versions match (re-copy vault skills; still syncs global `~/.config/opencode/skills` when present) |
 | `--skip-cli` | Skip CLI self-update, only upgrade vault |
 | `--preset <name>` | Override preset during bootstrap |
 

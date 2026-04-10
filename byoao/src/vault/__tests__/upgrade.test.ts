@@ -166,7 +166,7 @@ describe("upgradeVault", () => {
     });
 
     const { upgradeVault } = await import("../upgrade.js");
-    const result = await upgradeVault(tmpDir);
+    const result = await upgradeVault(tmpDir, { skipGlobalSkillsSync: true });
 
     expect(result.fromVersion).toBe(version);
     expect(result.toVersion).toBe(version);
@@ -185,7 +185,7 @@ describe("upgradeVault", () => {
     });
 
     const { upgradeVault } = await import("../upgrade.js");
-    const result = await upgradeVault(tmpDir, { force: true });
+    const result = await upgradeVault(tmpDir, { force: true, skipGlobalSkillsSync: true });
 
     expect(result.dryRun).toBe(false);
   });
@@ -216,7 +216,7 @@ describe("upgradeVault", () => {
     await fs.writeFile(path.join(tmpDir, "AGENT.md"), "# Agent");
 
     const { upgradeVault } = await import("../upgrade.js");
-    const result = await upgradeVault(tmpDir, { force: true });
+    const result = await upgradeVault(tmpDir, { force: true, skipGlobalSkillsSync: true });
 
     expect(result.fromVersion).toBe("0.0.0");
   });

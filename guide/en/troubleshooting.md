@@ -139,6 +139,8 @@ If any are disabled, toggle them on. No restart required.
 
 **Important:** `byoao upgrade` does **not** overwrite vault-root **`AGENTS.md`** or **`SCHEMA.md`**. Those files are generated once at **`byoao init`** from the package templates; afterward they are yours so custom edits and taxonomy are not wiped.
 
+**Global vs vault skills:** `byoao install -g` installs skills under `~/.config/opencode/skills`. `byoao init` also copies skills into `{vault}/.opencode/skills`. After you upgrade the npm CLI, run **`byoao upgrade`** from the vault root: it updates the vault copy when needed, and **whenever `~/.config/opencode/skills` already exists** it refreshes that directory from the current package—even if the vault reports “already up to date” (same manifest version as the CLI). Use **`byoao upgrade --force`** to re-copy vault skills too.
+
 **Easiest — `byoao sync-docs`:** From the vault root, run `byoao sync-docs` (use `--dry-run` to preview). It inserts packaged sections such as **Knowledge Retrieval (Q&A)** in `AGENTS.md` and **Retrieval** in `SCHEMA.md` only when those headings are missing, without replacing whole files. Your `AGENTS.md` must still contain a `## Available Skills` heading so the tool knows where to insert the block.
 
 **Manual merge:** Copy sections from the templates in the [repository](https://github.com/JayJiangCT/BYOAO) (`byoao/src/assets/presets/common/AGENTS.md.hbs`, `SCHEMA.md.hbs`) or from `node_modules/@jayjiang/byoao/`, then paste into your vault files.
