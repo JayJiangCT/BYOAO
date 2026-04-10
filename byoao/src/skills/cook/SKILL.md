@@ -3,7 +3,8 @@ name: cook
 description: >
   The core knowledge compilation skill. Reads raw notes and external sources, then
   distills them into structured, cross-referenced knowledge pages in entities/, concepts/,
-  comparisons/, and queries/. Use this skill whenever the user mentions compiling notes,
+  comparisons/, and queries/. Keeps SCHEMA.md tag and domain taxonomy in sync when new
+  tags or domains appear. Use this skill whenever the user mentions compiling notes,
   digesting material, updating the knowledge base, running a cook cycle, or says anything
   like "process my notes", "compile this", "add this to the wiki", "what's new in my notes",
   or "update knowledge pages". Also activate when the user pastes external content and wants
@@ -71,6 +72,7 @@ When user provides a URL:
 ### Step 2: Match Against Existing Pages
 - Check `INDEX.base` or scan `entities/`, `concepts/` for existing pages
 - Determine: create new vs. update existing
+- Read `SCHEMA.md` (Obsidian CLI) for current tag and domain taxonomy so new pages prefer existing tags when they fit
 
 ### Step 3: Create/Update Pages
 - **New entities:** Create in `entities/<name>.md`
@@ -86,12 +88,21 @@ When user provides a URL:
 - Ensure every new/updated page has at least 2 outbound wikilinks
 - Check existing pages link back where relevant
 
-### Step 5: Update Navigation
+### Step 5: Sync SCHEMA.md
+After Step 3–4, reconcile agent pages touched this cycle with `SCHEMA.md`:
+
+- Re-read `SCHEMA.md` if you have not just read it.
+- If **any** new or updated agent page uses a `tag` not listed under **Current Tags** (or **Domain Taxonomy** / **Knowledge Domains** for a new `domain` value), **update `SCHEMA.md`** via Obsidian CLI: add the missing tag(s) or domain line(s), keep lists alphabetically sorted where the file already uses lists, and **preserve** unrelated sections and the user’s prose.
+- If every tag and domain on those pages already appears in `SCHEMA.md`, **do not** rewrite the file.
+- Do **not** remove tags or domains from `SCHEMA.md` during /cook unless the user explicitly asked to prune taxonomy.
+- Stay consistent with SCHEMA rules: singular tags, 2–5 tags per page on agent pages, new tags documented here before (or as soon as) use.
+
+### Step 6: Update Navigation
 - `INDEX.base` auto-updates via Obsidian Base query
 - Append entry to `log.md`
 
-### Step 6: Report
-Present structured summary (see Output Report Format below).
+### Step 7: Report
+Present structured summary (see Output Report Format below). Mention `SCHEMA.md` when you added tags or domains, or say it was unchanged.
 
 ## Contradiction Handling
 
@@ -130,6 +141,7 @@ Contradiction found:
   Want me to create a comparison page?
 
 Log: 1 entry added to log.md
+SCHEMA.md: added tags: observability, backend (or: SCHEMA.md — no taxonomy changes)
 ```
 
 **Design principles:**
@@ -165,6 +177,7 @@ No `owner` frontmatter field needed.
 
 - **Evidence-based**: Every knowledge page cites its sources
 - **Never modify user notes**: User notes are read-only during /cook
+- **SCHEMA.md stays accurate**: New tags or domains on agent pages are reflected in `SCHEMA.md` in the same cook cycle when possible
 - **Thresholds matter**: 2+ mentions or central subject to create a page
 - **Split at 200 lines**: Break large pages into sub-topics
 - **Flag contradictions**: Never silently overwrite

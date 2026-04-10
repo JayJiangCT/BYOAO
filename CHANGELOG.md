@@ -2,6 +2,13 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.5] — 2026-04-10
+
+### Skills
+- **`/cook`**: Read `SCHEMA.md` before tagging new pages; new **Step 5 — Sync SCHEMA.md** requires updating tag/domain taxonomy in the same cook cycle when new `tags` or `domain` values appear on agent pages (Obsidian CLI; preserve unrelated sections). Report SCHEMA changes in the cook summary; skill description and key principles updated accordingly.
+
+---
+
 ## [v2.0.4] — 2026-04-10
 
 ### New Features
