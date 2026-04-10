@@ -93,7 +93,7 @@ byoao status ~/my-kb      # 检查指定路径
 
 ## byoao upgrade
 
-升级 BYOAO CLI 和知识库基础设施（skills、commands、SCHEMA.md、Obsidian 配置）到最新版本。
+升级 BYOAO CLI 和知识库基础设施（OpenCode skills、Obsidian 插件配置等）。**不会**覆盖库根的 `AGENTS.md` / `SCHEMA.md`；老库若要补齐模板段落，请用 **`byoao sync-docs`**。
 
 命令分两阶段执行：先检查 npm 上是否有更新的 CLI 版本并提示更新，然后升级知识库内容。如果 CLI 更新成功，进程会退出，再次运行 `byoao upgrade` 即可完成知识库升级。
 
@@ -111,6 +111,24 @@ byoao upgrade --skip-cli  # 仅升级知识库，跳过 CLI 更新
 | `--force` | 即使版本一致也执行 |
 | `--skip-cli` | 跳过 CLI 自我更新，仅升级知识库 |
 | `--preset <name>` | 初始化时覆盖预设 |
+
+---
+
+## byoao sync-docs
+
+在库根的 **`AGENTS.md`**、**`SCHEMA.md`** 中**仅当缺少**对应章节时，插入当前包里的模板段落（例如 **Knowledge Retrieval (Q&A)**、**Retrieval**）。属于安全合并：不整文件覆盖、不删除你已有内容。在知识库根目录执行（或传入路径）。
+
+```bash
+byoao sync-docs              # 当前目录所在知识库
+byoao sync-docs ~/my-kb      # 指定知识库
+byoao sync-docs --dry-run    # 只预览，不写文件
+```
+
+| 参数 | 说明 |
+|------|------|
+| `--dry-run` | 仅预览，不修改文件 |
+
+**说明：** `AGENTS.md` 里需要保留 `## Available Skills` 标题，工具才能把检索小节插在它前面。若你已删掉或改名该标题，请手动从包内模板合并。
 
 ---
 

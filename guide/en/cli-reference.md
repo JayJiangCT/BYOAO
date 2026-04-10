@@ -91,7 +91,7 @@ byoao status ~/my-kb      # Check specific path
 
 ## byoao upgrade
 
-Upgrade the BYOAO CLI and vault infrastructure (skills, commands, SCHEMA.md, Obsidian config) to the latest version.
+Upgrade the BYOAO CLI and vault infrastructure (OpenCode skills, Obsidian plugin config, etc.) to the latest version. Root `AGENTS.md` / `SCHEMA.md` are not overwritten; use **`byoao sync-docs`** to merge missing template sections into existing vaults.
 
 The command runs in two phases: first it checks for a newer CLI version on npm and offers to update it, then it upgrades the vault content. If the CLI is updated, the process exits and you run `byoao upgrade` again to complete the vault upgrade.
 
@@ -109,6 +109,24 @@ byoao upgrade --skip-cli  # Only upgrade vault, skip CLI update
 | `--force` | Run even if versions match |
 | `--skip-cli` | Skip CLI self-update, only upgrade vault |
 | `--preset <name>` | Override preset during bootstrap |
+
+---
+
+## byoao sync-docs
+
+Insert packaged sections into vault-root **`AGENTS.md`** and **`SCHEMA.md`** when they are missing (for example **Knowledge Retrieval (Q&A)** and **Retrieval**). Safe merge: does not replace whole files or delete your edits. Run from the vault root (or pass the vault path).
+
+```bash
+byoao sync-docs              # Current directory vault
+byoao sync-docs ~/my-kb      # Specific vault
+byoao sync-docs --dry-run    # Show what would change; no writes
+```
+
+| Flag | Description |
+|------|-------------|
+| `--dry-run` | Preview only; do not modify files |
+
+**Note:** `AGENTS.md` must contain a `## Available Skills` heading so the tool knows where to insert the retrieval block. If you removed or renamed it, merge manually from the package templates.
 
 ---
 
