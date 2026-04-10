@@ -93,7 +93,7 @@ byoao status ~/my-kb      # 检查指定路径
 
 ## byoao upgrade
 
-升级 BYOAO CLI 和知识库基础设施（OpenCode skills、Obsidian 插件配置等）。**不会**覆盖库根的 `AGENTS.md` / `SCHEMA.md`；老库若要补齐模板段落，请用 **`byoao sync-docs`**。
+升级 BYOAO CLI 和知识库基础设施（会更新**当前知识库**下的 `.opencode/skills/`、Obsidian 插件配置等）。若本机已存在 **`~/.config/opencode/skills`**（曾执行过 **`byoao install -g`**），在 vault 升级**成功且无复制错误**时，会**顺带用当前包里的技能覆盖刷新**该全局目录，避免全局 skills 长期过期。**不会**覆盖库根 `AGENTS.md` / `SCHEMA.md`；老库补模板请用 **`byoao sync-docs`**。
 
 命令分两阶段执行：先检查 npm 上是否有更新的 CLI 版本并提示更新，然后升级知识库内容。如果 CLI 更新成功，进程会退出，再次运行 `byoao upgrade` 即可完成知识库升级。
 
@@ -108,7 +108,7 @@ byoao upgrade --skip-cli  # 仅升级知识库，跳过 CLI 更新
 |------|------|
 | `-y, --yes` | 跳过确认提示 |
 | `--dry-run` | 只显示计划，不执行 |
-| `--force` | 即使版本一致也执行 |
+| `--force` | 即使版本一致也执行（重拷 vault 内 skills；若存在全局目录仍会同步 `~/.config/opencode/skills`） |
 | `--skip-cli` | 跳过 CLI 自我更新，仅升级知识库 |
 | `--preset <name>` | 初始化时覆盖预设 |
 

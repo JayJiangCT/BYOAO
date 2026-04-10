@@ -141,6 +141,8 @@ Properties view 在侧边栏以结构化面板显示 `type`、`tags`、`sources`
 
 **重要：** `byoao upgrade` **不会**覆盖库根目录的 **`AGENTS.md`** 和 **`SCHEMA.md`**。这两个文件只在 **`byoao init`** 时按模板生成一次，之后视为你的内容，避免覆盖自定义修改和分类。
 
+**全局 vs 库内 skills：** `byoao install -g` 会把技能装到 `~/.config/opencode/skills`；`byoao init` 还会在 **`{知识库}/.opencode/skills`** 再拷一份。升级 npm 里的 `byoao` 后，在**知识库根目录**执行 **`byoao upgrade`**：需要时会更新库内副本；**只要本机已有** `~/.config/opencode/skills`，每次成功执行都会用当前包**刷新该目录**（即使提示 vault 已与 CLI 同版本）。若要强制重拷库内 `.opencode/skills`，用 **`byoao upgrade --force`**。
+
 **最省事 — `byoao sync-docs`：** 在知识库根目录执行 `byoao sync-docs`（可加 `--dry-run` 先看会改什么）。若缺少对应标题，会自动插入包里的 **Knowledge Retrieval (Q&A)**（`AGENTS.md`）和 **Retrieval**（`SCHEMA.md`），不整文件覆盖。注意 `AGENTS.md` 里需保留 `## Available Skills` 标题，工具才能把检索小节插在它的前面。
 
 **手动合并：** 从 [仓库](https://github.com/JayJiangCT/BYOAO) 的 `byoao/src/assets/presets/common/` 下模板，或 `node_modules/@jayjiang/byoao/` 中复制段落，粘贴进你的 `AGENTS.md`、`SCHEMA.md`。

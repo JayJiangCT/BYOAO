@@ -1,5 +1,10 @@
 import { fs } from "../lib/cjs-modules.js";
 import path from "node:path";
+import os from "node:os";
+import {
+  copyBundledSkillsToOpenCodeSkillsDir,
+  type CopyBundledSkillsResult,
+} from "./copy-bundled-skills.js";
 import {
   readManifest,
   writeManifest,
@@ -40,12 +45,18 @@ export interface UpgradeVaultResult {
   deprecated: string[];
   errors: Array<{ file: string; error: string }>;
   dryRun: boolean;
+  /** When `~/.config/opencode/skills` existed, refreshed from this package after a successful vault write */
+  globalOpenCodeSkills?: CopyBundledSkillsResult;
+  /** Non-fatal failure refreshing global skills (vault upgrade still applied) */
+  globalOpenCodeSkillsError?: string;
 }
 
 export interface UpgradeOptions {
   preset?: string;
   dryRun?: boolean;
   force?: boolean;
+  /** Skip refreshing `~/.config/opencode/skills` (used by tests; default false) */
+  skipGlobalSkillsSync?: boolean;
 }
 
 // ── Scanning ────────────────────────────────────────────────────
@@ -444,7 +455,7 @@ export async function upgradeVault(
   vaultPath: string,
   options?: UpgradeOptions
 ): Promise<UpgradeVaultResult> {
-  const { preset, dryRun = false, force = false } = options ?? {};
+  const { preset, dryRun = false, force = false, skipGlobalSkillsSync = false } = options ?? {};
 
   // 1. Validate this is a BYOAO vault
   const detectedPath = detectVaultContext(vaultPath);
@@ -465,6 +476,21 @@ export async function upgradeVault(
 
   // 3. Check if upgrade needed
   if (fromVersion === pkgVersion && !force) {
+    let globalOpenCodeSkillsEarly: CopyBundledSkillsResult | undefined;
+    let globalOpenCodeSkillsErrorEarly: string | undefined;
+    if (!dryRun && !skipGlobalSkillsSync) {
+      const globalSkillsRoot = path.join(os.homedir(), ".config", "opencode", "skills");
+      if (await fs.pathExists(globalSkillsRoot)) {
+        try {
+          globalOpenCodeSkillsEarly = await copyBundledSkillsToOpenCodeSkillsDir(globalSkillsRoot, {
+            includeObsidianSkills: true,
+          });
+        } catch (err) {
+          globalOpenCodeSkillsErrorEarly =
+            err instanceof Error ? err.message : String(err);
+        }
+      }
+    }
     return {
       fromVersion,
       toVersion: pkgVersion,
@@ -473,6 +499,8 @@ export async function upgradeVault(
       deprecated: [],
       errors: [],
       dryRun,
+      globalOpenCodeSkills: globalOpenCodeSkillsEarly,
+      globalOpenCodeSkillsError: globalOpenCodeSkillsErrorEarly,
     };
   }
 
@@ -510,6 +538,8 @@ export async function upgradeVault(
   const updated: string[] = [];
   const deprecated: string[] = [];
   const errors: Array<{ file: string; error: string }> = [];
+  let globalOpenCodeSkills: CopyBundledSkillsResult | undefined;
+  let globalOpenCodeSkillsError: string | undefined;
 
   if (!dryRun) {
     // Build lookup from relativePath → sourcePath
@@ -548,6 +578,21 @@ export async function upgradeVault(
     // 6. Update manifest with new version and current file list
     const installedFiles = await scanInstalledAssets(vaultPath);
     await writeManifest(vaultPath, effectivePreset, installedFiles);
+
+    // 7. If user ever used global `byoao install -g`, refresh ~/.config/opencode/skills too
+    if (!skipGlobalSkillsSync && errors.length === 0) {
+      const globalSkillsRoot = path.join(os.homedir(), ".config", "opencode", "skills");
+      if (await fs.pathExists(globalSkillsRoot)) {
+        try {
+          globalOpenCodeSkills = await copyBundledSkillsToOpenCodeSkillsDir(globalSkillsRoot, {
+            includeObsidianSkills: true,
+          });
+        } catch (err) {
+          globalOpenCodeSkillsError =
+            err instanceof Error ? err.message : String(err);
+        }
+      }
+    }
   }
 
   return {
@@ -558,5 +603,7 @@ export async function upgradeVault(
     deprecated,
     errors,
     dryRun,
+    globalOpenCodeSkills,
+    globalOpenCodeSkillsError,
   };
 }

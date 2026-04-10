@@ -9,6 +9,10 @@ import { checkGcloud } from "../vault/toolbox.js";
 import { configureObsidianPlugins } from "../vault/obsidian-plugins.js";
 import { loadPreset } from "../vault/preset.js";
 import {
+  copyBundledSkillsToOpenCodeSkillsDir,
+  resolveBundledByoaoSkillsRoot,
+} from "../vault/copy-bundled-skills.js";
+import {
   printSectionHeader,
   printProgress,
   printProgressWithBar,
@@ -230,8 +234,7 @@ export async function install(
   // ── 2. Install components ─────────────────────────────────────
   printSectionHeader("Installing components...");
 
-  let totalSteps = 2; // plugin + byoao skills
-  if (options.installSkills) totalSteps++;
+  let totalSteps = 2; // plugin + bundled skills (Obsidian optional + BYOAO)
   let completedSteps = 0;
 
   // ── 2a. Register plugin in opencode.json ──────────────────────
@@ -279,84 +282,31 @@ export async function install(
     printProgress("Plugin registration", "skip", "OpenCode not installed");
   }
 
-  // ── 2b. Install Obsidian Skills ───────────────────────────────
-  if (options.installSkills) {
-    const skillsDir = options.global
-      ? path.join(os.homedir(), ".config/opencode/skills")
-      : path.join(options.projectDir || process.cwd(), ".opencode/skills");
-
-    await fs.ensureDir(skillsDir);
-
-    const assetsDir = resolveAssetsDir();
-    const obsidianSkillsSrc = path.join(assetsDir, "obsidian-skills");
-
-    if (await fs.pathExists(obsidianSkillsSrc)) {
-      const skillFiles = await fs.readdir(obsidianSkillsSrc);
-      let installedCount = 0;
-      for (const file of skillFiles) {
-        if (file.endsWith(".md")) {
-          const skillName = file.replace(/\.md$/, "");
-          const destDir = path.join(skillsDir, skillName);
-          await fs.ensureDir(destDir);
-          await fs.copy(
-            path.join(obsidianSkillsSrc, file),
-            path.join(destDir, "SKILL.md"),
-            { overwrite: true }
-          );
-          installedCount++;
-        }
-      }
-      completedSteps++;
-      const pct = Math.round((completedSteps / totalSteps) * 100);
-      printProgressWithBar(
-        "Obsidian Skills",
-        "ok",
-        pct,
-        `${installedCount} files`
-      );
-    } else {
-      completedSteps++;
-      printProgress("Obsidian Skills", "warn", "not found in assets");
-    }
-  }
-
-  // ── 2c. Install BYOAO skills ─────────────────────────────────
-  const byoaoSkillsDestDir = options.global
+  // ── 2b. Install Obsidian + BYOAO skills (same layout as vault upgrade global sync)
+  const skillsDestDir = options.global
     ? path.join(os.homedir(), ".config/opencode/skills")
     : path.join(options.projectDir || process.cwd(), ".opencode/skills");
 
-  await fs.ensureDir(byoaoSkillsDestDir);
-  const byoaoSkillsSrc = path.join(resolveAssetsDir(), "skills");
+  await fs.ensureDir(skillsDestDir);
+  const bundled = await copyBundledSkillsToOpenCodeSkillsDir(skillsDestDir, {
+    includeObsidianSkills: options.installSkills,
+  });
+  completedSteps++;
+  const skillsPct = Math.round((completedSteps / totalSteps) * 100);
+  const skillsLabel =
+    bundled.obsidianSkills + bundled.byoaoSkills > 0
+      ? `${bundled.obsidianSkills} Obsidian + ${bundled.byoaoSkills} BYOAO`
+      : "0 skills";
+  printProgressWithBar("OpenCode skills", "ok", skillsPct, skillsLabel);
 
-  if (await fs.pathExists(byoaoSkillsSrc)) {
-    const entries = await fs.readdir(byoaoSkillsSrc, { withFileTypes: true });
-    let installedCount = 0;
-    for (const entry of entries) {
-      if (entry.isDirectory()) {
-        const srcSkill = path.join(byoaoSkillsSrc, entry.name, "SKILL.md");
-        if (await fs.pathExists(srcSkill)) {
-          const destDir = path.join(byoaoSkillsDestDir, entry.name);
-          await fs.ensureDir(destDir);
-          await fs.copy(srcSkill, path.join(destDir, "SKILL.md"), { overwrite: true });
-          installedCount++;
-        }
-      }
-    }
-    completedSteps++;
-    printProgressWithBar(
-      "BYOAO skills",
-      "ok",
-      100,
-      `${installedCount} skills`
-    );
-
-    // Clean up legacy commands/ directory
+  const byoaoSkillsRoot = resolveBundledByoaoSkillsRoot();
+  if (await fs.pathExists(byoaoSkillsRoot)) {
     const legacyCommandsDir = options.global
       ? path.join(os.homedir(), ".config/opencode/commands")
       : path.join(options.projectDir || process.cwd(), ".opencode/commands");
 
     if (await fs.pathExists(legacyCommandsDir)) {
-      const entries2 = await fs.readdir(byoaoSkillsSrc, { withFileTypes: true });
+      const entries2 = await fs.readdir(byoaoSkillsRoot, { withFileTypes: true });
       const skillNames = entries2.filter((e) => e.isDirectory()).map((e) => e.name);
       const deprecated = ["weave", "emerge"];
       let removedCount = 0;
@@ -375,9 +325,6 @@ export async function install(
         printProgress("Legacy commands", "ok", `migrated ${removedCount} → skills/`);
       }
     }
-  } else {
-    completedSteps++;
-    printProgressWithBar("BYOAO skills", "ok", 100, "0 skills");
   }
 
   // ── 2d. Install Obsidian plugins (minimal preset) ───────────

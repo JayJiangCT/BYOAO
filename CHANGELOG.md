@@ -2,6 +2,17 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.6] — 2026-04-10
+
+### Improvements
+- **`byoao upgrade`**: Refreshes **`~/.config/opencode/skills`** from the current package when that directory exists (global `install -g` layout), including when the vault manifest already matches the CLI—so global skills do not stay stale after an npm upgrade. Vault skill copy errors skip global sync. CLI prints a line when global skills are synced.
+- **`byoao install`**: Uses shared **`copyBundledSkillsToOpenCodeSkillsDir`** (Obsidian + BYOAO) with one progress step; legacy `commands/` cleanup unchanged.
+
+### Documentation
+- **CLI reference & troubleshooting (EN/ZH)**: Global vs vault skills, upgrade behavior, `--force`, and install location hint for project-only mode.
+
+---
+
 ## [v2.0.5] — 2026-04-10
 
 ### Skills

@@ -11,7 +11,7 @@ import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import path from "node:path";
 import os from "node:os";
-import { upgradeVault } from "../vault/upgrade.js";
+import { upgradeVault, type UpgradeVaultResult } from "../vault/upgrade.js";
 import { syncRootDocsFromTemplates } from "../vault/sync-root-docs.js";
 import { checkForCliUpdate, selfUpdateCli } from "../vault/self-update.js";
 import { detectVaultContext, detectInitMode } from "../vault/vault-detect.js";
@@ -85,7 +85,10 @@ program
           message: "Install location:",
           choices: [
             { name: "global (all projects)", value: "global" },
-            { name: "project-only (current directory)", value: "project" },
+            {
+              name: "project-only (current directory — prefer your vault root, or cd there after `byoao init`)",
+              value: "project",
+            },
           ],
           default: installGlobal ? "global" : "project",
         },
@@ -515,7 +518,7 @@ program
   .command("upgrade")
   .argument("[path]", "Path to vault root (default: detect from current directory)")
   .description(
-    "Upgrade BYOAO CLI and vault infrastructure to the latest version"
+    "Upgrade BYOAO CLI and vault OpenCode skills; refresh ~/.config/opencode/skills when present"
   )
   .option("-y, --yes", "Skip confirmation prompts", false)
   .option("--dry-run", "Show upgrade plan without executing", false)
@@ -603,14 +606,25 @@ program
         force: opts.force,
       });
 
-      // Up-to-date check
+      // Up-to-date check (vault files may need no changes; global ~/.config skills may still refresh)
       if (
         preview.added.length === 0 &&
         preview.updated.length === 0 &&
         preview.deprecated.length === 0
       ) {
         printEventDone(`Vault is already up to date at v${preview.toVersion}`);
-        if (!opts.force) return;
+        if (!opts.force) {
+          if (!opts.dryRun) {
+            const syncOnly = await upgradeVault(vaultRoot, {
+              preset: opts.preset,
+              force: false,
+            });
+            printGlobalSkillsOutcome(syncOnly);
+            console.log();
+            printEventDone("Done");
+          }
+          return;
+        }
       }
 
       printEventDetail(`From v${preview.fromVersion} → v${preview.toVersion}`);
@@ -678,6 +692,7 @@ program
         printWarning("Re-run upgrade to retry failed files");
       }
       printEventCheck(`Manifest updated to v${result.toVersion}`);
+      printGlobalSkillsOutcome(result);
       console.log();
       printEventDone("Done");
 
@@ -691,6 +706,20 @@ program
       process.exit(1);
     }
   });
+
+function printGlobalSkillsOutcome(result: UpgradeVaultResult): void {
+  if (result.globalOpenCodeSkills) {
+    const g = result.globalOpenCodeSkills;
+    printEventCheck(
+      `Global OpenCode skills synced (~/.config/opencode/skills): ${g.obsidianSkills} Obsidian + ${g.byoaoSkills} BYOAO`
+    );
+  }
+  if (result.globalOpenCodeSkillsError) {
+    printWarning(
+      `Global skills sync skipped or failed (non-fatal): ${result.globalOpenCodeSkillsError}`
+    );
+  }
+}
 
 function getCategoryLabel(filePath: string): string {
   if (filePath.startsWith(".opencode/skills/")) return "skills";
