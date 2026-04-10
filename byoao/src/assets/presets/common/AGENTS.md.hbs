@@ -14,6 +14,16 @@ Agent pages: Knowledge pages maintained by the Agent, located in `entities/`, `c
 **Use Obsidian CLI for all note operations** (`obsidian read`, `obsidian search`, `obsidian create`, etc.).
 Do not use bash (`cat`, `grep`, `find`, `sed`, etc.) to manipulate note files directly — Obsidian CLI correctly maintains wikilinks, frontmatter, and file relationships.
 
+## Knowledge Retrieval (Q&A)
+
+For questions that must be answered **from this vault** (not general knowledge), follow this chain. **Authoritative specification: the `/ask` skill** — if this summary diverges, follow `/ask`.
+
+- Read **`INDEX.base`** first when it exists (compiled knowledge map and page discovery).
+- Read **`SCHEMA.md`** when you need tag taxonomy, domain rules, or agent directory conventions.
+- Run **`obsidian search`** with each key concept; merge results across queries.
+- Run **`obsidian read`** on promising paths. Prefer agent pages under `entities/`, `concepts/`, `comparisons/`, and `queries/`, then pages whose tags or `domain` match the question, `status: reviewed` over `draft`, and more recent `updated`.
+- **Synthesize** a direct answer with `[[wikilink]]` citations and explicit gaps. Every claim should be backed by vault notes.
+
 ## Available Skills
 - **/cook** — Digest notes and external sources, compile knowledge pages
 - **/health** — Check knowledge page health (orphans, stale content, contradictions)
