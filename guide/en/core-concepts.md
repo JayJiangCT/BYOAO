@@ -242,6 +242,10 @@ AGENTS.md uses section markers so /wiki can update auto-generated sections witho
 
 Content between markers is tool-owned. Content outside markers is yours.
 
+### Retrieval protocol (Q&A)
+
+Default vault templates also include a **Knowledge Retrieval (Q&A)** section in `AGENTS.md`: use `INDEX.base` for discovery, `SCHEMA.md` when you need taxonomy or layout rules, then Obsidian CLI `search` and `read` with prioritization (agent directories, tags/domain, `status`, `updated`), and answer with wikilink citations. The **`/ask`** skill is the authoritative, full protocol so agent behavior stays in one place. That chain turns **progressive disclosure** (frontmatter and links) into concrete steps for grounded answers.
+
 ## SCHEMA.md — Tag Taxonomy and Conventions
 
 `SCHEMA.md` defines the rules for your LLM Wiki: tag taxonomy, naming conventions, page thresholds, and frontmatter requirements. It replaces the v1 Glossary.

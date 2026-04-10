@@ -2,6 +2,15 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.3] — 2026-04-10
+
+### Documentation
+- **Vault templates**: `AGENTS.md.hbs` now includes a **Knowledge Retrieval (Q&A)** summary (INDEX.base → SCHEMA.md → Obsidian CLI search/read, prioritization, wikilink grounding) with `/ask` as the authoritative protocol.
+- **SCHEMA.md template**: Added a **Retrieval** section cross-linking to that AGENTS summary and `/ask`.
+- **Guides**: English and Chinese `core-concepts.md` document how the retrieval chain relates to progressive disclosure.
+
+---
+
 ## [v2.0.2] — 2026-04-09
 
 ### Bug Fixes
