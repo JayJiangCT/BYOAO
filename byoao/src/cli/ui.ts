@@ -1,49 +1,28 @@
 import chalk from "chalk";
-
-// B and Y use standard gradient; OΛO uses a warm accent to hint at the "face"
-//
-//   B   Y   O   Λ   O
-//             👁  👄  👁    ← the hidden face
-//
-// Λ = pointed top, no crossbar (unlike A). Two open legs = cat-mouth vibe.
-
-// Column index where OΛO begins (after "  " prefix + BY columns)
-const FACE_START = 20;
-
-// Full logo as single block for precise alignment.
-// The A column is replaced with a symmetric Λ:
-//   pointed top (██╗), widening (████╗), open legs, no crossbar.
-const LOGO_LINES = [
-  "  ██████╗ ██╗   ██╗ ██████╗   ██╗    ██████╗ ",
-  "  ██╔══██╗╚██╗ ██╔╝██╔═══██╗ ████╗  ██╔═══██╗",
-  "  ██████╔╝ ╚████╔╝ ██║   ██║██╔══██╗██║   ██║",
-  "  ██╔══██╗  ╚██╔╝  ██║   ██║██║  ██║██║   ██║",
-  "  ██████╔╝   ██║   ╚██████╔╝██║  ██║╚██████╔╝",
-  "  ╚═════╝    ╚═╝    ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ",
-];
+import { BYOAO_LOGO_LINES } from "./byoao-logo-art.js";
 
 const TAGLINE = "Build Your Own AI OS";
 
-// BY gradient: purple → blue
-const GRADIENT_BY: number[][] = [
-  [138, 92, 246],  // purple
-  [99, 144, 255],  // blue
-];
+/** Logo anchor + TUI accents (warm marmot, same family as `byoao_logo.js` 175;120;82) */
+const RGB = {
+  furLight: [198, 148, 108] as const,
+  headline: [215, 178, 132] as const,
+  accent: [190, 140, 95] as const,
+  success: [118, 142, 88] as const,
+  warn: [212, 170, 72] as const,
+  error: [188, 82, 76] as const,
+};
 
-// OΛO gradient: cyan → mint → green  (warmer, eye-catching)
-const GRADIENT_FACE: number[][] = [
-  [34, 211, 238],  // cyan
-  [52, 211, 153],  // mint
-  [16, 185, 129],  // green
-];
+const tc = (rgb: readonly [number, number, number], s: string) =>
+  chalk.rgb(rgb[0], rgb[1], rgb[2])(s);
 
-// Tagline: full spectrum
+// Tagline: warm brown–tan (banner art from `byoao-logo-art.ts`)
 const GRADIENT_FULL: number[][] = [
-  [138, 92, 246],
-  [99, 144, 255],
-  [34, 211, 238],
-  [52, 211, 153],
-  [16, 185, 129],
+  [132, 86, 58],
+  [158, 108, 74],
+  [175, 120, 82],
+  [198, 148, 108],
+  [218, 172, 128],
 ];
 
 function lerpColor(
@@ -81,15 +60,9 @@ function colorize(
 const BAR_WIDTH = 22;
 
 export function printLogo(): void {
-  const totalRows = LOGO_LINES.length;
   console.log();
-  for (let i = 0; i < totalRows; i++) {
-    const chars = [...LOGO_LINES[i]];
-    const byPart = chars.slice(0, FACE_START).join("");
-    const facePart = chars.slice(FACE_START).join("");
-    const by = colorize(byPart, GRADIENT_BY, i, totalRows);
-    const face = colorize(facePart, GRADIENT_FACE, i, totalRows);
-    console.log(by + face);
+  for (const line of BYOAO_LOGO_LINES) {
+    console.log(`  ${line}`);
   }
   console.log();
   const pad = " ".repeat(6);
@@ -112,10 +85,10 @@ export function printProgress(
   detail?: string
 ): void {
   const markers: Record<typeof status, string> = {
-    ok: chalk.green("✓"),
-    warn: chalk.yellow("⚠"),
+    ok: tc(RGB.success, "✓"),
+    warn: tc(RGB.warn, "⚠"),
     skip: chalk.dim("⏭"),
-    fail: chalk.red("✗"),
+    fail: tc(RGB.error, "✗"),
   };
 
   const marker = markers[status];
@@ -126,9 +99,10 @@ export function printProgress(
 export function printProgressBar(percent: number): void {
   const filled = Math.round((percent / 100) * BAR_WIDTH);
   const empty = BAR_WIDTH - filled;
-  const bar = "█".repeat(filled) + "░".repeat(empty);
+  const bar =
+    tc(RGB.furLight, "█".repeat(filled)) + chalk.dim("░".repeat(empty));
   const pct = `${Math.round(percent)}%`;
-  console.log(chalk.dim(`  ${bar}  ${pct}`));
+  console.log(`  ${bar}${chalk.dim(`  ${pct}`)}`);
 }
 
 export function printProgressWithBar(
@@ -138,10 +112,10 @@ export function printProgressWithBar(
   detail?: string
 ): void {
   const markers: Record<typeof status, string> = {
-    ok: chalk.green("✓"),
-    warn: chalk.yellow("⚠"),
+    ok: tc(RGB.success, "✓"),
+    warn: tc(RGB.warn, "⚠"),
     skip: chalk.dim("⏭"),
-    fail: chalk.red("✗"),
+    fail: tc(RGB.error, "✗"),
   };
 
   const marker = markers[status];
@@ -149,12 +123,13 @@ export function printProgressWithBar(
 
   const filled = Math.round((percent / 100) * BAR_WIDTH);
   const empty = BAR_WIDTH - filled;
-  const bar = "█".repeat(filled) + "░".repeat(empty);
+  const bar =
+    tc(RGB.furLight, "█".repeat(filled)) + chalk.dim("░".repeat(empty));
   const pct = `${Math.round(percent)}%`;
 
   // Pad label to align bars
   const padded = text.padEnd(36);
-  console.log(`  ${marker} ${padded} ${chalk.dim(`${bar}  ${pct}`)}`);
+  console.log(`  ${marker} ${padded} ${bar}${chalk.dim(`  ${pct}`)}`);
 }
 
 export function printGettingStarted(
@@ -162,12 +137,14 @@ export function printGettingStarted(
 ): void {
   console.log();
   console.log(
-    chalk.bold("  Build Your Own AI OS — Obsidian + AI Agent")
+    chalk.rgb(RGB.headline[0], RGB.headline[1], RGB.headline[2]).bold(
+      "  Build Your Own AI OS — Obsidian + AI Agent"
+    )
   );
   console.log();
 
   for (const item of items) {
-    const cmd = chalk.cyan(item.cmd.padEnd(28));
+    const cmd = tc(RGB.accent, item.cmd.padEnd(28));
     const desc = chalk.dim(item.desc);
     console.log(`  ${cmd}${desc}`);
   }
@@ -175,7 +152,9 @@ export function printGettingStarted(
 
 export function printFooter(url: string): void {
   console.log();
-  console.log(chalk.dim(`  For more info visit ${url}`));
+  console.log(
+    `  ${chalk.dim("For more info visit")} ${tc(RGB.furLight, url)}`
+  );
   console.log();
 }
 
@@ -184,7 +163,8 @@ export function printBlank(): void {
 }
 
 export function printWarning(message: string): void {
-  console.log(`  ${chalk.yellow("⚠")} ${chalk.yellow(message)}`);
+  const w = tc(RGB.warn, "⚠");
+  console.log(`  ${w} ${tc(RGB.warn, message)}`);
 }
 
 export function printInfo(message: string): void {
@@ -193,7 +173,7 @@ export function printInfo(message: string): void {
 
 /** Print an event-line marker: ● label */
 export function printEvent(label: string): void {
-  console.log(`  ${chalk.cyan("●")} ${chalk.bold(label)}`);
+  console.log(`  ${tc(RGB.accent, "●")} ${chalk.bold(label)}`);
 }
 
 /** Print event-line detail (indented under event) */
@@ -203,12 +183,12 @@ export function printEventDetail(text: string): void {
 
 /** Print a completed event detail with checkmark: ✓ text */
 export function printEventCheck(text: string): void {
-  console.log(`    ${chalk.green("✓")} ${text}`);
+  console.log(`    ${tc(RGB.success, "✓")} ${text}`);
 }
 
 /** Print a completed event: ◆ label */
 export function printEventDone(label: string): void {
-  console.log(`  ${chalk.green("◆")} ${chalk.bold(label)}`);
+  console.log(`  ${tc(RGB.success, "◆")} ${chalk.bold(label)}`);
 }
 
 /** Animated spinner for long-running operations. Call stop() when done. */
@@ -218,7 +198,9 @@ export function startSpinner(label: string): { stop: (finalLabel?: string) => vo
   const stream = process.stderr;
 
   const interval = setInterval(() => {
-    stream.write(`\r  ${chalk.cyan(frames[i % frames.length])} ${chalk.bold(label)}`);
+    stream.write(
+      `\r  ${tc(RGB.accent, frames[i % frames.length])} ${chalk.bold(label)}`
+    );
     i++;
   }, 80);
 
