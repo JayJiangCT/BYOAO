@@ -2,6 +2,17 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.7] — 2026-04-10
+
+### Improvements
+- **CLI banner**: Pixel-style **BYOAO** wordmark with ear row, TrueColor fur tone, and `npm run generate:logo-art` to sync `byoao_logo.js` → `src/cli/byoao-logo-art.ts`.
+- **TUI colors**: Tagline gradient, progress markers, spinner, help text accents, and progress bars use a unified warm earth palette aligned with the banner (replaces generic cyan/green/yellow/red defaults).
+
+### Documentation
+- **README**: Header uses the project banner image (`.github/readme-banner.png`) instead of ASCII art.
+
+---
+
 ## [v2.0.6] — 2026-04-10
 
 ### Improvements

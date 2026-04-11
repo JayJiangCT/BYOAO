@@ -1,14 +1,6 @@
 <p align="center">
-  <pre align="center">
-  ██████╗ ██╗   ██╗ ██████╗   ██╗    ██████╗
-  ██╔══██╗╚██╗ ██╔╝██╔═══██╗ ████╗  ██╔═══██╗
-  ██████╔╝ ╚████╔╝ ██║   ██║██╔══██╗██║   ██║
-  ██╔══██╗  ╚██╔╝  ██║   ██║██║  ██║██║   ██║
-  ██████╔╝   ██║   ╚██████╔╝██║  ██║╚██████╔╝
-  ╚═════╝    ╚═╝    ╚═════╝ ╚═╝  ╚═╝ ╚═════╝
-  </pre>
-  <strong>Build Your Own AI OS</strong>
-  <br/>
+  <img src=".github/readme-banner.png" alt="BYOAO — Build Your Own AI OS" width="720" />
+  <br/><br/>
   <em>Turn Obsidian into an AI-powered LLM Wiki knowledge base</em>
   <br/><br/>
   <a href="https://www.npmjs.com/package/@jayjiang/byoao"><img src="https://img.shields.io/npm/v/@jayjiang/byoao?style=flat-square" alt="npm version"></a>
