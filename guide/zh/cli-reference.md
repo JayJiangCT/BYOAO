@@ -69,6 +69,8 @@ byoao init --kb "My KB" --name "Jay" --preset pm-tpm
 | `--provider <name>` | AI 提供商：`copilot`、`gemini` 或 `skip` |
 | `--gcp-project <id>` | GCP 项目 ID（`--provider=gemini` 时必填） |
 
+**交互式预设：** 未传 **`--preset`** 时，CLI 会先问**主要用途**（Personal / Work），再在 Work 场景下按需展示**工作向预设**列表。传入 **`--preset`** 会跳过上述提问，本次初始化固定使用该预设。
+
 **模式检测：**
 - 空路径或不存在 → **Mode A**（全新知识库）
 - 路径中有 `.md` 文件 → **Mode B**（采纳已有，向用户确认）

@@ -233,6 +233,16 @@ source ~/.zshrc
 
 ---
 
+### "Knowledge/ exists but contains no markdown" (vault diagnosis)
+
+**Symptom:** A health or diagnosis report shows an **info** message that folder `Knowledge/` exists but has no Markdown files, and mentions BYOAO v2.
+
+**Why:** BYOAO v1 used a `Knowledge/` directory; v2 uses the agent folders (`entities/`, `concepts/`, etc.) at the vault root. An empty or unused `Knowledge/` folder is harmless legacy clutter.
+
+**Fix:** If you do not need that folder, you can delete `Knowledge/`. Your v2 notes and `/cook` output are not stored there.
+
+---
+
 ## MCP Service Issues
 
 ### MCP service connection expired (Atlassian / BigQuery)

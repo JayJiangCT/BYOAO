@@ -235,6 +235,16 @@ source ~/.zshrc
 
 ---
 
+### 提示「Knowledge/ 存在但没有 Markdown」（库诊断）
+
+**症状：** 健康检查或诊断报告里出现 **info**：`Knowledge/` 文件夹存在但其中没有 Markdown 文件，并提到 BYOAO v2。
+
+**原因：** v1 曾使用 `Knowledge/` 目录；v2 在库根使用 agent 目录（`entities/`、`concepts/` 等）。空的或未使用的 `Knowledge/` 多为历史遗留，不影响 v2 工作流。
+
+**处理：** 若不需要该目录，可删除 `Knowledge/`。v2 笔记与 `/cook` 产出不依赖此路径。
+
+---
+
 ## MCP 服务问题
 
 ### MCP 服务连接过期（Atlassian / BigQuery）

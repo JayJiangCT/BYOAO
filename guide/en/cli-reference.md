@@ -67,6 +67,8 @@ byoao init --kb "My KB" --name "Jay" --preset pm-tpm
 | `--provider <name>` | AI provider: `copilot`, `gemini`, or `skip` |
 | `--gcp-project <id>` | GCP Project ID (required with `--provider=gemini`) |
 
+**Interactive preset flow:** If you do **not** pass `--preset`, the CLI asks for **main use** (Personal vs Work), then (for Work) may offer a **work setup** list when multiple presets apply. Passing **`--preset`** skips those questions and locks the preset for this run.
+
 **Mode detection:**
 - Empty or non-existent path → **Mode A** (fresh KB)
 - Path with `.md` files → **Mode B** (adopt existing, confirms with user)

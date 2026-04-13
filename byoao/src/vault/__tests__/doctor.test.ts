@@ -177,4 +177,16 @@ describe("getVaultDiagnosis", () => {
     );
     expect(templateIssues).toHaveLength(0);
   });
+
+  it("info when empty legacy Knowledge folder exists", async () => {
+    await fs.ensureDir(path.join(tmpDir, "Knowledge"));
+    const report = await getVaultDiagnosis(tmpDir);
+    const legacy = report.issues.filter(
+      (i) =>
+        i.severity === "info" &&
+        i.message.includes("Knowledge/") &&
+        i.message.includes("v1 legacy"),
+    );
+    expect(legacy).toHaveLength(1);
+  });
 });

@@ -1,6 +1,10 @@
 import { fs } from "../lib/cjs-modules.js";
 import path from "node:path";
-import { PresetConfigSchema, type PresetConfig } from "../plugin-config.js";
+import {
+  PresetConfigSchema,
+  type PresetConfig,
+  type InitOfferWhen,
+} from "../plugin-config.js";
 
 function getPresetsDir(): string {
   // When running from dist/ (bundled): dist/assets/presets
@@ -18,10 +22,17 @@ function getPresetsDir(): string {
   );
 }
 
-export function listPresets(): { name: string; displayName: string; description: string }[] {
+export type PresetListEntry = {
+  name: string;
+  displayName: string;
+  description: string;
+  initOfferWhen: InitOfferWhen;
+};
+
+function readAllPresetEntries(): PresetListEntry[] {
   const presetsDir = getPresetsDir();
   const entries = fs.readdirSync(presetsDir, { withFileTypes: true });
-  const presets: { name: string; displayName: string; description: string }[] = [];
+  const presets: PresetListEntry[] = [];
 
   for (const entry of entries) {
     if (!entry.isDirectory() || entry.name === "common") continue;
@@ -33,10 +44,34 @@ export function listPresets(): { name: string; displayName: string; description:
       name: parsed.name,
       displayName: parsed.displayName,
       description: parsed.description,
+      initOfferWhen: parsed.initOfferWhen,
     });
   }
 
   return presets;
+}
+
+export function listPresets(): { name: string; displayName: string; description: string }[] {
+  return readAllPresetEntries().map(({ name, displayName, description }) => ({
+    name,
+    displayName,
+    description,
+  }));
+}
+
+/** Full preset rows for interactive init filtering. */
+export function listPresetsDetailed(): PresetListEntry[] {
+  return readAllPresetEntries();
+}
+
+/** Presets shown after user picks Personal or Work in interactive init. */
+export function filterPresetsForInitUseCase(
+  presets: PresetListEntry[],
+  useCase: "personal" | "work",
+): PresetListEntry[] {
+  return presets.filter(
+    (p) => p.initOfferWhen === "always" || p.initOfferWhen === useCase,
+  );
 }
 
 export function loadPreset(name: string): {

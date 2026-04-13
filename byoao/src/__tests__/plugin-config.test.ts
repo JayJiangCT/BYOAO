@@ -60,6 +60,18 @@ describe("PresetConfigSchema", () => {
     expect(result.mcpServers).toEqual({});
     expect(result.templates).toEqual([]);
     expect(result.frontmatterExtras).toEqual({});
+    expect(result.initOfferWhen).toBe("always");
+  });
+
+  it("parses initOfferWhen work", () => {
+    const result = PresetConfigSchema.parse({
+      name: "pm-tpm",
+      displayName: "PM / TPM",
+      description: "d",
+      agentDescription: "a",
+      initOfferWhen: "work",
+    });
+    expect(result.initOfferWhen).toBe("work");
   });
 
   it("validates mcpServers field", () => {
