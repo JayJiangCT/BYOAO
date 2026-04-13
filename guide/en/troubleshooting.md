@@ -38,6 +38,20 @@ Common issues and how to fix them.
 
 ---
 
+### Agent read INDEX.base but still can't list pages
+
+**Symptom:** You (or your AI agent) ran `obsidian read file="INDEX.base"` and expected note titles in the output, but you see YAML/views/filters instead.
+
+**Why:** `INDEX.base` is an **Obsidian Bases** index file. On disk it holds the **definition** Obsidian evaluates into a live table (with paths, tags, dates, backlinks, etc.). The CLI `read` command returns that definition, not the rendered rows.
+
+**Fix:**
+
+1. Treat **`INDEX.base`** as the canonical wiki index: parse it for path and property scope, then run **`obsidian properties`** (e.g. by `type=entity` / `concept` / `comparison` / `query`), **`obsidian search`**, **`obsidian tags`**, and **`obsidian backlinks`** to list and traverse the same notes the Base shows in Obsidian.
+2. Follow the **`/ask`** skill end-to-end — it encodes this Bases + CLI workflow.
+3. Run **`/wiki`** when the Base query, views, or columns need to match your growing knowledge map.
+
+---
+
 ### Frontmatter not visible in sidebar
 
 **Symptom:** Agent pages have YAML frontmatter but you can't see the metadata fields in the sidebar.

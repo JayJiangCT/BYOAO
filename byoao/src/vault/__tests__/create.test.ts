@@ -62,12 +62,15 @@ describe("createVault", () => {
     expect(result.directories).toContain("concepts");
   });
 
-  it("creates SCHEMA.md and log.md", async () => {
+  it("creates SCHEMA.md, log.md, and INDEX.base from template when missing", async () => {
     const result = await createVault(makeConfig());
     const vp = result.vaultPath;
 
     expect(await fs.pathExists(path.join(vp, "SCHEMA.md"))).toBe(true);
     expect(await fs.pathExists(path.join(vp, "log.md"))).toBe(true);
+    expect(await fs.pathExists(path.join(vp, "INDEX.base"))).toBe(true);
+    const indexBase = await fs.readFile(path.join(vp, "INDEX.base"), "utf-8");
+    expect(indexBase).toContain("file.inFolder");
   });
 
   it("generates AGENTS.md", async () => {

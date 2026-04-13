@@ -84,7 +84,7 @@ Verify vault configuration:
 - `.opencode/` directory has current skill definitions
 - `SCHEMA.md` exists and has a defined tag taxonomy
 - `log.md` exists and has recent entries
-- `INDEX.base` exists for compiled knowledge discovery
+- `INDEX.base` exists as the Bases wiki index (run `/wiki` to verify or improve it)
 
 ### Step 6: Present Diagnosis
 

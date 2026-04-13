@@ -111,7 +111,7 @@ For a minimal KB:
 ├── comparisons/         # Agent-compiled: side-by-side analyses
 ├── queries/             # Agent-compiled: valuable Q&A
 ├── SCHEMA.md            # Tag taxonomy and conventions
-├── INDEX.base           # Knowledge map (Obsidian Base view)
+├── INDEX.base           # Knowledge map (Bases; copied from package template when missing on init)
 ├── log.md               # Action log
 ├── AGENTS.md            # AI navigation index
 └── Start Here.md        # Your onboarding guide
@@ -176,7 +176,7 @@ This is where the magic happens. /cook reads your notes and compiles structured 
 - Creates entity pages for people, projects, and products mentioned across notes
 - Creates concept pages for methods, rules, and decisions
 - Detects contradictions across your notes and flags them for review
-- Updates INDEX.base (your knowledge map) and log.md
+- Updates INDEX.base (knowledge map) and log.md
 - Reports a natural-language summary of what changed
 
 After it runs, press `Cmd+G` to open Graph View and see your notes connected to agent-compiled knowledge pages.

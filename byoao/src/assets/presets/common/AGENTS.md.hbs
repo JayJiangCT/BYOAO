@@ -4,7 +4,7 @@
 This is an LLM Wiki knowledge base. Your notes are raw material — the Agent compiles them into structured knowledge pages via `/cook`. Both coexist in the same vault, connected through wikilinks.
 
 ## Getting Started
-Run `/wiki` to generate `INDEX.base`, then explore the knowledge structure from there.
+Run `/wiki` to set up or refresh **`INDEX.base`** (Obsidian Bases wiki index), then explore the knowledge structure from there. Agents query the same graph with Obsidian CLI (`obsidian properties`, `search`, `tags`, `backlinks` — see **`/ask`**).
 
 ## Note Types
 User notes: Your existing notes, kept in their original directories (Projects/, Daily/, etc.) — untouched.
@@ -18,17 +18,17 @@ Do not use bash (`cat`, `grep`, `find`, `sed`, etc.) to manipulate note files di
 
 For questions that must be answered **from this vault** (not general knowledge), follow this chain. **Authoritative specification: the `/ask` skill** — if this summary diverges, follow `/ask`.
 
-- Read **`INDEX.base`** first when it exists (compiled knowledge map and page discovery).
+- **`INDEX.base`** is the vault Bases wiki index (live query + metadata in Obsidian). Read it via CLI to learn scope; use **`obsidian properties`** by `type` (and `search` / `tags` / `backlinks` as needed) to list and traverse the same compiled pages — no duplicate static index file.
 - Read **`SCHEMA.md`** when you need tag taxonomy, domain rules, or agent directory conventions.
-- Run **`obsidian search`** with each key concept; merge results across queries.
-- Run **`obsidian read`** on promising paths. Prefer agent pages under `entities/`, `concepts/`, `comparisons/`, and `queries/`, then pages whose tags or `domain` match the question, `status: reviewed` over `draft`, and more recent `updated`.
+- Run **`obsidian search`** for each key concept and merge results; broaden to user-note paths when the answer may live outside agent directories.
+- Run **`obsidian read`** on promising paths. Prefer agent pages under `entities/`, `concepts/`, `comparisons/`, and `queries/`, then user notes elsewhere. Prefer `status: reviewed` over `draft`, and more recent `updated`.
 - **Synthesize** a direct answer with `[[wikilink]]` citations and explicit gaps. Every claim should be backed by vault notes.
 
 ## Available Skills
 - **/cook** — Digest notes and external sources, compile knowledge pages
 - **/health** — Check knowledge page health (orphans, stale content, contradictions)
 - **/prep** — Fix frontmatter and broken wikilinks
-- **/wiki** — Generate INDEX.base knowledge map
+- **/wiki** — Set up or refresh INDEX.base (Bases wiki index) and inventory
 - **/organize** — Reorganize directory structure as needed
 - **/ask** — Open-ended Q&A against the knowledge base
 - **Thinking Tools** — /trace, /connect, /ideas, /challenge, /drift

@@ -34,7 +34,7 @@ obsidian search "<from>"
 obsidian search "<to>"
 ```
 
-If `INDEX.base` exists, read it to spot compiled pages for either topic.
+If `INDEX.base` exists, read it to align with the vault Bases index, then use `obsidian properties` / `search` as in **`/ask`**.
 
 Read any existing agent pages in `entities/`, `concepts/`, `comparisons/`, and `queries/`:
 

@@ -194,9 +194,28 @@ Use `log.md` to understand what the agent has been doing and when. It's especial
 - Columns: title, type, tags, updated date, source count
 - Sortable by any column, filterable by type or tags
 
-Open `INDEX.base` in Obsidian to browse, sort, and filter your knowledge pages. Run `/wiki` to regenerate it when the knowledge base grows.
+Open `INDEX.base` in Obsidian to browse, sort, and filter your knowledge pages. Each row is a note; columns can show frontmatter (tags, dates, status, domain), paths, backlinks, and more — that metadata is what makes Bases a strong **associative** index. Run **`/wiki`** when you need to verify or tune the Base query and views as the knowledge base grows.
+
+**CLI and AI:** `obsidian read file="INDEX.base"` returns the **Base definition** on disk; Obsidian evaluates it into the live table. Agents use **`obsidian properties`**, **`obsidian search`**, **`obsidian tags`**, **`obsidian backlinks`**, and related commands to query the **same** set of notes and metadata (see **`/ask`**). There is no separate static index file to maintain by default.
 
 > **Requires the Bases core plugin** — make sure it's enabled in Settings → Core plugins. See the [Getting Started](getting-started.md#core-plugins) setup instructions.
+
+### Reference `INDEX.base` layout
+
+The repo ships **[`byoao/src/assets/presets/common/INDEX.base.example`](https://github.com/JayJiangCT/BYOAO/blob/main/byoao/src/assets/presets/common/INDEX.base.example)** (also under `presets/common/` in the published npm package). **`byoao init`** and **`byoao upgrade`** copy it to **`INDEX.base`** at the vault root when that file is missing. Open **`INDEX.base`** in Obsidian. The template includes a **global** `or` folder scope over the four agent directories, **formulas** (`type_label`, days since `updated`, backlink count), **`properties.displayName`** (including **`file.name` → Name**), optional **`summaries`**, and **six views** (All Pages grouped by `type`, Entities/Concepts grouped by `domain`, Comparisons, Queries, Recently Updated with **`limit`** only — no `groupBy` on raw `updated`). **`/wiki`** describes the same pattern; adjust YAML if your Obsidian Bases version differs.
+
+#### Bases YAML — where do functions come from?
+
+Filters and formulas use **Obsidian Bases** expression syntax (e.g. `file.inFolder("entities")`, `file.backlinks.length`, `date(updated)`, `today()`). Full schema, filter operators, formula helpers, and view options are documented in the bundled **obsidian-bases** skill shipped with BYOAO (`byoao/src/assets/obsidian-skills/obsidian-bases.md`) and in [Obsidian’s Bases documentation](https://obsidian.md/blog/bases/).
+
+#### `obsidian search` vs Bases
+
+- **Bases (`INDEX.base`)** — Live table over a **declared scope** (folders + filters): best for **browsing**, grouping, staleness/backlink columns, and **defining** what counts as compiled wiki pages.
+- **`obsidian search` (CLI)** — Full-text (and query-string) search across the vault: best for **ad hoc** keywords, questions, and notes **outside** the four agent folders. Agents use **both**: read **`INDEX.base`** for scope, then **`obsidian properties`** / **`search`** / **`tags`** / **`backlinks`** per **`/ask`**.
+
+#### `domain` in frontmatter and `SCHEMA.md`
+
+Views that **group by `domain`** only work well if agent pages include a **`domain`** field in YAML frontmatter (see **`SCHEMA.md` → Domain Taxonomy**). Add domains to **`SCHEMA.md`** before or when `/cook` starts using them so the Base and CLI stay aligned.
 
 ## Brownfield Adoption
 
@@ -219,7 +238,7 @@ To upgrade from BYOAO v1 (Zettelkasten model) to v2 (LLM Wiki model):
 byoao upgrade
 ```
 
-This adds the v2 agent directories, `SCHEMA.md`, and `log.md` while preserving everything from v1.
+This adds the v2 agent directories, `SCHEMA.md`, `log.md`, and **`INDEX.base`** (from the template when missing) while preserving everything from v1.
 
 ## AGENTS.md — The AI Navigation Index
 
@@ -244,7 +263,7 @@ Content between markers is tool-owned. Content outside markers is yours.
 
 ### Retrieval protocol (Q&A)
 
-Default vault templates also include a **Knowledge Retrieval (Q&A)** section in `AGENTS.md`: use `INDEX.base` for discovery, `SCHEMA.md` when you need taxonomy or layout rules, then Obsidian CLI `search` and `read` with prioritization (agent directories, tags/domain, `status`, `updated`), and answer with wikilink citations. The **`/ask`** skill is the authoritative, full protocol so agent behavior stays in one place. That chain turns **progressive disclosure** (frontmatter and links) into concrete steps for grounded answers.
+Default vault templates also include a **Knowledge Retrieval (Q&A)** section in `AGENTS.md`: **`INDEX.base`** is the Bases wiki index; agents read it for scope and use Obsidian CLI **`properties`**, **`search`**, **`tags`**, and **`backlinks`** to traverse the same graph. Read `SCHEMA.md` when you need taxonomy or layout rules, then `read` candidate notes with prioritization (agent directories, tags/domain, `status`, `updated`), and answer with wikilink citations. The **`/ask`** skill is the authoritative, full protocol.
 
 ## SCHEMA.md — Tag Taxonomy and Conventions
 
@@ -308,7 +327,7 @@ These fields enable **progressive disclosure**: AI reads AGENTS.md first, then f
 ├── comparisons/         # Agent-compiled: side-by-side analyses
 ├── queries/             # Agent-compiled: valuable Q&A
 ├── SCHEMA.md            # Tag taxonomy and conventions
-├── INDEX.base           # Knowledge map (Obsidian Base view)
+├── INDEX.base           # Knowledge map (Obsidian Bases wiki index)
 ├── log.md               # Action log
 ├── AGENTS.md            # AI navigation index
 └── Start Here.md        # Onboarding guide
@@ -345,7 +364,7 @@ When AI agents work in your vault, the system-transform hook injects a navigatio
 2. **Search by domain or tags** — find relevant agent pages
 3. **Follow references** — read linked notes for deeper context
 4. **Check backlinks** — discover related notes the user didn't mention
-5. **Chain**: SCHEMA.md → INDEX.base → agent pages → source notes → details
+5. **Chain**: SCHEMA.md → INDEX.base scope + CLI property/search graph → agent pages → source notes → details (see **`/ask`**)
 
 This means AI gets smarter about your vault over time — not because it memorizes, but because the knowledge base structure guides it to the right pages.
 

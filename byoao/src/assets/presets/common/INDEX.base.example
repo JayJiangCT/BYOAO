@@ -1,0 +1,136 @@
+# BYOAO LLM Wiki v2 — copy to vault root as INDEX.base (see /wiki). Bases core plugin required.
+# Quoting: keep each formula value in single quotes; use double quotes inside the expression where needed.
+# Recently Updated: use limit + column order only — do not groupBy on raw `updated` (unique timestamps = one row per group).
+
+filters:
+  or:
+    - file.inFolder("entities")
+    - file.inFolder("concepts")
+    - file.inFolder("comparisons")
+    - file.inFolder("queries")
+
+formulas:
+  type_label: 'if(type == "entity", "Entity", if(type == "concept", "Concept", if(type == "comparison", "Comparison", if(type == "query", "Query", type))))'
+  days_since_update: 'if(updated, (today() - date(updated)).days, "")'
+  backlink_count: 'file.backlinks.length'
+
+properties:
+  file.name:
+    displayName: Name
+  title:
+    displayName: Title
+  type:
+    displayName: Type
+  domain:
+    displayName: Domain
+  tags:
+    displayName: Tags
+  updated:
+    displayName: Updated
+  status:
+    displayName: Status
+  formula.type_label:
+    displayName: Kind
+  formula.days_since_update:
+    displayName: Days since update
+  formula.backlink_count:
+    displayName: Backlinks
+
+views:
+  - type: table
+    name: All Pages
+    groupBy:
+      property: type
+      direction: ASC
+    order:
+      - file.name
+      - title
+      - formula.type_label
+      - domain
+      - tags
+      - updated
+      - formula.days_since_update
+      - formula.backlink_count
+      - status
+    summaries:
+      formula.backlink_count: Average
+
+  - type: table
+    name: Entities
+    filters:
+      and:
+        - 'type == "entity"'
+    groupBy:
+      property: domain
+      direction: ASC
+    order:
+      - file.name
+      - title
+      - domain
+      - tags
+      - updated
+      - formula.days_since_update
+      - formula.backlink_count
+      - status
+    summaries:
+      formula.backlink_count: Average
+
+  - type: table
+    name: Concepts
+    filters:
+      and:
+        - 'type == "concept"'
+    groupBy:
+      property: domain
+      direction: ASC
+    order:
+      - file.name
+      - title
+      - domain
+      - tags
+      - updated
+      - formula.days_since_update
+      - formula.backlink_count
+      - status
+
+  - type: table
+    name: Comparisons
+    filters:
+      and:
+        - 'type == "comparison"'
+    order:
+      - file.name
+      - title
+      - domain
+      - tags
+      - updated
+      - formula.days_since_update
+      - formula.backlink_count
+      - status
+
+  - type: table
+    name: Queries
+    filters:
+      and:
+        - 'type == "query"'
+    order:
+      - file.name
+      - title
+      - domain
+      - tags
+      - updated
+      - formula.days_since_update
+      - formula.backlink_count
+      - status
+
+  - type: table
+    name: Recently Updated
+    limit: 10
+    order:
+      - updated
+      - file.name
+      - title
+      - type
+      - domain
+      - formula.days_since_update
+      - formula.backlink_count

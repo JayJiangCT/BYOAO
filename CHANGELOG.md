@@ -2,6 +2,28 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.8] — 2026-04-13
+
+### New Features
+- **Vault `INDEX.base` on init / upgrade**: When the vault root has no **`INDEX.base`**, **`byoao init`** and **`byoao upgrade`** copy **`INDEX.base.example`** idempotently ([`copyIndexBaseExampleIfMissing`](byoao/src/vault/index-base-example.ts)).
+
+### Skills
+- **`/ask`**: **`INDEX.base`** as canonical Bases wiki index; read for scope, then **`obsidian properties`** / **`search`** / **`tags`** / **`backlinks`**; no duplicate static **`INDEX.md`**; no delegating vault Q&A to generic exploration subagents.
+- **`/wiki`**: Step **3a** (Bases + template copy) and **3b** (CLI inventory; chat-only markdown fallback without default **`INDEX.md`**); Step **4** with **INDEX.base vs CLI** responsibility table, six-view pattern, and template hints.
+- **`/cook`**, **`/connect`**, **`/trace`**, **`/ideas`**, **`/diagnose`**: Wording aligned with Bases-first index and CLI mirroring.
+
+### Improvements
+- **`INDEX.base.example`**: Shipped reference Bases YAML — global **`filters.or`** over agent folders, formulas (`type_label`, `days_since_update`, `backlink_count`), **`properties.displayName`** (including **`file.name`**), optional **`summaries`** on views, six views; Recently Updated uses **`limit`** only (no **`groupBy`** on raw **`updated`**); header comments for YAML quoting.
+- **Bundled `obsidian-cli` skill**: Subsection on Bases (`.base`) files vs CLI retrieval.
+
+### Documentation
+- **Troubleshooting (EN/ZH)**: Agent read **`INDEX.base`** but cannot list rows — Base definition on disk vs live table; fix via Bases scope + CLI commands.
+- **Core concepts & getting started (EN/ZH)**: Reference layout, Bases YAML / function references, **`obsidian search` vs Bases**, **`domain`** and **`SCHEMA.md`**, init copy behavior.
+- **`docs-site/docs/byoao/`**: Internal review notes for the INDEX.base / wiki rollout.
+- **`README`**, **`AGENTS.md.hbs`**, **`Start Here.md.hbs`**, **`init-vault` tool**, **idle suggestion**: Copy and messaging for **`INDEX.base`**.
+
+---
+
 ## [v2.0.7] — 2026-04-10
 
 ### Improvements

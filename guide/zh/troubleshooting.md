@@ -40,6 +40,20 @@
 
 ---
 
+### Agent 读了 INDEX.base 却仍然列不出页面
+
+**症状：** 你（或 AI Agent）执行了 `obsidian read file="INDEX.base"`，期望输出里直接出现笔记标题，但看到的是 YAML、视图或过滤条件。
+
+**原因：** `INDEX.base` 是 **Obsidian Bases** 索引文件。磁盘上存的是 **定义**，Obsidian 在应用里把它求值为带路径、标签、日期、反向链接等列的实时表格；CLI 的 **`read` 返回的是该定义**，不是渲染后的行。
+
+**处理：**
+
+1. 把 **`INDEX.base`** 当作权威 wiki 索引：从中理解路径与属性范围，再用 **`obsidian properties`**（如按 `type=entity` / `concept` / `comparison` / `query`）、**`obsidian search`**、**`obsidian tags`**、**`obsidian backlinks`** 列举和遍历与 Base 中一致的笔记。
+2. 完整遵循 **`/ask`** 技能（其中写明了 Bases + CLI 流程）。
+3. 知识地图变化大时运行 **`/wiki`**，检查 Base 的查询、视图与列是否仍匹配。
+
+---
+
 ### 侧边栏看不到 Frontmatter
 
 **症状：** Agent 页面有 YAML frontmatter 但侧边栏看不到元数据字段。
