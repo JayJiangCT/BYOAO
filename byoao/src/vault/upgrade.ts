@@ -15,6 +15,7 @@ import {
 import { loadPreset, getCommonDir } from "./preset.js";
 import { renderTemplate } from "./template.js";
 import { detectVaultContext } from "./vault-detect.js";
+import { copyIndexBaseExampleIfMissing } from "./index-base-example.js";
 
 // ── Constants ───────────────────────────────────────────────────
 
@@ -238,6 +239,9 @@ This file describes the vault knowledge schema. Update it as your model evolves.
   if (!(await fs.pathExists(logPath))) {
     await fs.writeFile(logPath, LOG_MD_PLACEHOLDER, "utf-8");
   }
+
+  const commonDir = getCommonDir();
+  await copyIndexBaseExampleIfMissing(vaultPath, commonDir);
 }
 
 const BYOAO_SKILL_NAMES = [

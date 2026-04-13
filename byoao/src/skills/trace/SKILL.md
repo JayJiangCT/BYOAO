@@ -45,7 +45,7 @@ obsidian read file="comparisons/<topic>.md"
 obsidian read file="queries/<topic>.md"
 ```
 
-Read `INDEX.base` to check if there's already a compiled page for this topic.
+Read `INDEX.base` if it exists, then use `obsidian properties` by `type` and `obsidian search` to find compiled pages (see **`/ask`**).
 
 ### Step 2: Build Timeline
 

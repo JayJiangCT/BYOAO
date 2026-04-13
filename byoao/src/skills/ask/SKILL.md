@@ -1,12 +1,12 @@
 ---
 name: ask
 description: >
-  Open-ended Q&A against the knowledge base. Agent reads INDEX.base for page discovery
-  and SCHEMA.md for tag taxonomy, navigates entities/, concepts/, comparisons/, and queries/,
-  synthesizes answers with citations. Use when the user asks questions about vault content
-  like "what is X", "why did we decide Y", "explain Z", "what do my notes say about",
-  "summarize what I know about", or any question that should be answered from accumulated
-  knowledge rather than general training data.
+  Open-ended Q&A against the knowledge base. Uses INDEX.base as the vault Bases wiki index,
+  Obsidian CLI (properties, search, tags, backlinks) to traverse the same graph the Base
+  shows in Obsidian, SCHEMA.md for taxonomy, then reads and synthesizes with citations.
+  Use when the user asks questions about vault content like "what is X", "why did we decide Y",
+  "explain Z", "what do my notes say about", "summarize what I know about", or any question
+  that should be answered from accumulated knowledge rather than general training data.
 ---
 
 # /ask — Knowledge Q&A
@@ -36,21 +36,56 @@ Identify the key concepts, entities, and intent in the user's question.
 
 ### Step 2: Locate Relevant Pages
 
-If `INDEX.base` exists, read it first for page discovery and the compiled knowledge map:
+**Do not delegate this workflow to a generic exploration subagent.** Run the Obsidian CLI steps yourself so searches merge and nothing is skipped.
+
+#### 2a — Wiki index: `INDEX.base` (Bases)
+
+If `INDEX.base` exists, read it first:
 
 ```bash
 obsidian read file="INDEX.base"
 ```
 
-Read `SCHEMA.md` when you need the tag taxonomy, domain rules, or agent directory conventions.
+**What this is:** The vault’s **Obsidian Bases wiki index**. In the app, this file drives a **live, query-backed table** of notes with rich metadata (paths, tags, dates, backlinks, and any columns you add). The bytes on disk are the Base definition (views, filters, formulas); Obsidian **evaluates** that definition into the dynamic index you see in the UI.
 
-Then search for relevant pages:
+**How to use it as an agent:** Parse the definition to learn **which paths and property filters** define “compiled knowledge” in this vault. Then run CLI commands that query the **same scope** — do not treat the YAML as meaningless “config” or assume the vault has no index when you do not see note titles in the read output.
+
+#### 2b — List agent-maintained pages (same scope the Base should cover)
+
+Enumerate compiled pages by v2 frontmatter `type` (high-speed retrieval, same notes the Base is meant to index):
+
+```bash
+obsidian properties type=entity
+obsidian properties type=concept
+obsidian properties type=comparison
+obsidian properties type=query
+```
+
+Use paths and titles from this output as candidates. When helpful, add **`obsidian tags`**, **`obsidian backlinks file="..."`**, or other list commands from `obsidian help` to exploit metadata associations the Base surfaces as columns.
+
+#### 2c — Taxonomy and conventions
+
+Read `SCHEMA.md` when you need the tag taxonomy, domain rules, or agent directory conventions:
+
+```bash
+obsidian read file="SCHEMA.md"
+```
+
+If the question or `SCHEMA.md` points at specific tags, run targeted searches for those tags in addition to plain terms.
+
+#### 2d — Search by key concepts
+
+For each key concept in the question:
 
 ```bash
 obsidian search "<key concept>"
 ```
 
-Search for each key concept mentioned in the question. Combine results across concepts.
+Combine and deduplicate results across queries.
+
+#### 2e — User and source notes outside agent directories
+
+Answers may live in raw notes (e.g. reports, dailies, `Projects/`) that are **not** under `entities/`, `concepts/`, `comparisons/`, or `queries/`. After agent-scope passes, run broader searches (filename keywords, dates, or tags) until you have checked plausible locations or confirmed the vault has no matching note.
 
 ### Step 3: Read Relevant Pages
 
@@ -61,6 +96,7 @@ obsidian read file="entities/some-page.md"
 ```
 
 Prioritize:
+
 - Agent pages in `entities/`, `concepts/`, `comparisons/`, `queries/`
 - Pages with matching tags or domain
 - Pages with `status: reviewed` (over `draft`)
@@ -133,3 +169,4 @@ Use `obsidian create` to save. Ask the user where they'd like it saved.
 - **Acknowledge gaps**: If the vault doesn't have enough information, say so.
 - **Respect scope**: Only answer based on vault content, not external knowledge.
 - **Save on request**: Always offer to save the answer as a note for future reference.
+- **Bases + CLI:** The wiki index is **`INDEX.base`** in Obsidian; discovery via CLI is **`obsidian properties`** (by `type` and other fields), **`obsidian search`**, and related commands — not a duplicate markdown index file.

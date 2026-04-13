@@ -62,7 +62,7 @@ Then open in Obsidian, enable CLI, and run `/cook` to compile your notes into kn
 | `/cook` | Compile notes into structured knowledge — entities, concepts, comparisons, queries |
 | `/health` | Audit agent pages for orphans, broken links, stale content, taxonomy drift |
 | `/prep` | Enrich frontmatter and cross-references across all notes |
-| `/wiki` | Generate INDEX.base overview and update AGENTS.md stats |
+| `/wiki` | Refresh INDEX.base (Bases wiki index) and update AGENTS.md stats |
 | `/organize` | Reorganize vault directories safely via Obsidian CLI |
 | `/trace` | Track how an idea evolved over time |
 | `/connect` | Bridge two seemingly unrelated topics |

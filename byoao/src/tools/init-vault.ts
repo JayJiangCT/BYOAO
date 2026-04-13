@@ -7,7 +7,7 @@ import os from "node:os";
 
 export const byoao_init_vault = tool({
   description:
-    "Create an LLM Wiki knowledge base in Obsidian. Sets up agent directories (entities/, concepts/, comparisons/, queries/), SCHEMA.md, log.md, and AI routing (AGENTS.md). Your existing notes become raw material for /cook.",
+    "Create an LLM Wiki knowledge base in Obsidian. Sets up agent directories (entities/, concepts/, comparisons/, queries/), SCHEMA.md, log.md, INDEX.base (from INDEX.base.example when missing), and AI routing (AGENTS.md). Your existing notes become raw material for /cook.",
   args: {
     kbName: tool.schema.string().describe("Knowledge base name (e.g. \"Jay's KB\")"),
     ownerName: tool.schema.string().optional().describe("Owner's name"),

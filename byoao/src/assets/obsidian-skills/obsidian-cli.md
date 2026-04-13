@@ -59,6 +59,13 @@ obsidian backlinks file="My Note"
 
 Use `--copy` on any command to copy output to clipboard. Use `silent` to prevent files from opening. Use `total` on list commands to get a count.
 
+## Bases (`.base` files) and CLI retrieval
+
+[Obsidian Bases](https://obsidian.md/blog/bases/) use `.base` files (for example `INDEX.base`) as the **vault wiki index**: in the app, each row is a note and columns expose frontmatter, paths, backlinks, dates, and other metadata.
+
+- **`obsidian read file="INDEX.base"`** returns the **on-disk Base definition** (views, filters, formulas). Obsidian **evaluates** that definition into the live, sortable table — the definition is the source of truth for *what* is in the index, not a throwaway “config.”
+- **Agents** should read the Base to learn path/property scope, then query the same graph at high speed with **`obsidian properties`**, **`obsidian search`**, **`obsidian tags`**, **`obsidian backlinks`**, and any newer list commands from **`obsidian help`**. Do not maintain a duplicate markdown catalog unless the user explicitly wants one.
+
 ## Plugin development
 
 ### Develop/test cycle

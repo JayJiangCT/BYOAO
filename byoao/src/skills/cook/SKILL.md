@@ -70,7 +70,7 @@ When user provides a URL:
 - Identify entities (named things), concepts (abstract ideas), decisions, contradictions
 
 ### Step 2: Match Against Existing Pages
-- Check `INDEX.base` or scan `entities/`, `concepts/` for existing pages
+- Check `INDEX.base` (Bases index in Obsidian) or scan `entities/`, `concepts/` for existing pages; use `obsidian properties` by `type` for a fast listing
 - Determine: create new vs. update existing
 - Read `SCHEMA.md` (Obsidian CLI) for current tag and domain taxonomy so new pages prefer existing tags when they fit
 
@@ -98,7 +98,7 @@ After Step 3–4, reconcile agent pages touched this cycle with `SCHEMA.md`:
 - Stay consistent with SCHEMA rules: singular tags, 2–5 tags per page on agent pages, new tags documented here before (or as soon as) use.
 
 ### Step 6: Update Navigation
-- `INDEX.base` auto-updates via Obsidian Base query
+- `INDEX.base` stays current in Obsidian via its Base query — suggest **`/wiki`** if views, filters, or columns need tuning after large cooks
 - Append entry to `log.md`
 
 ### Step 7: Report

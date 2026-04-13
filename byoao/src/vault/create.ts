@@ -8,6 +8,7 @@ import { configureProvider, type ConfigureProviderResult } from "./provider.js";
 import { writeManifest, type InstalledFiles } from "./manifest.js";
 import type { VaultConfig, PresetConfig } from "../plugin-config.js";
 import { detectInitMode } from "./vault-detect.js";
+import { copyIndexBaseExampleIfMissing } from "./index-base-example.js";
 
 function countWikilinks(content: string): number {
   const stripped = content
@@ -142,6 +143,10 @@ Entries are appended here during /cook operations.
   const logPath = path.join(ctx.vaultPath, "log.md");
   if (!(await fs.pathExists(logPath))) {
     await fs.writeFile(logPath, logContent);
+    ctx.filesCreated++;
+  }
+
+  if (await copyIndexBaseExampleIfMissing(ctx.vaultPath, ctx.commonDir)) {
     ctx.filesCreated++;
   }
 }
