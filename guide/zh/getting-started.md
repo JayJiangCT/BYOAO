@@ -85,11 +85,14 @@ byoao init
 交互式设置会依次询问：
 
 1. **你的名字** — 用于 AGENTS.md，让 AI 知道这是谁的知识库
-2. **知识库名称** — 默认 "{名字}'s KB"
-3. **存储位置** — 默认 `~/Documents/{知识库名}`
-4. **添加工作预设？** — 选 "minimal" 创建纯 LLM Wiki，选 "PM/TPM" 添加 Atlassian 和 BigQuery MCP 服务
-5. **连接外部服务？** — 选了 PM/TPM 后，选择启用哪些 MCP 服务（Atlassian、BigQuery）。BigQuery 会提示输入 GCP Project ID 并自动完成认证
-6. **设置 AI 提供商？** — 现在认证或稍后操作
+2. **知识库名称** — 默认 "{名字}'s KB"（采纳已有文件夹时用文件夹名）
+3. **存储位置** — 默认 `~/Documents/{知识库名}`（使用 `byoao init --from` 采纳已有路径时不再问）
+4. **主要用途** — **Personal**（学习、兴趣、笔记 → 仅核心 LLM Wiki / `minimal`）或 **Work**（团队场景；可选 Jira、Confluence、BigQuery）。选 Personal 会跳过下一步预设。选 Work 时，若只有一个适用预设会自动选中；若有多个（例如「无团队集成的 minimal」与 PM/TPM），会再让你**选择工作场景配置**
+5. **领域**（可选）— 知识库大致覆盖的主题；可直接回车跳过
+6. **连接外部服务？** — 仅当所选预设包含 MCP 服务时：勾选要启用的服务（Atlassian、BigQuery）。BigQuery 会询问 GCP Project ID；首次使用时再完成认证
+7. **知识库创建完成后** — **是否现在配置 AI 提供商？**（仅交互式终端）— 可选；也可稍后执行 `opencode auth login`
+
+若在命令行传入 **`--preset`**，将跳过 **主要用途** 与 **工作向预设** 相关提问，直接使用该预设。
 
 ### 已有笔记？
 

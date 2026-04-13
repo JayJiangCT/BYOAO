@@ -5,7 +5,10 @@ import { printLogo, printVersion, printEvent, printEventDetail, printEventCheck,
 import { createVault } from "../vault/create.js";
 import { getVaultStatus, formatVaultStatus } from "../vault/status.js";
 import { checkObsidian, formatObsidianStatus } from "../vault/obsidian-check.js";
-import { listPresets } from "../vault/preset.js";
+import {
+  listPresetsDetailed,
+  filterPresetsForInitUseCase,
+} from "../vault/preset.js";
 import { VaultConfigSchema } from "../plugin-config.js";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
@@ -168,7 +171,6 @@ program
   .option("--gcp-project <id>", "GCP Project ID for BigQuery")
   .option("--mcp-skip <names...>", "MCP servers to skip (comma-separated)")
   .action(async (opts) => {
-    // Check Obsidian first
     const obsidianStatus = checkObsidian();
     if (!obsidianStatus.installed) {
       console.log(formatObsidianStatus(obsidianStatus));
@@ -179,7 +181,11 @@ program
     let kbName = opts.kb;
     let ownerName = opts.name || "";
     let vaultPath = opts.path || opts.from;
-    let presetName = opts.preset || "minimal";
+    const presetLockedFromCli =
+      opts.preset != null && String(opts.preset).trim().length > 0;
+    let presetName = presetLockedFromCli
+      ? String(opts.preset).trim()
+      : "minimal";
     let wikiDomain = "";
     let mcpSkip: string[] = opts.mcpSkip || [];
     let gcpProjectId = opts.gcpProject || "";
@@ -270,22 +276,54 @@ program
           }
         }
 
-        // 4. Work profile (preset)
-        const presets = listPresets().filter(p => p.name !== "minimal");
-        if (presets.length > 0) {
-          const { selectedPreset } = await inquirer.prompt([{
+        // 4. Use case + preset (skipped when --preset was passed)
+        if (!presetLockedFromCli) {
+          const { useCase } = await inquirer.prompt([{
             type: "list",
-            name: "selectedPreset",
-            message: "Choose your work profile:",
+            name: "useCase",
+            message: "What will you mainly use this knowledge base for?",
             choices: [
-              { name: "Minimal — core LLM Wiki only", value: "minimal" },
-              ...presets.map(p => ({
-                name: `${p.displayName} — ${p.description}`,
-                value: p.name,
-              })),
+              {
+                name: "Personal — learning, hobbies, notes (core wiki only)",
+                value: "personal",
+              },
+              {
+                name: "Work — team context; optional Jira, Confluence, BigQuery",
+                value: "work",
+              },
             ],
           }]);
-          presetName = selectedPreset;
+
+          if (useCase === "personal") {
+            presetName = "minimal";
+          } else {
+            const detailed = listPresetsDetailed();
+            const offered = filterPresetsForInitUseCase(detailed, "work");
+            if (offered.length === 0) {
+              presetName = "minimal";
+            } else if (offered.length === 1) {
+              presetName = offered[0].name;
+            } else {
+              const sorted = [...offered].sort((a, b) => {
+                if (a.name === "minimal") return -1;
+                if (b.name === "minimal") return 1;
+                return a.displayName.localeCompare(b.displayName);
+              });
+              const { selectedPreset } = await inquirer.prompt([{
+                type: "list",
+                name: "selectedPreset",
+                message: "Choose your work setup:",
+                choices: sorted.map((p) => ({
+                  name:
+                    p.name === "minimal"
+                      ? "Minimal — core LLM Wiki only (no team integrations)"
+                      : `${p.displayName} — ${p.description}`,
+                  value: p.name,
+                })),
+              }]);
+              presetName = selectedPreset;
+            }
+          }
         }
 
         // 5. Wiki domain (optional)

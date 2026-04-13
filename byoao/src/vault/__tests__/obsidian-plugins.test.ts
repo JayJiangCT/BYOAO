@@ -26,6 +26,7 @@ function makePreset(
     name: "test",
     displayName: "Test",
     description: "test preset",
+    initOfferWhen: "always",
     directories: [],
     agentDescription: "test",
     frontmatterExtras: {},

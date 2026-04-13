@@ -2,6 +2,25 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.9] — 2026-04-13
+
+### New Features
+- **`byoao init` (interactive)**: Two-step flow — choose **Personal** (core LLM Wiki / `minimal`) or **Work** (team-oriented presets). Work use case shows presets tagged with `initOfferWhen: work` (e.g. PM/TPM); multiple options open a second preset list (including minimal without team integrations).
+- **`--preset`**: When provided on the command line, skips the use-case and interactive preset prompts and uses the given preset directly.
+
+### Improvements
+- **Preset model**: `listPresetsDetailed()`, `filterPresetsForInitUseCase()`, and optional **`initOfferWhen`** in preset `plugin.json` (PM/TPM set to `work`).
+- **Vault diagnosis**: **`getVaultDiagnosis`** reports an **info**-level note when **`Knowledge/`** exists but contains no Markdown (BYOAO v1 legacy path; v2 uses root agent folders).
+
+### Documentation
+- **Getting started & CLI reference (EN/ZH)**: Document the Personal/Work init flow, optional domain step, MCP selection after preset choice, post-create AI provider prompt, and `--preset` behavior.
+- **Troubleshooting (EN/ZH)**: Explain the empty **`Knowledge/`** diagnostic and that the folder can be removed if unused.
+
+### Infrastructure
+- **Tests**: `preset-init-filter` unit tests; extended coverage for plugin-config, doctor, MCP, and Obsidian plugins.
+
+---
+
 ## [v2.0.8] — 2026-04-13
 
 ### New Features

@@ -83,11 +83,14 @@ byoao init
 The interactive setup asks:
 
 1. **Your name** — used in AGENTS.md so AI knows whose knowledge base this is
-2. **Knowledge base name** — defaults to "{Name}'s KB"
-3. **Vault location** — defaults to `~/Documents/{KB name}`
-4. **Work preset?** — choose "minimal" for a pure LLM Wiki, or "PM/TPM" to add Atlassian and BigQuery MCP services
-5. **Connected services?** — if you chose PM/TPM, select which MCP services to enable (Atlassian, BigQuery). BigQuery will prompt for your GCP Project ID and handle authentication automatically
-6. **Set up AI provider?** — optionally authenticate now, or do it later
+2. **Knowledge base name** — defaults to "{Name}'s KB" (when adopting an existing folder, the folder name is used)
+3. **Vault location** — defaults to `~/Documents/{KB name}` (skipped when you adopt a folder with `byoao init --from`)
+4. **Main use** — **Personal** (learning, hobbies, notes → core LLM Wiki only / `minimal`) or **Work** (team context; optional Jira, Confluence, BigQuery). Personal skips the next preset question. Work may pick a preset automatically, or show **Choose your work setup** when more than one work-oriented preset is available (for example minimal without team integrations vs PM/TPM)
+5. **Domain** (optional) — what topic area the knowledge base covers; press Enter to skip
+6. **Connected services?** — only if the chosen preset includes MCP servers: select which services to enable (Atlassian, BigQuery). BigQuery will prompt for your GCP Project ID; authentication runs when you first use it
+7. **After the vault is created** — **Set up AI provider now?** (terminal only) — optional; you can run `opencode auth login` later
+
+Pass **`--preset`** on the command line to skip the **main use** and **work setup** questions; BYOAO uses that preset directly.
 
 ### Already have notes?
 

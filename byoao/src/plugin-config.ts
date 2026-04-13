@@ -32,10 +32,16 @@ export const VaultStatusSchema = z.object({
 
 // --- Preset System ---
 
+/** When interactive `byoao init` may offer this preset (after Personal / Work choice). */
+export const InitOfferWhenSchema = z.enum(["always", "work", "personal"]);
+export type InitOfferWhen = z.infer<typeof InitOfferWhenSchema>;
+
 export const PresetConfigSchema = z.object({
   name: z.string().min(1),
   displayName: z.string().min(1),
   description: z.string(),
+  /** `always`: both Personal and Work paths; `work` / `personal`: only that init branch */
+  initOfferWhen: InitOfferWhenSchema.default("always"),
   directories: z.array(z.string()).default([]),
   agentDescription: z.string(),
   frontmatterExtras: z.record(z.string(), z.array(z.string())).default({}),

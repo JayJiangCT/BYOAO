@@ -61,6 +61,20 @@ function extractWikilinks(content: string): string[] {
 
 export async function getVaultDiagnosis(vaultPath: string): Promise<DiagnosticReport> {
   const issues: DiagnosticIssue[] = [];
+
+  const knowledgeDir = path.join(vaultPath, "Knowledge");
+  if (await fs.pathExists(knowledgeDir)) {
+    const mdUnderKnowledge = await collectMarkdownFiles(knowledgeDir);
+    if (mdUnderKnowledge.length === 0) {
+      issues.push({
+        severity: "info",
+        category: "orphan",
+        message:
+          "Folder `Knowledge/` exists but contains no markdown files. BYOAO v2 does not use this path (v1 legacy). You can remove the folder if you do not need it.",
+      });
+    }
+  }
+
   const allFiles = await collectMarkdownFiles(vaultPath);
   const noteNames = new Set(
     allFiles.map((f) => path.basename(f, ".md"))
