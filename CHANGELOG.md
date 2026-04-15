@@ -2,6 +2,13 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.11] — 2026-04-15
+
+### Fixes
+- **Build script**: `rmSync` the skills output directory before copying so renamed or deleted skills (e.g. `diagnose → mise`) no longer linger in the tarball from previous builds. v2.0.10 shipped with a stale `diagnose/` directory alongside `mise/`.
+
+---
+
 ## [v2.0.10] — 2026-04-15
 
 ### Skills
