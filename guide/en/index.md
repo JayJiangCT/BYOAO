@@ -19,6 +19,6 @@
 
 ## Reference
 
-- **[Skills Reference](skills-reference.md)** — All AI skills: /cook, /health, /prep, /wiki, /trace, /connect, /ideas, /challenge, /drift, /diagnose
+- **[Skills Reference](skills-reference.md)** — All AI skills: /cook, /health, /prep, /wiki, /trace, /connect, /ideas, /challenge, /drift, /mise
 - **[CLI Reference](cli-reference.md)** — All commands, flags, and examples
 - **[Troubleshooting](troubleshooting.md)** — Common issues and fixes

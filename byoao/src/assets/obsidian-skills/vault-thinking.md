@@ -18,7 +18,7 @@ This vault has BYOAO thinking commands available. Suggest them when they match t
 | `/ideas` | Deep scan to generate actionable ideas from vault content | User asks "what should I work on", wants brainstorming, or needs next steps |
 | `/challenge topic` | Pressure-test a belief against the vault's own history | User is making a decision, says "am I wrong", or wants to validate an assumption |
 | `/drift` | Compare stated intentions vs actual behavior over 30-90 days | User asks about follow-through, wonders where time went, or reviews goals |
-| `/diagnose` | Vault health check — orphans, broken links, frontmatter gaps | User notices broken links, asks "what's wrong with my vault", or after heavy editing |
+| `/mise` | Vault health check — orphans, broken links, frontmatter gaps | User notices broken links, asks "what's wrong with my vault", or after heavy editing |
 
 ## When to Proactively Suggest
 
@@ -28,7 +28,7 @@ This vault has BYOAO thinking commands available. Suggest them when they match t
 - User is **reviewing goals or progress** → suggest `/drift`
 - User **imported new notes** or mentions disorganization → suggest `/cook`
 - User asks about **connections between topics** → suggest `/connect`
-- User mentions **broken links or vault messiness** → suggest `/diagnose`
+- User mentions **broken links or vault messiness** → suggest `/mise`
 
 ## How to Suggest
 

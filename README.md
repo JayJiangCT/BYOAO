@@ -70,7 +70,7 @@ Then open in Obsidian, enable CLI, and run `/cook` to compile your notes into kn
 | `/challenge` | Pressure-test a belief against your own notes |
 | `/drift` | Compare stated intentions vs actual behavior |
 | `/ask` | Open-ended Q&A against your knowledge base |
-| `/diagnose` | Full vault structural health check |
+| `/mise` | Full vault structural health check |
 
 ## Documentation
 

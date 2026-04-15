@@ -12,7 +12,7 @@ export function getIdleSuggestion(): string | null {
     "Tip: run /ideas to generate actionable insights from your vault",
     "Tip: run /challenge to pressure-test a belief against your own notes",
     "Tip: run /drift to compare intentions vs actions over the past month",
-    "Tip: run /diagnose to check overall vault health",
+    "Tip: run /mise to check overall vault health",
   ];
   const idx = new Date().getMinutes() % suggestions.length;
   return suggestions[idx];
