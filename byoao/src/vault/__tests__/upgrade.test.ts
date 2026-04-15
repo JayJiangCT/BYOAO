@@ -229,4 +229,35 @@ describe("upgradeVault", () => {
       /No BYOAO vault detected/
     );
   });
+
+  it("removes deprecated skill directories from the vault on upgrade", async () => {
+    vi.resetModules();
+    const { writeManifest } = await import("../manifest.js");
+
+    // Set up a vault that has a skill (diagnose) which is no longer shipped
+    await fs.ensureDir(path.join(tmpDir, ".obsidian"));
+    await fs.writeFile(path.join(tmpDir, "AGENTS.md"), "# Agents");
+    const diagnoseSkillPath = path.join(tmpDir, ".opencode", "skills", "diagnose", "SKILL.md");
+    await fs.ensureDir(path.dirname(diagnoseSkillPath));
+    await fs.writeFile(diagnoseSkillPath, "# Diagnose skill");
+
+    // Manifest records diagnose as installed (but current package no longer ships it)
+    await writeManifest(tmpDir, "minimal", {
+      skills: [".opencode/skills/diagnose/SKILL.md"],
+      commands: [],
+      obsidianConfig: [],
+      templates: [],
+    }, "0.0.0");
+
+    vi.resetModules();
+    const { upgradeVault } = await import("../upgrade.js");
+    const result = await upgradeVault(tmpDir, { force: true, skipGlobalSkillsSync: true });
+
+    // diagnose should be in the deprecated list
+    expect(result.deprecated).toContain(".opencode/skills/diagnose/SKILL.md");
+
+    // And actually removed from disk
+    expect(await fs.pathExists(diagnoseSkillPath)).toBe(false);
+    expect(await fs.pathExists(path.dirname(diagnoseSkillPath))).toBe(false);
+  });
 });

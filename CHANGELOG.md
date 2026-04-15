@@ -2,6 +2,16 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.12] — 2026-04-15
+
+### Fixes
+- **`byoao upgrade`**: Deprecated skills (and other infrastructure files no longer shipped by the package) are now **deleted from the vault** during upgrade. Previously, renamed skills like `/diagnose` would persist on disk indefinitely even after upgrading to the version that replaced them with `/mise`. The parent directory is also removed when it becomes empty (relevant for the `.opencode/skills/<name>/` layout).
+
+### Infrastructure
+- **Tests**: Added `upgradeVault` integration test verifying deprecated skill directories are removed from disk.
+
+---
+
 ## [v2.0.11] — 2026-04-15
 
 ### Fixes
