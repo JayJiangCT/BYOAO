@@ -163,24 +163,28 @@ BYOAO 的所有 AI 技能。在 Obsidian 的 Agent Client 面板中运行。
 
 ---
 
-## /diagnose — 检查知识库健康
+## /mise — 全面知识库健康检查
 
-**功能：** 对知识库运行 5 项诊断检查并建议修复。
+**功能：** 对整个知识库进行结构性审计 — 检查 frontmatter 覆盖率、断裂链接、孤立笔记、AGENTS.md/SCHEMA.md 漂移及配置。范围比 `/health` 更广，后者只检查 agent 维护的目录。
 
 **运行方式：**
 
 ```
-/diagnose
+/mise
+/mise focus=frontmatter   # 只检查 frontmatter 覆盖率
+/mise focus=links         # 只检查断裂的 wikilinks
+/mise focus=config        # 只检查知识库配置
 ```
 
 **检查项目：**
-1. 缺少 frontmatter — 没有 YAML 元数据的笔记
-2. 缺少 type/tags — frontmatter 不完整的笔记
-3. AGENTS.md 漂移 — 引用了不存在的笔记
-4. 孤立笔记 — 没有入站或出站 wikilinks
-5. 断裂的 wikilinks — 链接到不存在的笔记
+1. Frontmatter 覆盖率 — 缺少 YAML 元数据或必填字段的笔记
+2. 断裂的 wikilinks — 链接到不存在文件（全库范围）
+3. 孤立笔记 — 没有入站 wikilinks（用户笔记和 agent 页面）
+4. AGENTS.md / SCHEMA.md 漂移 — 过时引用或不匹配的标签分类
+5. v2 agent 目录 — 验证 `entities/`、`concepts/`、`comparisons/`、`queries/` 是否存在
+6. 配置检查 — `.obsidian/`、`.opencode/`、`log.md`、`INDEX.base`
 
-**修复建议：** 每个问题附带具体操作（运行 /cook、创建笔记、修复链接）。修改前始终征求确认。
+**输出：** 结构化报告，附整体健康评分（Good / Fair / Needs attention）以及每个问题的具体修复建议。修改前始终征求确认。
 
 ---
 

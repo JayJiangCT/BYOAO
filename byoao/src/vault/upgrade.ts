@@ -245,7 +245,7 @@ This file describes the vault knowledge schema. Update it as your model evolves.
 }
 
 const BYOAO_SKILL_NAMES = [
-  "ask", "challenge", "connect", "cook", "diagnose", "drift",
+  "ask", "challenge", "connect", "cook", "mise", "drift",
   "health", "ideas", "organize", "prep", "trace", "wiki",
 ] as const;
 

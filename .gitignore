@@ -8,6 +8,7 @@
 .env
 .env.*
 !.env.example
+.envrc
 
 # Generated output
 output/
@@ -22,6 +23,8 @@ Thumbs.db
 
 # Claude Code auto files
 .claude/settings.local.json
+.claude/settings.json
+.claude/commands/
 
 # Internal docs — plans, specs, design reviews, research
 docs/superpowers/

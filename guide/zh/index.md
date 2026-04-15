@@ -19,6 +19,6 @@
 
 ## 参考
 
-- **[技能参考](skills-reference.md)** — 所有 AI 技能：/cook、/health、/prep、/wiki、/trace、/connect、/ideas、/challenge、/drift、/diagnose
+- **[技能参考](skills-reference.md)** — 所有 AI 技能：/cook、/health、/prep、/wiki、/trace、/connect、/ideas、/challenge、/drift、/mise
 - **[CLI 参考](cli-reference.md)** — 所有命令、参数和示例
 - **[故障排除](troubleshooting.md)** — 常见问题与解决方案

@@ -2,6 +2,16 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.10] — 2026-04-15
+
+### Skills
+- **`/mise`** (renamed from `/diagnose`): Vault structural health check — frontmatter coverage, broken links, orphan notes, AGENTS.md/SCHEMA.md drift, v2 agent directories, and configuration. Renamed to fit the kitchen/cooking theme ("mise en place" = everything in its place). All references updated across guide, templates, and vault assets.
+
+### Infrastructure
+- **`.gitignore`**: Added `.claude/commands/`, `.claude/settings.json`, and `.envrc` to prevent local developer tooling from being committed.
+
+---
+
 ## [v2.0.9] — 2026-04-13
 
 ### New Features

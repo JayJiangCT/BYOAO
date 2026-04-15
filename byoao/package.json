@@ -1,6 +1,6 @@
 {
   "name": "@jayjiang/byoao",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "Build Your Own AI OS — Obsidian + AI Agent",
   "type": "module",
   "engines": {

@@ -1,15 +1,15 @@
 ---
-name: diagnose
+name: mise
 description: >
   Vault health check at the structural level. Checks frontmatter coverage, orphan notes,
   broken links, AGENTS.md and SCHEMA.md drift, v2 agent directories, and overall vault
-  configuration. Broader than /health (which focuses on agent pages) — /diagnose checks
-  the entire vault including user notes. Use when the user says "check my vault", "is
-  everything set up correctly", "vault health", "diagnose issues", or wants a full
+  configuration. Broader than /health (which focuses on agent pages) — /mise checks the
+  entire vault including user notes. Use when the user says "check my vault", "is
+  everything set up correctly", "vault health", "mise", or wants a full
   structural audit beyond just agent pages.
 ---
 
-# /diagnose — Vault Diagnosis
+# /mise — Vault Mise en Place
 
 You are a vault doctor. Your job is to check the overall health of the vault — structure, frontmatter coverage, configuration, and consistency across both user notes and agent pages.
 
@@ -89,7 +89,7 @@ Verify vault configuration:
 ### Step 6: Present Diagnosis
 
 ```markdown
-# Vault Diagnosis
+# Vault Mise en Place
 
 Scanned {N} notes, {M} agent pages, {K} user notes.
 
@@ -130,5 +130,5 @@ Scanned {N} notes, {M} agent pages, {K} user notes.
 - **Comprehensive but prioritized.** Check everything, but surface the most important issues first.
 - **Actionable findings.** Every issue should come with a suggested fix.
 - **Non-destructive by default.** Report issues, don't fix them automatically.
-- **Whole vault, not just agent pages.** Unlike /health which focuses on agent-maintained directories, /diagnose checks the entire vault.
+- **Whole vault, not just agent pages.** Unlike /health which focuses on agent-maintained directories, /mise checks the entire vault.
 - **Obsidian is first workbench.** All note operations go through Obsidian CLI.

@@ -161,24 +161,28 @@ All AI skills available in BYOAO. Run these in the Agent Client panel inside Obs
 
 ---
 
-## /diagnose — Check Knowledge Base Health
+## /mise — Full Vault Health Check
 
-**What it does:** Runs 5 diagnostic checks on your vault and suggests fixes.
+**What it does:** Structural audit of the entire vault — frontmatter coverage, broken links, orphan notes, AGENTS.md/SCHEMA.md drift, and configuration. Broader than `/health`, which only covers agent-maintained directories.
 
 **How to run:**
 
 ```
-/diagnose
+/mise
+/mise focus=frontmatter   # Check only frontmatter coverage
+/mise focus=links         # Check only broken wikilinks
+/mise focus=config        # Check only vault configuration
 ```
 
 **Checks performed:**
-1. Missing frontmatter — notes without YAML metadata
-2. Missing type/tags — notes with incomplete frontmatter
-3. AGENTS.md drift — references to notes that don't exist
-4. Orphan notes — no incoming or outgoing wikilinks
-5. Broken wikilinks — links to non-existent notes
+1. Frontmatter coverage — notes missing YAML metadata or required fields
+2. Broken wikilinks — links to non-existent files (across the entire vault)
+3. Orphan notes — no inbound wikilinks (user notes and agent pages)
+4. AGENTS.md / SCHEMA.md drift — stale references or mismatched taxonomy
+5. v2 agent directories — verifies `entities/`, `concepts/`, `comparisons/`, `queries/` exist
+6. Configuration — `.obsidian/`, `.opencode/`, `log.md`, `INDEX.base`
 
-**Fix suggestions:** Each issue gets a concrete action (run /cook, create a note, fix a link). Always asks before making changes.
+**Output:** Structured report with an overall health score (Good / Fair / Needs attention) and concrete fix suggestions for each issue. Always asks before making changes.
 
 ---
 
