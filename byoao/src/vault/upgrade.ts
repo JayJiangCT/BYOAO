@@ -569,6 +569,17 @@ export async function upgradeVault(
             }
           }
         } else if (item.action === "deprecated") {
+          const dest = path.join(vaultPath, item.file);
+          if (await fs.pathExists(dest)) {
+            await fs.remove(dest);
+            // For skill directories (.opencode/skills/<name>/SKILL.md), remove
+            // the parent dir too if it is now empty.
+            const parentDir = path.dirname(dest);
+            const remaining = await fs.readdir(parentDir).catch(() => ["_"]);
+            if (remaining.length === 0) {
+              await fs.remove(parentDir);
+            }
+          }
           deprecated.push(item.file);
         }
       } catch (err) {
