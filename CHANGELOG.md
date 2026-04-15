@@ -2,6 +2,13 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.13] — 2026-04-15
+
+### Fixes
+- **`byoao upgrade` no longer creates a `Knowledge/` folder**: Preset templates (e.g. `Feature Doc.md`, `Sprint Handoff.md` in the pm-tpm preset) were being re-installed to `Knowledge/templates/` on every upgrade, conflicting with the v1→v2 cleanup that marks that path as deprecated. Templates are now installed only once during `byoao init` (into `templates/` at the vault root) and are never overwritten by upgrade, preserving any user customisations.
+
+---
+
 ## [v2.0.12] — 2026-04-15
 
 ### Fixes

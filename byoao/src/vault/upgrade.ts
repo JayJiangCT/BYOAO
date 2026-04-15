@@ -419,35 +419,12 @@ function resolvePackageAssets(preset: string): PackageAssets {
     }
   }
 
-  // 4. Templates: common + preset
-  const commonTemplatesDir = path.join(commonDir, "templates");
-  if (fs.existsSync(commonTemplatesDir)) {
-    for (const file of fs.readdirSync(commonTemplatesDir)) {
-      if (file.endsWith(".md")) {
-        templates.push({
-          relativePath: `Knowledge/templates/${file}`,
-          sourcePath: path.join(commonTemplatesDir, file),
-        });
-      }
-    }
-  }
-
-  try {
-    const { presetsDir } = loadPreset(preset);
-    const presetTemplatesDir = path.join(presetsDir, preset, "templates");
-    if (fs.existsSync(presetTemplatesDir)) {
-      for (const file of fs.readdirSync(presetTemplatesDir)) {
-        if (file.endsWith(".md")) {
-          templates.push({
-            relativePath: `Knowledge/templates/${file}`,
-            sourcePath: path.join(presetTemplatesDir, file),
-          });
-        }
-      }
-    }
-  } catch {
-    /* Preset not found — use common templates only */
-  }
+  // 4. Templates: intentionally not re-installed during upgrade.
+  //    Templates are installed once at `byoao init` (create.ts) into `templates/`
+  //    and may be customised by the user. Re-installing them on every upgrade
+  //    would overwrite customisations and (historically) created a spurious
+  //    `Knowledge/templates/` directory that conflicts with the v1→v2 cleanup.
+  void commonDir; // referenced above for other assets
 
   return { skills, commands, obsidianConfig, templates };
 }
