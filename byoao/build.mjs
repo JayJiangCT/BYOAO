@@ -10,7 +10,7 @@
  */
 import { execSync } from "node:child_process";
 import { build } from "esbuild";
-import { readFileSync, writeFileSync, readdirSync, statSync, cpSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, statSync, cpSync, rmSync } from "node:fs";
 import path from "node:path";
 
 const pkg = JSON.parse(readFileSync("package.json", "utf-8"));
@@ -86,9 +86,11 @@ cpSync(assetsSrc, assetsDst, { recursive: true, force: true });
 
 // Step 1.7: Copy BYOAO skills to dist/assets/skills/ (overlay on top of assets copy)
 // Skills are now in directory layout: src/skills/<name>/SKILL.md
+// Clean first so renamed/deleted skills don't linger from previous builds.
 console.log("copy BYOAO skills…");
 const skillsSrc = "src/skills";
 const skillsDst = "dist/assets/skills";
+rmSync(skillsDst, { recursive: true, force: true });
 cpSync(skillsSrc, skillsDst, { recursive: true, force: true });
 
 // Step 2: Bundle dist/index.js with esbuild
