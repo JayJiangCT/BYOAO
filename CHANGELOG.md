@@ -2,6 +2,13 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.15] — 2026-04-30
+
+### Fixes
+- **MCP Auth UX**: Further improved MCP auth failure handling. The agent will now ask the user to check if the MCP connection indicator has turned green. If it has, the agent retries. If it hasn't, the agent properly instructs the user to use the "Restart agent" menu to force a reload, preventing dead-ends.
+
+---
+
 ## [v2.0.14] — 2026-04-30
 
 ### Fixes
