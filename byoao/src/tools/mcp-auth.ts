@@ -74,8 +74,7 @@ function runCommand(command: string, args: string[], timeoutMs = 120_000): Promi
 }
 
 const RESTART_MSG =
-  "IMPORTANT: The current session needs to be restarted to load the MCP tools.\n" +
-  'Tell the user to click the "..." menu in the Agent Client panel → "Restart agent", then retry their request.';
+  "IMPORTANT: Tell the user to check if the MCP connection is now available/green, then retry their request.";
 
 export const byoao_mcp_auth = tool({
   description:
@@ -108,7 +107,7 @@ export const byoao_mcp_auth = tool({
         return (
           `⏱ Authentication timed out for "${serviceName}".\n` +
           "The browser window may still be open — complete the login there, " +
-          'then click "..." → "Restart agent".'
+          'then check if the MCP connection is successful.'
         );
       } else {
         return (
@@ -130,14 +129,14 @@ export const byoao_mcp_auth = tool({
       return (
         `⏱ Authentication timed out for "${serviceName}".\n` +
         "The browser window may still be open — complete the login there, " +
-        'then click "..." → "Restart agent".'
+        'then check if the MCP connection is successful.'
       );
     } else {
       return (
         `✗ Authentication failed for "${serviceName}" (exit code ${result.code}).\n` +
         `Detail: ${(result.stderr || result.stdout || "(no output)").trim()}\n\n` +
         "The user may need to:\n" +
-        '1. Click "..." → "Restart agent" to retry\n' +
+        '1. Check if the MCP connection is available\n' +
         "2. Or run in terminal: opencode mcp auth " + serviceName
       );
     }

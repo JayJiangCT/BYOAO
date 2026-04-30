@@ -250,11 +250,11 @@ source ~/.zshrc
 **Symptom:** Agent says "Atlassian connection failed" or BigQuery queries return authentication errors.
 
 **Fix:**
-1. Click the "..." menu in the Agent Client panel → **Restart agent**
+1. Ask the agent to run `byoao_mcp_auth` to re-authenticate
 2. A browser window should open for re-authentication
 3. For Google services, make sure to select your work account
 4. Complete the login, then return to Obsidian
-5. Ask the agent to retry your request
+5. Check if the MCP connection is now available, then ask the agent to retry your request
 
 If this doesn't work, restart Obsidian completely.
 
@@ -270,7 +270,7 @@ BigQuery authentication happens lazily — the first time you ask the agent to q
 1. Make sure gcloud CLI is installed: https://cloud.google.com/sdk/docs/install
 2. Ask the agent to run a BigQuery query — it should call `byoao_mcp_auth` automatically
 3. Complete the Google login in the browser window that opens
-4. Click "..." → **Restart agent**, then retry
+4. Check if the MCP connection is now available, then retry
 
 ---
 

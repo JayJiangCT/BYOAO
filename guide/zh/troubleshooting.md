@@ -252,11 +252,11 @@ source ~/.zshrc
 **症状：** Agent 提示 "Atlassian connection failed" 或 BigQuery 查询返回认证错误。
 
 **解决：**
-1. 点击 Agent Client 面板右上角 "..." 菜单 → **Restart agent**
+1. 让 Agent 调用 `byoao_mcp_auth` 进行重新认证
 2. 浏览器会弹出重新认证页面
 3. Google 服务请确保选择正确的 Google 账号（工作账号，非个人账号）
 4. 完成登录后返回 Obsidian
-5. 让 agent 重试之前的请求
+5. 检查 MCP 连接状态，然后让 agent 重试之前的请求
 
 如果仍然不行，完全重启 Obsidian。
 
@@ -272,7 +272,7 @@ BigQuery 认证是延迟触发的 —— 当你第一次让 agent 查询 BigQuer
 1. 确保已安装 gcloud CLI：https://cloud.google.com/sdk/docs/install
 2. 让 agent 执行一个 BigQuery 查询 —— 它应该会自动调用 `byoao_mcp_auth`
 3. 在弹出的浏览器窗口中完成 Google 登录
-4. 点击 "..." → **Restart agent**，然后重试
+4. 检查 MCP 连接状态，然后重试
 
 ---
 
