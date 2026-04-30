@@ -74,7 +74,9 @@ function runCommand(command: string, args: string[], timeoutMs = 120_000): Promi
 }
 
 const RESTART_MSG =
-  "IMPORTANT: Tell the user to check if the MCP connection is now available/green, then retry their request.";
+  "IMPORTANT: Tell the user to check if the MCP connection indicator is now green.\n" +
+  "- If green: They can retry their request.\n" +
+  '- If NOT green: Tell them to click the "..." menu → "Restart agent" to reload the tools.';
 
 export const byoao_mcp_auth = tool({
   description:

@@ -254,7 +254,9 @@ source ~/.zshrc
 2. A browser window should open for re-authentication
 3. For Google services, make sure to select your work account
 4. Complete the login, then return to Obsidian
-5. Check if the MCP connection is now available, then ask the agent to retry your request
+5. Check if the MCP connection indicator is now green
+6. If green, ask the agent to retry your request
+7. If NOT green, click "..." → **Restart agent** to reload the connection
 
 If this doesn't work, restart Obsidian completely.
 
@@ -270,7 +272,8 @@ BigQuery authentication happens lazily — the first time you ask the agent to q
 1. Make sure gcloud CLI is installed: https://cloud.google.com/sdk/docs/install
 2. Ask the agent to run a BigQuery query — it should call `byoao_mcp_auth` automatically
 3. Complete the Google login in the browser window that opens
-4. Check if the MCP connection is now available, then retry
+4. Check if the MCP connection indicator is now green
+5. If NOT green, click "..." → **Restart agent** to reload the connection, then retry
 
 ---
 
