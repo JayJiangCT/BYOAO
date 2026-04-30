@@ -2,6 +2,13 @@
 
 All notable changes to BYOAO (`@jayjiang/byoao`) are documented in this file.
 
+## [v2.0.14] — 2026-04-30
+
+### Fixes
+- **MCP Auth**: Updated the `byoao_mcp_auth` tool, system prompt hooks, and troubleshooting guides to prompt users to check their MCP connection status rather than explicitly restarting the agent.
+
+---
+
 ## [v2.0.13] — 2026-04-15
 
 ### Fixes
